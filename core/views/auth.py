@@ -77,8 +77,13 @@ def login_view(request):
         if not email or not password:
             form_error = 'Please enter your email and password.'
         else:
-            # Django authenticates by username — we store username=email
-            user = authenticate(request, username=email, password=password)
+            # Look up user by email address or username
+            lookup_user = (
+                User.objects.filter(email__iexact=email).first() or
+                User.objects.filter(username__iexact=email).first()
+            )
+            username_to_auth = lookup_user.username if lookup_user else email
+            user = authenticate(request, username=username_to_auth, password=password)
 
             if user is None:
                 # Could be wrong password or user doesn't exist

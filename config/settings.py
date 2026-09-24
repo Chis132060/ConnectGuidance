@@ -66,13 +66,14 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 # Database configuration: Supabase PostgreSQL with local SQLite fallback
 db_url = os.getenv('DATABASE_URL', '').strip()
-if not db_url or db_url.startswith('https://'):
+has_placeholder_pass = any(p in db_url for p in ('your-password', '[YOUR-PASSWORD]', '<YOUR-PASSWORD>'))
+if not db_url or db_url.startswith('https://') or has_placeholder_pass:
     db_host = os.getenv('DB_HOST', '').strip()
     db_user = os.getenv('DB_USER', 'postgres').strip()
     db_pass = os.getenv('DB_PASSWORD', '').strip()
     db_name = os.getenv('DB_NAME', 'postgres').strip()
     db_port = os.getenv('DB_PORT', '5432').strip()
-    if db_host and db_host != 'your-supabase-host' and db_pass and db_pass != 'your-password':
+    if db_host and db_host != 'your-supabase-host' and db_pass and db_pass not in ('your-password', '[YOUR-PASSWORD]', '<YOUR-PASSWORD>', ''):
         db_url = f"postgresql://{db_user}:{db_pass}@{db_host}:{db_port}/{db_name}?sslmode=require"
     else:
         db_url = f"sqlite:///{BASE_DIR / 'db.sqlite3'}"
