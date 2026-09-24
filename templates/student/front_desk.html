@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Front Desk Information — ConnectGuidance{% endblock %}
+{% block meta_description %}Information on how to book in person, operating hours, and guidance center policies.{% endblock %}
+
+{% block content %}
+<div class="front-desk-container" style="max-width: 900px; margin: 0 auto;">
+    <div style="margin-bottom: 2rem;">
+        <h1 style="font-size: 1.75rem; font-weight: 700; color: #1e293b; margin: 0;">University Guidance Front Desk</h1>
+        <p style="color: #64748b; font-size: 0.95rem; margin-top: 0.25rem;">Information for in-person consultations, walk-in services, and emergency crisis response.</p>
+    </div>
+
+    <div class="card" style="margin-bottom: 2rem;">
+        <h2 style="font-size: 1.25rem; font-weight: 600; color: #1e293b; margin-bottom: 1rem;">Operating Hours & Location</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+            <div>
+                <strong style="color: #334155; display: block; margin-bottom: 0.25rem;">Office Location</strong>
+                <p style="color: #64748b; margin: 0;">Student Center Building, 2nd Floor, Room 204</p>
+                <p style="color: #64748b; margin: 0.25rem 0 0 0;">Main University Campus</p>
+            </div>
+            <div>
+                <strong style="color: #334155; display: block; margin-bottom: 0.25rem;">Office Schedule</strong>
+                <p style="color: #64748b; margin: 0;">Monday – Friday: 08:00 AM – 05:00 PM</p>
+                <p style="color: #64748b; margin: 0.25rem 0 0 0;">Closed on Weekends and University Holidays</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="card" style="margin-bottom: 2rem;">
+        <h2 style="font-size: 1.25rem; font-weight: 600; color: #1e293b; margin-bottom: 1rem;">Walk-In Procedures</h2>
+        <ol style="padding-left: 1.5rem; color: #475569; display: flex; flex-direction: column; gap: 0.75rem;">
+            <li><strong>Check-In at Reception Desk:</strong> Present your valid Student ID card to the attending staff member.</li>
+            <li><strong>Intake Triage:</strong> The receptionist will record your primary concern (academic, personal, emotional, or career) and check real-time counselor availability.</li>
+            <li><strong>Assignment:</strong> If an opening exists, you will be booked into the earliest available slot. If fully booked, a scheduled session for a future date will be reserved.</li>
+        </ol>
+    </div>
+
+    <div class="card" style="background: #fef2f2; border-color: #fee2e2;">
+        <h2 style="font-size: 1.25rem; font-weight: 600; color: #991b1b; margin-bottom: 0.75rem;">24/7 Immediate Crisis Support</h2>
+        <p style="color: #b91c1c; font-size: 0.95rem; margin-bottom: 1rem;">
+            If you or someone you know is experiencing acute emotional crisis, self-harm thoughts, or overwhelming distress, immediate confidential help is available 24/7.
+        </p>
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+            <div style="background: #ffffff; padding: 0.75rem 1.25rem; border-radius: 8px; border: 1px solid #fecaca;">
+                <span style="font-size: 0.8rem; color: #64748b; display: block;">National Suicide & Crisis Lifeline</span>
+                <strong style="font-size: 1.25rem; color: #b91c1c;">Dial 988</strong>
+            </div>
+            <div style="background: #ffffff; padding: 0.75rem 1.25rem; border-radius: 8px; border: 1px solid #fecaca;">
+                <span style="font-size: 0.8rem; color: #64748b; display: block;">Campus Security Emergency Dispatch</span>
+                <strong style="font-size: 1.25rem; color: #b91c1c;">(555) 019-9111</strong>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

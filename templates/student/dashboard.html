@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Student Dashboard — ConnectGuidance{% endblock %}
+{% block meta_description %}ConnectGuidance student dashboard and upcoming counseling sessions.{% endblock %}
+
+{% block content %}
+<div class="dashboard-container" style="max-width: 1000px; margin: 2rem auto; padding: 0 1rem;">
+    <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 1rem;">
+        <div>
+            <h1 style="font-size: 1.75rem; font-weight: 700; color: #1e293b;">Welcome, {{ profile.full_name }}</h1>
+            <p style="color: #64748b; font-size: 0.95rem;">Student ID: {{ profile.student_id|default:"N/A" }} &bull; Department: {{ profile.department|default:"General" }}</p>
+        </div>
+        <div style="display: flex; gap: 0.75rem;">
+            <a href="{% url 'student_book_appointment' %}" style="background: #2563eb; color: #fff; padding: 0.6rem 1.2rem; border-radius: 6px; text-decoration: none; font-weight: 500;">+ Book Session</a>
+            <a href="{% url 'student_appointments' %}" style="background: #f1f5f9; color: #334155; padding: 0.6rem 1.2rem; border-radius: 6px; text-decoration: none; font-weight: 500;">My Appointments</a>
+        </div>
+    </header>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+        <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+            <h3 style="font-size: 0.9rem; text-transform: uppercase; color: #64748b; letter-spacing: 0.05em; margin-bottom: 0.5rem;">Upcoming Sessions</h3>
+            <p style="font-size: 2rem; font-weight: 700; color: #2563eb; margin: 0;">{{ upcoming_count }}</p>
+        </div>
+        <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+            <h3 style="font-size: 0.9rem; text-transform: uppercase; color: #64748b; letter-spacing: 0.05em; margin-bottom: 0.5rem;">Past Sessions</h3>
+            <p style="font-size: 2rem; font-weight: 700; color: #475569; margin: 0;">{{ past_count }}</p>
+        </div>
+    </div>
+
+    <section style="background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+        <h2 style="font-size: 1.25rem; font-weight: 600; color: #1e293b; margin-bottom: 1rem;">Next Scheduled Session</h2>
+        {% if next_appointment %}
+            <div style="border-left: 4px solid #2563eb; padding-left: 1rem; margin-bottom: 1rem;">
+                <p style="font-size: 1.1rem; font-weight: 600; color: #1e293b; margin: 0;">{{ next_appointment.counselor.full_name }}</p>
+                <p style="color: #64748b; font-size: 0.95rem; margin: 0.25rem 0;">{{ next_appointment.scheduled_at|date:"l, F j, Y @ g:i A" }}</p>
+                <p style="color: #475569; font-size: 0.9rem; margin: 0.25rem 0;">Concern: <strong>{{ next_appointment.concern_type|title }}</strong></p>
+                <span style="display: inline-block; padding: 0.25rem 0.6rem; border-radius: 4px; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; background: #e0f2fe; color: #0284c7;">
+                    {{ next_appointment.status }}
+                </span>
+            </div>
+        {% else %}
+            <p style="color: #64748b; margin: 0;">No upcoming appointments. Need support? <a href="{% url 'student_book_appointment' %}" style="color: #2563eb; text-decoration: underline;">Schedule a session</a>.</p>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

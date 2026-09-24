@@ -1,0 +1,19 @@
+{% if messages %}
+<div class="toast-container" id="toast-container">
+    {% for message in messages %}
+    <div class="toast toast-{{ message.tags|default:'info' }}">
+        {{ message }}
+    </div>
+    {% endfor %}
+</div>
+<script>
+setTimeout(function() {
+    var tc = document.getElementById('toast-container');
+    if (tc) {
+        tc.style.transition = 'opacity 0.5s ease';
+        tc.style.opacity = '0';
+        setTimeout(function() { tc.remove(); }, 500);
+    }
+}, 4000);
+</script>
+{% endif %}

@@ -1,0 +1,110 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ConnectGuidance — University Guidance & Counseling{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}Streamlined university guidance and psychological counseling.{% endblock %}">
+
+    <!-- Fonts: Inter & Poppins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Design System CSS -->
+    <link rel="stylesheet" href="{% static 'css/app.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    {% include "partials/_messages.html" %}
+
+    {% if request.user.is_authenticated and request.user.profile %}
+    <!-- Authenticated App Layout (Sidebar + Topbar + Content) -->
+    <div class="app-layout">
+        <!-- Sidebar (#0F172A) -->
+        <aside class="app-sidebar">
+            <div class="sidebar-header">
+                <a href="{% url 'role_home' %}" class="sidebar-brand">
+                    <span>✦</span> ConnectGuidance
+                </a>
+            </div>
+
+            <nav class="sidebar-nav">
+                {% if request.user.profile.role == 'student' %}
+                    {% include "partials/student_subnav.html" %}
+                {% elif request.user.profile.role == 'counselor' %}
+                    {% include "partials/counselor_subnav.html" %}
+                {% elif request.user.profile.role == 'admin' %}
+                    {% include "partials/admin_subnav.html" %}
+                {% elif request.user.profile.role == 'receptionist' %}
+                    {% include "partials/receptionist_subnav.html" %}
+                {% endif %}
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-chip">
+                    <div class="user-avatar">
+                        {{ request.user.profile.full_name|slice:":1"|default:"U"|upper }}
+                    </div>
+                    <div>
+                        <div class="user-info-name">{{ request.user.profile.full_name }}</div>
+                        <div class="user-info-role">{{ request.user.profile.role }}</div>
+                    </div>
+                </div>
+                <a href="{% url 'logout' %}" style="color: #94a3b8; text-decoration: none; font-size: 0.9rem;" title="Sign out">⎋</a>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <div class="app-main">
+            <header class="app-topbar">
+                <h2 class="page-title">{% block page_title %}{% block title_heading %}Dashboard{% endblock %}{% endblock %}</h2>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <span style="font-size: 0.85rem; color: #64748b;">
+                        Role: <strong style="text-transform: capitalize; color: #0f172a;">{{ request.user.profile.role }}</strong>
+                    </span>
+                    <a href="{% url 'logout' %}" class="btn btn-secondary btn-sm">Sign Out</a>
+                </div>
+            </header>
+
+            <main class="app-content">
+    {% else %}
+    <!-- Public / Authentication Layout (Landing, Sign In, Register) -->
+    <div style="min-height: 100vh; display: flex; flex-direction: column;">
+        <header style="background: #ffffff; border-bottom: 1px solid #e2e8f0; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center;">
+            <a href="{% url 'landing' %}" style="font-size: 1.25rem; font-weight: 700; color: #0f172a; text-decoration: none; display: flex; align-items: center; gap: 0.5rem;">
+                <span style="color: #2563eb;">✦</span> ConnectGuidance
+            </a>
+            <div style="display: flex; gap: 0.75rem;">
+                <a href="{% url 'login' %}" class="btn btn-secondary btn-sm">Sign In</a>
+                <a href="{% url 'register' %}" class="btn btn-primary btn-sm">Get Started</a>
+            </div>
+        </header>
+
+        <main style="flex: 1;">
+    {% endif %}
+
+            {% block content %}{% endblock %}
+
+    {% if request.user.is_authenticated and request.user.profile %}
+            </main>
+        </div>
+    </div>
+
+    <!-- Floating Chatbot Widget for Students -->
+    {% if request.user.profile.role == 'student' %}
+        {% include "widgets/chatbot.html" %}
+    {% endif %}
+    {% else %}
+        </main>
+
+        <footer style="background: #ffffff; border-top: 1px solid #e2e8f0; padding: 1.5rem 2rem; text-align: center; color: #64748b; font-size: 0.85rem;">
+            &copy; 2026 ConnectGuidance &bull; University Guidance & Counseling System. All rights reserved.
+        </footer>
+    </div>
+    {% endif %}
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

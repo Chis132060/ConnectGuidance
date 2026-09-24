@@ -1,0 +1,187 @@
+<!-- Floating AI Chatbot Widget Overlay (Stitch Token Styling) -->
+<div id="cg-chatbot-widget" style="position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 999; font-family: 'Inter', sans-serif;">
+    <!-- Amber Floating Action Button (FAB) -->
+    <button id="cg-chat-fab" style="width: 56px; height: 56px; border-radius: 50%; background: #b45309; color: #ffffff; border: none; box-shadow: 0 4px 14px rgba(180, 83, 9, 0.4); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; transition: transform 0.2s ease;" title="Ask AI Guidance Assistant">
+        💬
+    </button>
+
+    <!-- Overlay Panel (380x560, radius 16px) -->
+    <div id="cg-chat-panel" style="display: none; width: 380px; height: 560px; background: #ffffff; border-radius: 16px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.15), 0 8px 10px -6px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; flex-direction: column; overflow: hidden; position: absolute; bottom: 70px; right: 0;">
+        <!-- Header -->
+        <div style="background: #0f172a; color: #ffffff; padding: 0.85rem 1rem; display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <div style="width: 10px; height: 10px; border-radius: 50%; background: #22c55e;"></div>
+                <div>
+                    <strong style="font-size: 0.9rem; display: block;">Guidance Assistant</strong>
+                    <span style="font-size: 0.75rem; color: #94a3b8;">Online &bull; 24/7 Support</span>
+                </div>
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+                <button id="cg-chat-reset" style="background: transparent; border: none; color: #94a3b8; font-size: 0.8rem; cursor: pointer;" title="New Conversation">🔄</button>
+                <button id="cg-chat-close" style="background: transparent; border: none; color: #94a3b8; font-size: 1.1rem; cursor: pointer;" title="Minimize">&times;</button>
+            </div>
+        </div>
+
+        <!-- Crisis Disclaimer (Dismissible) -->
+        <div id="cg-crisis-banner" style="background: #fef2f2; border-bottom: 1px solid #fee2e2; padding: 0.5rem 0.75rem; font-size: 0.75rem; color: #991b1b; display: flex; justify-content: space-between; align-items: center;">
+            <span>Crisis? Call/Text <strong>988</strong> anytime for 24/7 immediate help.</span>
+            <button onclick="document.getElementById('cg-crisis-banner').style.display='none'" style="background: none; border: none; color: #991b1b; cursor: pointer; font-size: 0.9rem;">&times;</button>
+        </div>
+
+        <!-- Booking CTA Card (hidden by default) -->
+        <div id="cg-widget-cta" style="display: none; background: #eff6ff; border-bottom: 1px solid #bfdbfe; padding: 0.6rem 0.85rem; font-size: 0.8rem; color: #1e40af; justify-content: space-between; align-items: center;">
+            <span>Would you like to book a guidance session?</span>
+            <a href="{% url 'student_book_appointment' %}" style="background: #2563eb; color: #fff; padding: 0.25rem 0.5rem; border-radius: 4px; text-decoration: none; font-weight: 600; font-size: 0.75rem;">Book</a>
+        </div>
+
+        <!-- Messages Area -->
+        <div id="cg-widget-messages" style="flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem; background: #f8fafc;">
+            <div style="align-self: flex-start; max-width: 85%; background: #ffffff; border: 1px solid #e2e8f0; padding: 0.65rem 0.85rem; border-radius: 12px; font-size: 0.85rem; color: #334155; line-height: 1.4;">
+                Hi there! How can I assist your academic or personal wellness today?
+            </div>
+        </div>
+
+        <!-- Composer -->
+        <div style="border-top: 1px solid #e2e8f0; padding: 0.75rem; background: #ffffff;">
+            <form id="cg-widget-form" style="display: flex; gap: 0.5rem;">
+                <input type="text" id="cg-widget-input" placeholder="Type a message..." style="flex: 1; padding: 0.5rem 0.75rem; border: 1px solid #cbd5e1; border-radius: 20px; font-size: 0.85rem; outline: none;" autocomplete="off" required>
+                <button type="submit" id="cg-widget-send" style="background: #b45309; color: #ffffff; border: none; width: 34px; height: 34px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.85rem;">➔</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const fab = document.getElementById('cg-chat-fab');
+    const panel = document.getElementById('cg-chat-panel');
+    const closeBtn = document.getElementById('cg-chat-close');
+    const resetBtn = document.getElementById('cg-chat-reset');
+    const form = document.getElementById('cg-widget-form');
+    const input = document.getElementById('cg-widget-input');
+    const msgBox = document.getElementById('cg-widget-messages');
+    const cta = document.getElementById('cg-widget-cta');
+
+    let widgetMessages = [];
+    let widgetSessionId = null;
+
+    fab.addEventListener('click', () => {
+        panel.style.display = (panel.style.display === 'flex' ? 'none' : 'flex');
+        if (panel.style.display === 'flex') input.focus();
+    });
+
+    closeBtn.addEventListener('click', () => { panel.style.display = 'none'; });
+
+    resetBtn.addEventListener('click', () => {
+        widgetMessages = [];
+        widgetSessionId = null;
+        msgBox.innerHTML = '<div style="align-self: flex-start; max-width: 85%; background: #ffffff; border: 1px solid #e2e8f0; padding: 0.65rem 0.85rem; border-radius: 12px; font-size: 0.85rem; color: #334155; line-height: 1.4;">New conversation started. How can I help?</div>';
+        cta.style.display = 'none';
+    });
+
+    function appendWidgetBubble(role, text) {
+        const b = document.createElement('div');
+        const isUser = (role === 'user');
+        b.style.cssText = `
+            align-self: ${isUser ? 'flex-end' : 'flex-start'};
+            max-width: 85%;
+            background: ${isUser ? '#2563eb' : '#ffffff'};
+            color: ${isUser ? '#ffffff' : '#334155'};
+            border: ${isUser ? 'none' : '1px solid #e2e8f0'};
+            padding: 0.65rem 0.85rem;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            word-break: break-word;
+        `;
+        b.textContent = text;
+        msgBox.appendChild(b);
+        msgBox.scrollTop = msgBox.scrollHeight;
+        return b;
+    }
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const text = input.value.trim();
+        if (!text) return;
+
+        input.value = '';
+        input.disabled = true;
+        appendWidgetBubble('user', text);
+        widgetMessages.push({ role: 'user', content: text });
+
+        const assistantBubble = appendWidgetBubble('assistant', '...');
+        let replyText = '';
+
+        try {
+            const resp = await fetch('/chat/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookieValue('csrftoken')
+                },
+                body: JSON.stringify({
+                    sessionId: widgetSessionId,
+                    messages: widgetMessages
+                })
+            });
+
+            if (!resp.ok) {
+                const err = await resp.json().catch(() => ({}));
+                assistantBubble.textContent = err.error || 'Chat service unavailable.';
+                assistantBubble.style.color = '#ef4444';
+                return;
+            }
+
+            assistantBubble.textContent = '';
+            const reader = resp.body.getReader();
+            const decoder = new TextDecoder();
+            let done = false;
+
+            while (!done) {
+                const { value, done: rDone } = await reader.read();
+                done = rDone;
+                if (value) {
+                    const chunk = decoder.decode(value);
+                    const lines = chunk.split('\n');
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            try {
+                                const payload = JSON.parse(line.slice(6));
+                                if (payload.type === 'delta') {
+                                    replyText += payload.chunk;
+                                    assistantBubble.textContent = replyText;
+                                    msgBox.scrollTop = msgBox.scrollHeight;
+                                } else if (payload.type === 'done') {
+                                    widgetSessionId = payload.sessionId;
+                                    if (payload.should_suggest) cta.style.display = 'flex';
+                                } else if (payload.type === 'error') {
+                                    assistantBubble.textContent = payload.error;
+                                    assistantBubble.style.color = '#ef4444';
+                                }
+                            } catch (pe) {}
+                        }
+                    }
+                }
+            }
+            widgetMessages.push({ role: 'assistant', content: replyText });
+        } catch (err) {
+            assistantBubble.textContent = 'Connection error.';
+        } finally {
+            input.disabled = false;
+            input.focus();
+        }
+    });
+
+    function getCookieValue(name) {
+        let v = null;
+        if (document.cookie) {
+            document.cookie.split(';').forEach(c => {
+                const parts = c.trim().split('=');
+                if (parts[0] === name) v = decodeURIComponent(parts[1]);
+            });
+        }
+        return v;
+    }
+});
+</script>

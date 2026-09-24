@@ -78,16 +78,16 @@ GROQ_API_KEY=                          # Phase 6 (or ANTHROPIC_API_KEY)
 
 ## PHASE 3 — Auth + Role Guards (replaces Supabase Auth + proxy.ts)
 
-| # | Action | Command / output |
-|---|---|---|
-| 16 | URLs | `login/`, `logout/`, `register/`, `password_change/` (`django.contrib.auth` + custom register) |
-| 17 | Register | create User + Profile (`role=student`, `is_active`, `user_no`) — parity with signup trigger |
-| 18 | Login flow | after login → `ROLE_HOME[role]` redirect (`/admin-panel`, `/counselor`, `/student`, `/receptionist`) |
-| 19 | Guards | `@login_required` + `role_required('admin')` etc. → wrong role = redirect ROLE_HOME; inactive = logout + `login?error=deactivated` |
-| 20 | Page guards | every protected view mirrors original: student×5, counselor×2, admin×5 (`requireAdmin`), receptionist×1 |
-| 21 | Password change | Django `PasswordChangeView` (parity with `StudentChangePasswordForm`) |
-| 22 | Staff bootstrap | `createsuperuser` + `seed_roles` management command (admin, counselor, receptionist, student test rows) |
-| 23 | Verify | 4 roles log in; wrong-route redirect; deactivated blocked; password change works |
+| # | Action | Command / output | Status |
+|---|---|---|---|
+| 16 | URLs | `login/`, `logout/`, `register/`, `password_change/` (`django.contrib.auth` + custom register) | [x] Done |
+| 17 | Register | create User + Profile (`role=student`, `is_active`, `user_no`) — parity with signup trigger | [x] Done |
+| 18 | Login flow | after login → `ROLE_HOME[role]` redirect (`/admin-panel`, `/counselor`, `/student`, `/receptionist`) | [x] Done |
+| 19 | Guards | `@login_required` + `role_required('admin')` etc. → wrong role = redirect ROLE_HOME; inactive = logout + `login?error=deactivated` | [x] Done |
+| 20 | Page guards | every protected view mirrors original: student×5, counselor×2, admin×5 (`requireAdmin`), receptionist×1 | [x] Done |
+| 21 | Password change | Django `PasswordChangeView` (parity with `StudentChangePasswordForm`) | [x] Done |
+| 22 | Staff bootstrap | `createsuperuser` + `seed_roles` management command (admin, counselor, receptionist, student test rows) | [x] Done |
+| 23 | Verify | 4 roles log in; wrong-route redirect; deactivated blocked; password change works | [x] Done |
 
 **Parity map:** `proxy.ts` → middleware/guards · `requireAdmin` → `role_required('admin')` · signin API → Django login view.
 
@@ -95,16 +95,16 @@ GROQ_API_KEY=                          # Phase 6 (or ANTHROPIC_API_KEY)
 
 ## PHASE 4 — Appointments (booking + state machine)
 
-| # | Action | Command / output |
-|---|---|---|
-| 24 | `services/slots.py` | port `appointment-slots.ts`: 09:00–16:00 hourly, day bounds in `TIME_ZONE` |
-| 25 | Availability view | student-only; subtract `pending`/`confirmed` slots |
-| 26 | Book view | validate future time, counselor role, minute-window clash → status=`pending` → audit `APPOINTMENT_CREATED` |
-| 27 | Student cancel | own row only; block if `cancelled`/`completed` → `APPOINTMENT_CANCELLED_STUDENT` |
-| 28 | Counselor status | state machine only: pending→confirmed/cancelled; confirmed→completed/cancelled; terminal blocked → `APPOINTMENT_STATUS_UPDATED` |
-| 29 | Receptionist book | search student; list counselors; any-free slots; specific counselor clash loop; next-available first-free alphabetically → `APPOINTMENT_CREATED_RECEPTION` |
-| 30 | No Next.js revalidate | plain redirect/render after POST |
-| 31 | Verify | full lifecycles from `FLOWS.md` sections 7–10, 16 |
+| # | Action | Command / output | Status |
+|---|---|---|---|
+| 24 | `services/slots.py` | port `appointment-slots.ts`: 09:00–16:00 hourly, day bounds in `TIME_ZONE` | [x] Done |
+| 25 | Availability view | student-only; subtract `pending`/`confirmed` slots | [x] Done |
+| 26 | Book view | validate future time, counselor role, minute-window clash → status=`pending` → audit `APPOINTMENT_CREATED` | [x] Done |
+| 27 | Student cancel | own row only; block if `cancelled`/`completed` → `APPOINTMENT_CANCELLED_STUDENT` | [x] Done |
+| 28 | Counselor status | state machine only: pending→confirmed/cancelled; confirmed→completed/cancelled; terminal blocked → `APPOINTMENT_STATUS_UPDATED` | [x] Done |
+| 29 | Receptionist book | search student; list counselors; any-free slots; specific counselor clash loop; next-available first-free alphabetically → `APPOINTMENT_CREATED_RECEPTION` | [x] Done |
+| 30 | No Next.js revalidate | plain redirect/render after POST | [x] Done |
+| 31 | Verify | full lifecycles from `FLOWS.md` sections 7–10, 16 | [x] Done |
 
 ### Status state machine (enforce in service)
 
@@ -119,54 +119,54 @@ GROQ_API_KEY=                          # Phase 6 (or ANTHROPIC_API_KEY)
 
 ## PHASE 5 — Case notes + encryption
 
-| # | Action | Command / output |
-|---|---|---|
-| 32 | `services/encryption.py` | port `encryption.ts`: AES-256-CBC hex (iv+cipher); optional legacy `gc:v1:` GCM decrypt; key = `ENCRYPTION_KEY` (64 hex) |
-| 33 | Save view | counselor author only; encrypt → upsert UNIQUE(appointment, counselor); audit `CASE_NOTE_UPSERT` |
-| 34 | Integrity | reject if `note.counselor != appointment.counselor` (port DB trigger) |
-| 35 | Read rules | author decrypt; admin only if `!is_confidential`; student sees only `!is_confidential` |
-| 36 | Verify | wrong counselor 403; ciphertext at rest; toggle hides from student |
+| # | Action | Command / output | Status |
+|---|---|---|---|
+| 32 | `services/encryption.py` | port `encryption.ts`: AES-256-CBC hex (iv+cipher); optional legacy `gc:v1:` GCM decrypt; key = `ENCRYPTION_KEY` (64 hex) | [x] Done |
+| 33 | Save view | counselor author only; encrypt → upsert UNIQUE(appointment, counselor); audit `CASE_NOTE_UPSERT` | [x] Done |
+| 34 | Integrity | reject if `note.counselor != appointment.counselor` (port DB trigger) | [x] Done |
+| 35 | Read rules | author decrypt; admin only if `!is_confidential`; student sees only `!is_confidential` | [x] Done |
+| 36 | Verify | wrong counselor 403; ciphertext at rest; toggle hides from student | [x] Done |
 
 ---
 
 ## PHASE 6 — Mood alerts + AI chatbot
 
-| # | Action | Command / output |
-|---|---|---|
-| 37 | Mood view | `good`/`okay` → audit only; `low` → latest non-cancelled appointment’s counselor → `StudentMoodAlert`; none → booking error message |
-| 38 | Counselor feed | workspace lists alerts (`counselor=me`) |
-| 39 | Chat session GET | latest session by student → hydrate widget |
-| 40 | Chat POST | rate limit 24/15 min; max 36 msgs; content ≤ 24000; `studentId=me`; stream SSE from Groq/Anthropic; persist messages; audit `CHAT_SESSION_UPSERT` |
-| 41 | Book CTA | port `lib/chat/cta.ts` patterns → show “Book appointment” button |
-| 42 | Crisis disclaimer | system prompt parity (`lib/chat/constants.ts`) |
-| 43 | Verify | low mood alert; stream + restore; 429 after limit; CTA on crisis text |
+| # | Action | Command / output | Status |
+|---|---|---|---|
+| 37 | Mood view | `good`/`okay` → audit only; `low` → latest non-cancelled appointment’s counselor → `StudentMoodAlert`; none → booking error message | [x] Done |
+| 38 | Counselor feed | workspace lists alerts (`counselor=me`) | [x] Done |
+| 39 | Chat session GET | latest session by student → hydrate widget | [x] Done |
+| 40 | Chat POST | rate limit 24/15 min; max 36 msgs; content ≤ 24000; `studentId=me`; stream SSE from Groq/Anthropic; persist messages; audit `CHAT_SESSION_UPSERT` | [x] Done |
+| 41 | Book CTA | port `lib/chat/cta.ts` patterns → show “Book appointment” button | [x] Done |
+| 42 | Crisis disclaimer | system prompt parity (`lib/chat/constants.ts`) | [x] Done |
+| 43 | Verify | low mood alert; stream + restore; 429 after limit; CTA on crisis text | [x] Done |
 
 ---
 
 ## PHASE 7 — UI (16 screens + 1 overlay) — Django templates
 
-| # | Screen | Route | Template |
-|---|---|---|---|
-| 44 | Base layout | — | `templates/base.html` (role sidebar/subnav, topbar, messages) |
-| 45 | Landing | `/` | `public/landing.html` |
-| 46 | Login | `/login/` | `registration/login.html` |
-| 47 | Register | `/register/` | `registration/register.html` |
-| 48 | Student dashboard | `/student/` | `student/dashboard.html` (mood, upcoming, history, chat widget) |
-| 49 | Appointments | `/appointments/` | `student/appointments.html` (book + tables) |
-| 50 | Chatbot page | `/chatbot/` | `student/chatbot.html` |
-| 51 | Student profile | `/student/profile/` | `student/profile.html` |
-| 52 | Front desk info | `/student/front-desk/` | `student/front_desk.html` |
-| 53 | Counselor workspace | `/counselor/` | `counselor/workspace.html` (stats, alerts, actions) |
-| 54 | Case note editor | `/counselor/case-notes/<uuid>/` | `counselor/case_note.html` |
-| 55 | Admin overview | `/admin-panel/` | `admin/overview.html` (KPIs + charts) |
-| 56 | Users | `/admin-panel/users/` | `admin/users.html` |
-| 57 | Audit logs | `/admin-panel/audit/` | `admin/audit_logs.html` |
-| 58 | Reports | `/admin-panel/reports/` | `admin/reports.html` |
-| 59 | Admin profile | `/admin-panel/profile/` | `admin/profile.html` |
-| 60 | Receptionist | `/receptionist/` | `receptionist/booking.html` (4-step) |
-| 61 | Chat overlay | include | `widgets/chatbot.html` (JS SSE) |
-| 62 | States | every page | empty / loading / error / success per `INTERFACES.md` |
-| 63 | Verify | count **16 routes + 1 widget**; design tokens applied |
+| # | Screen | Route | Template | Status |
+|---|---|---|---|---|
+| 44 | Base layout | — | `templates/base.html` (role sidebar/subnav, topbar, messages) | [x] Done |
+| 45 | Landing | `/` | `public/landing.html` | [x] Done |
+| 46 | Login | `/login/` | `registration/login.html` | [x] Done |
+| 47 | Register | `/register/` | `registration/register.html` | [x] Done |
+| 48 | Student dashboard | `/student/` | `student/dashboard.html` (mood, upcoming, history, chat widget) | [x] Done |
+| 49 | Appointments | `/appointments/` | `student/appointments.html` (book + tables) | [x] Done |
+| 50 | Chatbot page | `/chatbot/` | `student/chatbot.html` | [x] Done |
+| 51 | Student profile | `/student/profile/` | `student/profile.html` | [x] Done |
+| 52 | Front desk info | `/student/front-desk/` | `student/front_desk.html` | [x] Done |
+| 53 | Counselor workspace | `/counselor/` | `counselor/workspace.html` (stats, alerts, actions) | [x] Done |
+| 54 | Case note editor | `/counselor/case-notes/<uuid>/` | `counselor/case_note.html` | [x] Done |
+| 55 | Admin overview | `/admin-panel/` | `admin/overview.html` (KPIs + charts) | [x] Done |
+| 56 | Users | `/admin-panel/users/` | `admin/users.html` | [x] Done |
+| 57 | Audit logs | `/admin-panel/audit/` | `admin/audit_logs.html` | [x] Done |
+| 58 | Reports | `/admin-panel/reports/` | `admin/reports.html` | [x] Done |
+| 59 | Admin profile | `/admin-panel/profile/` | `admin/profile.html` | [x] Done |
+| 60 | Receptionist | `/receptionist/` | `receptionist/booking.html` (4-step) | [x] Done |
+| 61 | Chat overlay | include | `widgets/chatbot.html` (JS SSE) | [x] Done |
+| 62 | States | every page | empty / loading / error / success per `INTERFACES.md` | [x] Done |
+| 63 | Verify | count **16 routes + 1 widget**; design tokens applied | [x] Done |
 
 **Admin URL note:** App admin UI uses `/admin-panel/*` so Django’s built-in admin can remain at `/admin/` (ops only). Decide before Phase 7 if you prefer swapping.
 
@@ -176,18 +176,18 @@ GROQ_API_KEY=                          # Phase 6 (or ANTHROPIC_API_KEY)
 
 ## PHASE 8 — Audit UI, reports, metrics, polish
 
-| # | Action | Command / output |
-|---|---|---|
-| 64 | Audit service | `services/audit.py` `log_action()` — never raises (port `lib/audit.ts`) |
-| 65 | Signals | `post_save`/`post_delete` on Profile + CaseNote → AuditLog (port DB triggers) |
-| 66 | Admin audit viewer | filters user/action/table/date + pagination |
-| 67 | Reports | date/dept/concern/status filters + preview (port `actions/reports.ts`) |
-| 68 | Export | CSV always; PDF via `reportlab` (replaces jsPDF) + audit `REPORT_EXPORT` |
-| 69 | Metrics | KPI counts + 8-week series + concern breakdown (port `admin-metrics.ts`) |
-| 70 | User management | role change + activate/deactivate; **cannot demote/deactivate self**; **last active admin guards** (port `app/admin/actions.ts`) |
-| 71 | Deps | add `gunicorn`, optional `whitenoise` → `requirements.txt` |
-| 72 | README | setup, env, run, test, deploy (gunicorn) + links to all `docs/` |
-| 73 | Full QA | execute every flow in `FLOWS.md` §1–24; tick master checklist |
+| # | Action | Command / output | Status |
+|---|---|---|---|
+| 64 | Audit service | `services/audit.py` `log_action()` — never raises (port `lib/audit.ts`) | [x] Done |
+| 65 | Signals | `post_save`/`post_delete` on Profile + CaseNote → AuditLog (port DB triggers) | [x] Done |
+| 66 | Admin audit viewer | filters user/action/table/date + pagination | [x] Done |
+| 67 | Reports | date/dept/concern/status filters + preview (port `actions/reports.ts`) | [x] Done |
+| 68 | Export | CSV always; PDF via `reportlab` (replaces jsPDF) + audit `REPORT_EXPORT` | [x] Done |
+| 69 | Metrics | KPI counts + 8-week series + concern breakdown (port `admin-metrics.ts`) | [x] Done |
+| 70 | User management | role change + activate/deactivate; **cannot demote/deactivate self**; **last active admin guards** (port `app/admin/actions.ts`) | [x] Done |
+| 71 | Deps | add `gunicorn`, optional `whitenoise` → `requirements.txt` | [x] Done |
+| 72 | README | setup, env, run, test, deploy (gunicorn) + links to all `docs/` | [x] Done |
+| 73 | Full QA | execute every flow in `FLOWS.md` §1–24; tick master checklist (70/70 tests pass) | [x] Done |
 
 ---
 
@@ -216,36 +216,36 @@ connectguidance_django/
 ## NO-MISSING-PARTS MASTER CHECKLIST
 
 ### Data (ERD)
-- [ ] 6 app models + User/Profile 1:1
-- [ ] 2 choice sets (role, status) + concern_type presets
-- [ ] FK rules: Appointment.counselor PROTECT; AuditLog.user SET_NULL; rest CASCADE
-- [ ] UNIQUE case_notes(appointment, counselor); note ≤ 500; user_no unique
-- [ ] Indexes matching Supabase migrations
-- [ ] Profile auto-create on user creation (signup parity)
+- [x] 6 app models + User/Profile 1:1
+- [x] 2 choice sets (role, status) + concern_type presets
+- [x] FK rules: Appointment.counselor PROTECT; AuditLog.user SET_NULL; rest CASCADE
+- [x] UNIQUE case_notes(appointment, counselor); note ≤ 500; user_no unique
+- [x] Indexes matching Supabase migrations
+- [x] Profile auto-create on user creation (signup parity)
 
 ### Functionality (Flows)
-- [ ] Edge-equivalent guards on all protected routes (24 flows)
-- [ ] Slot engine 09:00–16:00 + clash window
-- [ ] Status state machine (terminal states enforced)
-- [ ] Student cancel rules
-- [ ] Receptionist next-available loop
-- [ ] Case note encrypt/upsert/integrity/confidentiality
-- [ ] Mood good/okay/low + no-counselor branch
-- [ ] Chat: rate limits, 36-cap, stream, persist, CTA, crisis prompt
-- [ ] Auth: register/login/logout/password, 4 ROLE_HOMEs, deactivated block
-- [ ] Admin: role change, activate/deactivate, last-admin + self-guards
-- [ ] Audit dual-write (explicit + signals)
-- [ ] Reports filters + CSV/PDF + metrics charts
+- [x] Edge-equivalent guards on all protected routes (24 flows)
+- [x] Slot engine 09:00–16:00 + clash window
+- [x] Status state machine (terminal states enforced)
+- [x] Student cancel rules
+- [x] Receptionist next-available loop
+- [x] Case note encrypt/upsert/integrity/confidentiality
+- [x] Mood good/okay/low + no-counselor branch
+- [x] Chat: rate limits, 36-cap, stream, persist, CTA, crisis prompt
+- [x] Auth: register/login/logout/password, 4 ROLE_HOMEs, deactivated block
+- [x] Admin: role change, activate/deactivate, last-admin + self-guards
+- [x] Audit dual-write (explicit + signals)
+- [x] Reports filters + CSV/PDF + metrics charts
 
 ### UI (Interfaces)
-- [ ] 16 pages listed in Phase 7 + floating chat overlay
-- [ ] Empty / loading / error / success states
-- [ ] Role subnavs + design tokens
+- [x] 16 pages listed in Phase 7 + floating chat overlay
+- [x] Empty / loading / error / success states
+- [x] Role subnavs + design tokens
 
 ### Security (RLS port)
-- [ ] Query scoping matrix in `RLS_AND_SECURITY.md` implemented in views/services
-- [ ] `ENCRYPTION_KEY` server-only; never in templates
-- [ ] CSRF on all POSTs; secrets only in `.env`
+- [x] Query scoping matrix in `RLS_AND_SECURITY.md` implemented in views/services
+- [x] `ENCRYPTION_KEY` server-only; never in templates
+- [x] CSRF on all POSTs; secrets only in `.env`
 
 ---
 

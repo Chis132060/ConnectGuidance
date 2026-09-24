@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile — ConnectGuidance{% endblock %}
+{% block meta_description %}View your student account details and change your login password.{% endblock %}
+
+{% block content %}
+<div class="profile-container" style="max-width: 800px; margin: 0 auto;">
+    <div style="margin-bottom: 2rem;">
+        <h1 style="font-size: 1.75rem; font-weight: 700; color: #1e293b; margin: 0;">Student Account Profile</h1>
+        <p style="color: #64748b; font-size: 0.95rem; margin-top: 0.25rem;">Manage your university credentials and security settings.</p>
+    </div>
+
+    <!-- Account Details Card (Read-Only) -->
+    <div class="card" style="margin-bottom: 2rem;">
+        <h2 style="font-size: 1.25rem; font-weight: 600; color: #1e293b; margin-bottom: 1.25rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.75rem;">
+            Account Information
+        </h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem;">
+            <div>
+                <span class="form-label" style="color: #64748b;">Full Name</span>
+                <div style="font-size: 1rem; font-weight: 600; color: #1e293b;">{{ profile.full_name }}</div>
+            </div>
+            <div>
+                <span class="form-label" style="color: #64748b;">Student ID Number</span>
+                <div style="font-size: 1rem; font-weight: 600; color: #1e293b;">{{ profile.student_id|default:"Not Assigned" }}</div>
+            </div>
+            <div>
+                <span class="form-label" style="color: #64748b;">University Email</span>
+                <div style="font-size: 1rem; font-weight: 600; color: #1e293b;">{{ user.email }}</div>
+            </div>
+            <div>
+                <span class="form-label" style="color: #64748b;">System User #</span>
+                <div style="font-size: 1rem; font-weight: 600; color: #1e293b;">#{{ profile.user_no|default:profile.id }}</div>
+            </div>
+            <div>
+                <span class="form-label" style="color: #64748b;">Academic Department</span>
+                <div style="font-size: 1rem; font-weight: 600; color: #1e293b;">{{ profile.department|default:"General Academics" }}</div>
+            </div>
+            <div>
+                <span class="form-label" style="color: #64748b;">Account Status</span>
+                <div>
+                    <span class="badge badge-confirmed">Active Student</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Password Change Card -->
+    <div class="card">
+        <h2 style="font-size: 1.25rem; font-weight: 600; color: #1e293b; margin-bottom: 1.25rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.75rem;">
+            Change Password
+        </h2>
+        <form method="POST" action="{% url 'student_profile' %}">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label for="id_old_password" class="form-label">Current Password</label>
+                {{ password_form.old_password }}
+                {% if password_form.old_password.errors %}
+                <small style="color: #ef4444;">{{ password_form.old_password.errors.0 }}</small>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="id_new_password1" class="form-label">New Password</label>
+                {{ password_form.new_password1 }}
+                {% if password_form.new_password1.errors %}
+                <small style="color: #ef4444;">{{ password_form.new_password1.errors.0 }}</small>
+                {% endif %}
+                <small style="color: #64748b; display: block; margin-top: 0.25rem;">Must be at least 8 characters long.</small>
+            </div>
+
+            <div class="form-group">
+                <label for="id_new_password2" class="form-label">Confirm New Password</label>
+                {{ password_form.new_password2 }}
+                {% if password_form.new_password2.errors %}
+                <small style="color: #ef4444;">{{ password_form.new_password2.errors.0 }}</small>
+                {% endif %}
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="margin-top: 1rem;">
+                Update Password
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -7,7 +7,10 @@ from django.conf import settings
 
 
 def _get_encryption_key() -> bytes:
-    raw_key = getattr(settings, 'ENCRYPTION_KEY', '') or os.getenv('ENCRYPTION_KEY', '')
+    # Check Django settings first; only fall back to env if settings attribute is missing entirely
+    raw_key = getattr(settings, 'ENCRYPTION_KEY', None)
+    if raw_key is None:
+        raw_key = os.getenv('ENCRYPTION_KEY', '')
     if not raw_key:
         raise ValueError("ENCRYPTION_KEY is not configured in environment settings.")
     try:
@@ -51,10 +54,11 @@ def decrypt_text(payload: str) -> str:
     # Legacy AES-GCM check (prefix gc:v1:<iv>:<tag>:<ciphertext>)
     if cleaned.startswith("gc:v1:"):
         parts = cleaned.split(":")
-        if len(parts) == 4:
-            iv = binascii.unhexlify(parts[1])
-            tag = binascii.unhexlify(parts[2])
-            ct = binascii.unhexlify(parts[3])
+        # Format: gc:v1:<iv_hex>:<tag_hex>:<ciphertext_hex> → 5 parts
+        if len(parts) == 5:
+            iv = binascii.unhexlify(parts[2])
+            tag = binascii.unhexlify(parts[3])
+            ct = binascii.unhexlify(parts[4])
             cipher = Cipher(algorithms.AES(key), modes.GCM(iv, tag), backend=default_backend())
             decryptor = cipher.decryptor()
             return (decryptor.update(ct) + decryptor.finalize()).decode('utf-8')

@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block title %}Receptionist Desk — ConnectGuidance{% endblock %}
+{% block meta_description %}Front desk appointment booking and student check-in system.{% endblock %}
+
+{% block content %}
+<div class="receptionist-container" style="max-width: 1100px; margin: 2rem auto; padding: 0 1rem;">
+    <header style="margin-bottom: 2rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 1rem;">
+        <h1 style="font-size: 1.75rem; font-weight: 700; color: #1e293b; margin: 0;">Receptionist Desk — Walk-in Booking</h1>
+        <p style="color: #64748b; font-size: 0.95rem; margin-top: 0.25rem;">4-Step walk-in guidance booking workflow for attending staff.</p>
+    </header>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+        <!-- Left Column: 4-Step Booking Form -->
+        <section style="background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+            <h2 style="font-size: 1.25rem; font-weight: 600; color: #1e293b; margin-bottom: 1.5rem;">New Walk-in Appointment</h2>
+
+            <form method="POST" action="{% url 'receptionist_book' %}" id="rec-booking-form">
+                {% csrf_token %}
+
+                <!-- Step 1: Search Student -->
+                <div style="margin-bottom: 1.25rem;">
+                    <label style="display: block; font-weight: 600; color: #334155; margin-bottom: 0.5rem;">Step 1: Search Student</label>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <input type="text" id="student_search_input" placeholder="Enter student name, ID or email..." style="flex: 1; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px;">
+                        <button type="button" id="search_student_btn" style="background: #f1f5f9; border: 1px solid #cbd5e1; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer;">Search</button>
+                    </div>
+                    <div id="student_search_results" style="max-height: 160px; overflow-y: auto; margin-top: 0.5rem; border: 1px solid #e2e8f0; border-radius: 6px; display: none;"></div>
+                    <div id="selected_student_badge" style="display: none; margin-top: 0.5rem; padding: 0.5rem; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; font-size: 0.9rem; color: #1e40af;"></div>
+                    <input type="hidden" name="student_id" id="rec_student_id" required>
+                </div>
+
+                <!-- Step 2: Counselor Selection -->
+                <div style="margin-bottom: 1.25rem;">
+                    <label style="display: block; font-weight: 600; color: #334155; margin-bottom: 0.5rem;">Step 2: Assign Counselor</label>
+                    <select name="counselor_id" id="rec_counselor_select" style="width: 100%; padding: 0.6rem; border: 1px solid #cbd5e1; border-radius: 6px;">
+                        <option value="0">&starf; Next Available (Earliest Free Counselor)</option>
+                        {% for c in counselors %}
+                        <option value="{{ c.id }}">{{ c.full_name }} ({{ c.department|default:"Guidance" }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Step 3: Date & Slot -->
+                <div style="margin-bottom: 1.25rem;">
+                    <label style="display: block; font-weight: 600; color: #334155; margin-bottom: 0.5rem;">Step 3: Appointment Date & Time</label>
+                    <input type="datetime-local" name="scheduled_at" id="rec_scheduled_at" style="width: 100%; padding: 0.6rem; border: 1px solid #cbd5e1; border-radius: 6px;" required>
+                    <small style="color: #64748b; font-size: 0.8rem;">Available slots are hourly between 09:00 AM and 04:00 PM.</small>
+                </div>
+
+                <!-- Step 4: Concern & Notes -->
+                <div style="margin-bottom: 1.25rem;">
+                    <label style="display: block; font-weight: 600; color: #334155; margin-bottom: 0.5rem;">Step 4: Primary Concern</label>
+                    <select name="concern_type" style="width: 100%; padding: 0.6rem; border: 1px solid #cbd5e1; border-radius: 6px;" required>
+                        {% for val, label in concern_choices %}
+                        <option value="{{ val }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="display: block; font-weight: 600; color: #334155; margin-bottom: 0.5rem;">Notes (Optional)</label>
+                    <textarea name="notes" rows="2" placeholder="Walk-in notes or reason for visit..." style="width: 100%; padding: 0.6rem; border: 1px solid #cbd5e1; border-radius: 6px;"></textarea>
+                </div>
+
+                <button type="submit" style="width: 100%; background: #2563eb; color: #fff; padding: 0.75rem; border: none; border-radius: 6px; font-size: 1rem; font-weight: 600; cursor: pointer;">
+                    Confirm Walk-in Booking
+                </button>
+            </form>
+        </section>
+
+        <!-- Right Column: Today's Appointments -->
+        <section style="background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+            <h2 style="font-size: 1.25rem; font-weight: 600; color: #1e293b; margin-bottom: 1.5rem;">Today's Desk Appointments</h2>
+            {% if today_appointments %}
+                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                    {% for appt in today_appointments %}
+                    <div style="border-bottom: 1px solid #f1f5f9; padding-bottom: 0.75rem;">
+                        <div style="display: flex; justify-content: space-between;">
+                            <strong style="color: #1e293b;">{{ appt.student.full_name }}</strong>
+                            <span style="font-size: 0.8rem; font-weight: 600; text-transform: uppercase; color: #0284c7;">{{ appt.status }}</span>
+                        </div>
+                        <div style="font-size: 0.85rem; color: #64748b;">Counselor: {{ appt.counselor.full_name }}</div>
+                        <div style="font-size: 0.85rem; color: #64748b;">Time: {{ appt.scheduled_at|date:"g:i A" }} &bull; {{ appt.concern_type|title }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p style="color: #64748b;">No appointments scheduled for today.</p>
+            {% endif %}
+        </section>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('student_search_input');
+    const searchBtn = document.getElementById('search_student_btn');
+    const resultsBox = document.getElementById('student_search_results');
+    const badge = document.getElementById('selected_student_badge');
+    const hiddenId = document.getElementById('rec_student_id');
+
+    async function doSearch() {
+        const q = searchInput.value.trim();
+        if (!q) return;
+
+        resultsBox.style.display = 'block';
+        resultsBox.innerHTML = '<div style="padding: 0.5rem; color: #64748b;">Searching...</div>';
+
+        try {
+            const resp = await fetch(`/receptionist/search-students/?q=${encodeURIComponent(q)}`);
+            const data = await resp.json();
+
+            if (!data.results || data.results.length === 0) {
+                resultsBox.innerHTML = '<div style="padding: 0.5rem; color: #64748b;">No active students found.</div>';
+                return;
+            }
+
+            resultsBox.innerHTML = '';
+            data.results.forEach(s => {
+                const row = document.createElement('div');
+                row.style.cssText = 'padding: 0.5rem; border-bottom: 1px solid #f1f5f9; cursor: pointer; hover: background #f8fafc;';
+                row.innerHTML = `<strong>${s.full_name}</strong> <small style="color:#64748b;">(ID: ${s.student_id} &bull; ${s.email})</small>`;
+                row.onclick = () => {
+                    hiddenId.value = s.id;
+                    badge.style.display = 'block';
+                    badge.innerHTML = `Selected Student: <strong>${s.full_name}</strong> (${s.student_id}) &bull; ${s.department}`;
+                    resultsBox.style.display = 'none';
+                    searchInput.value = s.full_name;
+                };
+                resultsBox.appendChild(row);
+            });
+        } catch (err) {
+            resultsBox.innerHTML = '<div style="padding: 0.5rem; color: #ef4444;">Search error.</div>';
+        }
+    }
+
+    searchBtn.addEventListener('click', doSearch);
+    searchInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); doSearch(); } });
+});
+</script>
+{% endblock %}

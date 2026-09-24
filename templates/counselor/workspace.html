@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block title %}Counselor Workspace — ConnectGuidance{% endblock %}
+{% block meta_description %}Counselor clinical workspace for managing appointments, updating statuses, and monitoring alerts.{% endblock %}
+
+{% block content %}
+<div class="workspace-container" style="max-width: 1100px; margin: 2rem auto; padding: 0 1rem;">
+    <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 1rem;">
+        <div>
+            <h1 style="font-size: 1.75rem; font-weight: 700; color: #1e293b; margin: 0;">Counselor Workspace</h1>
+            <p style="color: #64748b; font-size: 0.95rem; margin-top: 0.25rem;">Provider: {{ profile.full_name }} &bull; Department: {{ profile.department|default:"Guidance Center" }}</p>
+        </div>
+        <div style="font-size: 0.9rem; color: #64748b;">
+            Today: <strong>{{ "now"|date:"l, F j, Y" }}</strong>
+        </div>
+    </header>
+
+    <!-- Stats summary grid -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+        <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+            <div style="font-size: 0.85rem; text-transform: uppercase; color: #64748b; font-weight: 600;">Today's Sessions</div>
+            <div style="font-size: 1.8rem; font-weight: 700; color: #2563eb; margin-top: 0.25rem;">{{ stats.today_count }}</div>
+        </div>
+        <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+            <div style="font-size: 0.85rem; text-transform: uppercase; color: #64748b; font-weight: 600;">Pending Requests</div>
+            <div style="font-size: 1.8rem; font-weight: 700; color: #d97706; margin-top: 0.25rem;">{{ stats.pending_count }}</div>
+        </div>
+        <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+            <div style="font-size: 0.85rem; text-transform: uppercase; color: #64748b; font-weight: 600;">Upcoming (Future)</div>
+            <div style="font-size: 1.8rem; font-weight: 700; color: #475569; margin-top: 0.25rem;">{{ stats.upcoming_count }}</div>
+        </div>
+        <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+            <div style="font-size: 0.85rem; text-transform: uppercase; color: #64748b; font-weight: 600;">Total Completed</div>
+            <div style="font-size: 1.8rem; font-weight: 700; color: #16a34a; margin-top: 0.25rem;">{{ stats.completed_count }}</div>
+        </div>
+    </div>
+
+    <!-- Today's Sessions -->
+    <section style="background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+        <h2 style="font-size: 1.25rem; font-weight: 600; color: #1e293b; margin-bottom: 1rem;">Today's Schedule</h2>
+        {% if today_sessions %}
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                {% for appt in today_sessions %}
+                <div style="display: flex; justify-content: space-between; align-items: center; border: 1px solid #e2e8f0; border-radius: 6px; padding: 1rem;">
+                    <div>
+                        <div style="font-weight: 600; font-size: 1.05rem; color: #1e293b;">{{ appt.student.full_name }} (ID: {{ appt.student.student_id|default:"N/A" }})</div>
+                        <div style="color: #64748b; font-size: 0.9rem; margin-top: 0.2rem;">Time: <strong>{{ appt.scheduled_at|date:"g:i A" }}</strong> &bull; Concern: {{ appt.concern_type|title }}</div>
+                        {% if appt.notes %}<div style="color: #64748b; font-size: 0.85rem; font-style: italic; margin-top: 0.2rem;">Notes: {{ appt.notes }}</div>{% endif %}
+                        <span style="display: inline-block; margin-top: 0.4rem; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; background: {% if appt.status == 'confirmed' %}#dcfce7; color: #15803d;{% elif appt.status == 'pending' %}#fef9c3; color: #854d0e;{% else %}#f1f5f9; color: #64748b;{% endif %}">
+                            {{ appt.status }}
+                        </span>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        {% if appt.status == 'pending' %}
+                        <form method="POST" action="{% url 'counselor_status_update' appt.id %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="status" value="confirmed">
+                            <button type="submit" style="background: #16a34a; color: #fff; border: none; padding: 0.4rem 0.8rem; border-radius: 4px; font-size: 0.85rem; font-weight: 500; cursor: pointer;">Confirm</button>
+                        </form>
+                        <form method="POST" action="{% url 'counselor_status_update' appt.id %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="status" value="cancelled">
+                            <button type="submit" style="background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; padding: 0.4rem 0.8rem; border-radius: 4px; font-size: 0.85rem; font-weight: 500; cursor: pointer;">Cancel</button>
+                        </form>
+                        {% elif appt.status == 'confirmed' %}
+                        <form method="POST" action="{% url 'counselor_status_update' appt.id %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="status" value="completed">
+                            <button type="submit" style="background: #2563eb; color: #fff; border: none; padding: 0.4rem 0.8rem; border-radius: 4px; font-size: 0.85rem; font-weight: 500; cursor: pointer;">Complete</button>
+                        </form>
+                        <form method="POST" action="{% url 'counselor_status_update' appt.id %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="status" value="cancelled">
+                            <button type="submit" style="background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; padding: 0.4rem 0.8rem; border-radius: 4px; font-size: 0.85rem; font-weight: 500; cursor: pointer;">Cancel</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p style="color: #64748b; margin: 0;">No sessions scheduled for today.</p>
+        {% endif %}
+    </section>
+
+    <!-- Pending / Upcoming Sessions -->
+    <section style="background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+        <h2 style="font-size: 1.25rem; font-weight: 600; color: #1e293b; margin-bottom: 1rem;">Pending & Upcoming Requests</h2>
+        {% if pending_sessions or upcoming_sessions %}
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+                <thead>
+                    <tr style="border-bottom: 2px solid #f1f5f9; text-align: left; color: #64748b;">
+                        <th style="padding: 0.75rem 0.5rem;">Date & Time</th>
+                        <th style="padding: 0.75rem 0.5rem;">Student</th>
+                        <th style="padding: 0.75rem 0.5rem;">Concern</th>
+                        <th style="padding: 0.75rem 0.5rem;">Status</th>
+                        <th style="padding: 0.75rem 0.5rem;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for appt in pending_sessions %}
+                    <tr style="border-bottom: 1px solid #f1f5f9;">
+                        <td style="padding: 0.75rem 0.5rem; font-weight: 500; color: #1e293b;">{{ appt.scheduled_at|date:"M d, Y @ g:i A" }}</td>
+                        <td style="padding: 0.75rem 0.5rem;">{{ appt.student.full_name }}</td>
+                        <td style="padding: 0.75rem 0.5rem;">{{ appt.concern_type|title }}</td>
+                        <td style="padding: 0.75rem 0.5rem;">
+                            <span style="display: inline-block; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; background: #fef9c3; color: #854d0e;">
+                                {{ appt.status }}
+                            </span>
+                        </td>
+                        <td style="padding: 0.75rem 0.5rem;">
+                            <form method="POST" action="{% url 'counselor_status_update' appt.id %}" style="display: inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="status" value="confirmed">
+                                <button type="submit" style="background: #16a34a; color: #fff; border: none; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.8rem; cursor: pointer;">Confirm</button>
+                            </form>
+                            <form method="POST" action="{% url 'counselor_status_update' appt.id %}" style="display: inline; margin-left: 0.25rem;">
+                                {% csrf_token %}
+                                <input type="hidden" name="status" value="cancelled">
+                                <button type="submit" style="background: #fee2e2; color: #b91c1c; border: none; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.8rem; cursor: pointer;">Cancel</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% for appt in upcoming_sessions %}
+                    {% if appt.status != 'pending' %}
+                    <tr style="border-bottom: 1px solid #f1f5f9;">
+                        <td style="padding: 0.75rem 0.5rem; color: #334155;">{{ appt.scheduled_at|date:"M d, Y @ g:i A" }}</td>
+                        <td style="padding: 0.75rem 0.5rem;">{{ appt.student.full_name }}</td>
+                        <td style="padding: 0.75rem 0.5rem;">{{ appt.concern_type|title }}</td>
+                        <td style="padding: 0.75rem 0.5rem;">
+                            <span style="display: inline-block; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; background: #dcfce7; color: #15803d;">
+                                {{ appt.status }}
+                            </span>
+                        </td>
+                        <td style="padding: 0.75rem 0.5rem;">
+                            <form method="POST" action="{% url 'counselor_status_update' appt.id %}" style="display: inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="status" value="completed">
+                                <button type="submit" style="background: #2563eb; color: #fff; border: none; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.8rem; cursor: pointer;">Complete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p style="color: #64748b; margin: 0;">No pending or upcoming requests.</p>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

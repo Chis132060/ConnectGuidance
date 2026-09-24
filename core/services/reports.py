@@ -1,89 +1,97 @@
+"""
+core/services/reports.py — Reporting and data export service for GuidanceConnect.
+
+Implements FLOWS §20 and PLAN steps 67–68:
+- Dynamic appointment filtering (dates, department, concern_type, status, counselor)
+- RFC-4180 CSV export
+- ReportLab PDF export with styled table and metadata summary
+- Audit log integration for REPORT_EXPORT
+"""
+
 import io
 import csv
 import datetime
-from typing import Dict, Any, List, Optional
+from typing import Optional, Union, Any
 from django.utils import timezone
-from django.db.models import Count, Q
+from django.http import HttpResponse
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
-from core.models import Appointment, Profile, AuditLog
-from core.choices import AppointmentStatusChoices, RoleChoices, ConcernTypeChoices
-from .audit import log_action
 
-
-def get_admin_metrics() -> Dict[str, Any]:
-    """Computes executive KPI summary and historical metrics."""
-    now = timezone.now()
-    eight_weeks_ago = now - datetime.timedelta(weeks=8)
-
-    total_appointments = Appointment.objects.count()
-    status_counts = Appointment.objects.values('status').annotate(total=Count('id'))
-    status_map = {item['status']: item['total'] for item in status_counts}
-
-    total_students = Profile.objects.filter(role=RoleChoices.STUDENT, is_active=True).count()
-    total_counselors = Profile.objects.filter(role=RoleChoices.COUNSELOR, is_active=True).count()
-
-    concern_counts = Appointment.objects.values('concern_type').annotate(count=Count('id')).order_by('-count')
-
-    # Weekly series for 8 weeks
-    weekly_series = []
-    for week_idx in range(7, -1, -1):
-        w_start = (now - datetime.timedelta(weeks=week_idx + 1)).replace(hour=0, minute=0, second=0)
-        w_end = (now - datetime.timedelta(weeks=week_idx)).replace(hour=23, minute=59, second=59)
-        c = Appointment.objects.filter(scheduled_at__gte=w_start, scheduled_at__lte=w_end).count()
-        weekly_series.append({
-            'label': w_start.strftime('Wk %W (%b %d)'),
-            'count': c
-        })
-
-    return {
-        'total_appointments': total_appointments,
-        'pending_count': status_map.get(AppointmentStatusChoices.PENDING, 0),
-        'confirmed_count': status_map.get(AppointmentStatusChoices.CONFIRMED, 0),
-        'completed_count': status_map.get(AppointmentStatusChoices.COMPLETED, 0),
-        'cancelled_count': status_map.get(AppointmentStatusChoices.CANCELLED, 0),
-        'total_students': total_students,
-        'total_counselors': total_counselors,
-        'concern_breakdown': list(concern_counts),
-        'weekly_series': weekly_series,
-    }
+from core.models import Appointment, Profile
+from core.choices import RoleChoices, ConcernTypeChoices
+from core.services.metrics import get_admin_metrics
+from core.services.audit import log_action
 
 
 def filter_appointments(
-    start_date: Optional[datetime.date] = None,
-    end_date: Optional[datetime.date] = None,
+    start_date: Optional[Union[str, datetime.date]] = None,
+    end_date: Optional[Union[str, datetime.date]] = None,
     department: Optional[str] = None,
     concern_type: Optional[str] = None,
-    status: Optional[str] = None
+    status: Optional[str] = None,
+    counselor_id: Optional[int] = None,
 ):
-    """Filter appointment queryset based on report criteria."""
+    """
+    Filter appointment queryset based on report criteria.
+    Accepts string or date objects for start_date / end_date.
+    """
     qs = Appointment.objects.select_related('student', 'counselor').all()
+
+    # Parse start_date if string
     if start_date:
-        qs = qs.filter(scheduled_at__date__gte=start_date)
+        if isinstance(start_date, str) and start_date.strip():
+            try:
+                parsed_start = datetime.datetime.strptime(start_date.strip(), "%Y-%m-%d").date()
+                qs = qs.filter(scheduled_at__date__gte=parsed_start)
+            except ValueError:
+                pass
+        elif isinstance(start_date, (datetime.date, datetime.datetime)):
+            qs = qs.filter(scheduled_at__date__gte=start_date)
+
+    # Parse end_date if string
     if end_date:
-        qs = qs.filter(scheduled_at__date__lte=end_date)
-    if department:
-        qs = qs.filter(student__department__iexact=department)
-    if concern_type:
-        qs = qs.filter(concern_type=concern_type)
-    if status:
-        qs = qs.filter(status=status)
+        if isinstance(end_date, str) and end_date.strip():
+            try:
+                parsed_end = datetime.datetime.strptime(end_date.strip(), "%Y-%m-%d").date()
+                qs = qs.filter(scheduled_at__date__lte=parsed_end)
+            except ValueError:
+                pass
+        elif isinstance(end_date, (datetime.date, datetime.datetime)):
+            qs = qs.filter(scheduled_at__date__lte=end_date)
+
+    if department and department.strip():
+        qs = qs.filter(student__department__icontains=department.strip())
+
+    if concern_type and concern_type.strip():
+        qs = qs.filter(concern_type=concern_type.strip())
+
+    if status and status.strip():
+        qs = qs.filter(status=status.strip())
+
+    if counselor_id:
+        qs = qs.filter(counselor_id=counselor_id)
+
     return qs.order_by('-scheduled_at')
 
 
-def export_appointments_csv(appointments, exported_by: Profile) -> str:
-    """Generate RFC-4180 CSV string of filtered appointments."""
-    output = io.StringIO()
-    writer = csv.writer(output)
+def export_appointments_csv(appointments, exported_by: Optional[Profile] = None) -> HttpResponse:
+    """Generate RFC-4180 CSV HttpResponse of filtered appointments."""
+    response = HttpResponse(content_type='text/csv')
+    timestamp_str = timezone.now().strftime("%Y%m%d_%H%M")
+    response['Content-Disposition'] = f'attachment; filename="appointments_report_{timestamp_str}.csv"'
+
+    writer = csv.writer(response)
     writer.writerow([
         "ID", "Scheduled At", "Status", "Concern Type",
         "Student Name", "Student ID", "Department",
         "Counselor Name", "Created At"
     ])
 
+    count = 0
     for appt in appointments:
+        count += 1
         writer.writerow([
             appt.id,
             appt.scheduled_at.strftime("%Y-%m-%d %H:%M"),
@@ -96,18 +104,19 @@ def export_appointments_csv(appointments, exported_by: Profile) -> str:
             appt.created_at.strftime("%Y-%m-%d %H:%M")
         ])
 
-    log_action(
-        user=exported_by,
-        action="REPORT_EXPORT",
-        table_name="core_appointment",
-        metadata={"format": "csv", "count": appointments.count()}
-    )
+    if exported_by:
+        log_action(
+            user=exported_by,
+            action="REPORT_EXPORT",
+            table_name="core_appointment",
+            metadata={"format": "csv", "count": count}
+        )
 
-    return output.getvalue()
+    return response
 
 
-def export_appointments_pdf(appointments, exported_by: Profile) -> bytes:
-    """Generate PDF document using ReportLab."""
+def export_appointments_pdf(appointments, exported_by: Optional[Profile] = None) -> HttpResponse:
+    """Generate PDF document using ReportLab and return as HttpResponse."""
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(
         buffer,
@@ -136,9 +145,15 @@ def export_appointments_pdf(appointments, exported_by: Profile) -> bytes:
         spaceAfter=18
     )
 
+    exporter_name = exported_by.full_name if exported_by else "Administrator"
+    total_count = appointments.count() if hasattr(appointments, 'count') else len(appointments)
+
     elements = [
         Paragraph("GuidanceConnect — Appointments Report", title_style),
-        Paragraph(f"Exported by {exported_by.full_name} on {timezone.now():%B %d, %Y at %I:%M %p} | Total Records: {appointments.count()}", meta_style),
+        Paragraph(
+            f"Exported by {exporter_name} on {timezone.now():%B %d, %Y at %I:%M %p} | Total Records: {total_count}",
+            meta_style
+        ),
         Spacer(1, 10)
     ]
 
@@ -171,13 +186,18 @@ def export_appointments_pdf(appointments, exported_by: Profile) -> bytes:
     elements.append(table)
     doc.build(elements)
 
-    log_action(
-        user=exported_by,
-        action="REPORT_EXPORT",
-        table_name="core_appointment",
-        metadata={"format": "pdf", "count": appointments.count()}
-    )
+    if exported_by:
+        log_action(
+            user=exported_by,
+            action="REPORT_EXPORT",
+            table_name="core_appointment",
+            metadata={"format": "pdf", "count": total_count}
+        )
 
     pdf_bytes = buffer.getvalue()
     buffer.close()
-    return pdf_bytes
+
+    timestamp_str = timezone.now().strftime("%Y%m%d_%H%M")
+    response = HttpResponse(pdf_bytes, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="appointments_report_{timestamp_str}.pdf"'
+    return response

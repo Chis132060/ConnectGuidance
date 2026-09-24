@@ -1,0 +1,3 @@
+<a href="{% url 'counselor_workspace' %}" class="nav-link {% if request.resolver_match.url_name == 'counselor_workspace' or request.resolver_match.url_name == 'case_note' %}active{% endif %}">
+    <span>📋</span> Clinical Workspace
+</a>

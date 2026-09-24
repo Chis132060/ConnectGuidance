@@ -122,7 +122,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Authentication URLs
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'role_home'
-LOGOUT_REDIRECT_URL = 'login'
+LOGOUT_REDIRECT_URL = '/'
 
 # Email configuration
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
@@ -136,3 +136,5 @@ ANTHROPIC_API_KEY = os.getenv('ANTHROPIC_API_KEY', '')
 GROQ_MODEL = os.getenv('GROQ_MODEL', 'llama3-70b-8192')
 CHAT_RATE_LIMIT_MAX = int(os.getenv('CHAT_RATE_LIMIT_MAX', 24))
 CHAT_SESSION_GET_MAX = int(os.getenv('CHAT_SESSION_GET_MAX', 60))
+CHAT_RATE_LIMIT_WINDOW_MS = int(os.getenv('CHAT_RATE_LIMIT_WINDOW_MS', 900000))
+CHAT_SESSION_GET_WINDOW = int(os.getenv('CHAT_SESSION_GET_WINDOW_MS', 900000))

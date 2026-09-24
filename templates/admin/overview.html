@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}Executive Overview — ConnectGuidance Admin{% endblock %}
+{% block meta_description %}Executive administrative overview with KPIs, appointment trends, and audit activity.{% endblock %}
+
+{% block content %}
+<div class="admin-overview" style="max-width: 1300px; margin: 0 auto;">
+    <div style="margin-bottom: 2rem;">
+        <h1 style="font-size: 1.75rem; font-weight: 700; color: #1e293b; margin: 0;">System Executive Overview</h1>
+        <p style="color: #64748b; font-size: 0.95rem; margin-top: 0.25rem;">Real-time service metrics, appointment volume trends, and recent system actions.</p>
+    </div>
+
+    <!-- 4 KPI Cards -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+        <div class="card" style="margin: 0;">
+            <span style="font-size: 0.85rem; text-transform: uppercase; color: #64748b; font-weight: 600;">Total Active Students</span>
+            <div style="font-size: 2rem; font-weight: 700; color: #2563eb; margin: 0.5rem 0 0.25rem 0;">{{ kpis.total_students }}</div>
+            <span style="font-size: 0.8rem; color: #16a34a;">&bull; Enrolled and registered</span>
+        </div>
+        <div class="card" style="margin: 0;">
+            <span style="font-size: 0.85rem; text-transform: uppercase; color: #64748b; font-weight: 600;">Licensed Counselors</span>
+            <div style="font-size: 2rem; font-weight: 700; color: #0d9488; margin: 0.5rem 0 0.25rem 0;">{{ kpis.total_counselors }}</div>
+            <span style="font-size: 0.8rem; color: #16a34a;">&bull; Active clinical workspace</span>
+        </div>
+        <div class="card" style="margin: 0;">
+            <span style="font-size: 0.85rem; text-transform: uppercase; color: #64748b; font-weight: 600;">Monthly Sessions</span>
+            <div style="font-size: 2rem; font-weight: 700; color: #7c3aed; margin: 0.5rem 0 0.25rem 0;">{{ kpis.monthly_appointments }}</div>
+            <span style="font-size: 0.8rem; color: #64748b;">Past 30 days</span>
+        </div>
+        <div class="card" style="margin: 0;">
+            <span style="font-size: 0.85rem; text-transform: uppercase; color: #64748b; font-weight: 600;">Completion Rate</span>
+            <div style="font-size: 2rem; font-weight: 700; color: #16a34a; margin: 0.5rem 0 0.25rem 0;">{{ kpis.completion_rate }}%</div>
+            <div style="width: 100%; background: #e2e8f0; height: 6px; border-radius: 3px; margin-top: 0.5rem; overflow: hidden;">
+                <div style="width: {{ kpis.completion_rate }}%; background: #16a34a; height: 100%;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+        <div class="card" style="margin: 0;">
+            <h2 style="font-size: 1.1rem; font-weight: 600; color: #1e293b; margin-bottom: 1rem;">Appointment Volume (Past 8 Weeks)</h2>
+            <div style="height: 260px;">
+                <canvas id="weeklyTrendChart"></canvas>
+            </div>
+        </div>
+        <div class="card" style="margin: 0;">
+            <h2 style="font-size: 1.1rem; font-weight: 600; color: #1e293b; margin-bottom: 1rem;">Concern Distribution</h2>
+            <div style="height: 260px;">
+                <canvas id="concernDonutChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Audit Activity -->
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h2 style="font-size: 1.1rem; font-weight: 600; color: #1e293b; margin: 0;">Recent System Audit Activity</h2>
+            <a href="{% url 'admin_audit' %}" class="btn btn-secondary btn-sm">View All Logs</a>
+        </div>
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>User</th>
+                        <th>Action</th>
+                        <th>Resource</th>
+                        <th>Record #</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in recent_activity %}
+                    <tr>
+                        <td>{{ row.created_at|date:"M d, Y @ g:i:s A" }}</td>
+                        <td>{{ row.user.full_name|default:"System" }}</td>
+                        <td>
+                            <span class="badge badge-counselor">{{ row.action }}</span>
+                        </td>
+                        <td>{{ row.table_name }}</td>
+                        <td>{{ row.record_id|default:"—" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="empty-state">No audit activities recorded.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const weeklyLabels = {{ weekly_labels|safe }};
+    const weeklyData = {{ weekly_data|safe }};
+    const concernLabels = {{ concern_labels|safe }};
+    const concernData = {{ concern_data|safe }};
+
+    // 8-Week Bar Chart
+    const trendCtx = document.getElementById('weeklyTrendChart').getContext('2d');
+    new Chart(trendCtx, {
+        type: 'bar',
+        data: {
+            labels: weeklyLabels,
+            datasets: [{
+                label: 'Sessions Booked',
+                data: weeklyData,
+                backgroundColor: '#2563eb',
+                borderRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true, ticks: { precision: 0 } }
+            }
+        }
+    });
+
+    // Concern Donut Chart
+    const donutCtx = document.getElementById('concernDonutChart').getContext('2d');
+    new Chart(donutCtx, {
+        type: 'doughnut',
+        data: {
+            labels: concernLabels,
+            datasets: [{
+                data: concernData,
+                backgroundColor: ['#2563eb', '#7c3aed', '#ea580c', '#db2777', '#64748b']
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom' }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

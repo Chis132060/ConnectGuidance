@@ -1,8 +1,16 @@
+"""
+core/services/chat.py — AI Chatbot Service for GuidanceConnect Django replica.
+
+Handles Groq / Anthropic LLM integrations, Server-Sent Events (SSE) streaming,
+crisis escalation protocols, rate limiting (GET 60/15min, POST 24/15min),
+history constraints (36 messages, 24000 characters), and session persistence.
+"""
+
 import os
 import time
 import json
 import logging
-from typing import List, Dict, Any, Tuple
+from typing import List, Dict, Any, Generator, Optional
 import requests
 from django.conf import settings
 from core.models import ChatbotSession, Profile
@@ -29,98 +37,226 @@ CRISIS_KEYWORDS = [
 
 BOOKING_KEYWORDS = [
     "appointment", "talk to someone", "counselor", "guidance session",
-    "schedule", "book", "therapist", "mental health"
+    "schedule", "book", "therapist", "mental health", "stressed", "stress", "burnout"
 ]
 
-# Simple in-memory rate limiting: {student_id: [(timestamp)]}
-_RATE_LIMIT_STORE: Dict[int, List[float]] = {}
+# In-memory rate limiting stores: {student_id: [timestamps]}
+_RATE_LIMIT_STORE_POST: Dict[int, List[float]] = {}
+_RATE_LIMIT_STORE_GET: Dict[int, List[float]] = {}
 
 
 def check_chat_rate_limit(student_id: int) -> bool:
-    """Enforce max 24 requests per 15 minutes per student."""
+    """Enforce max POST requests per 15 minutes (default 24)."""
     max_reqs = getattr(settings, 'CHAT_RATE_LIMIT_MAX', 24)
-    window_secs = 15 * 60
+    window_ms = getattr(settings, 'CHAT_RATE_LIMIT_WINDOW_MS', 900000)
+    window_secs = window_ms / 1000.0
+
     now = time.time()
-    timestamps = _RATE_LIMIT_STORE.get(student_id, [])
+    timestamps = _RATE_LIMIT_STORE_POST.get(student_id, [])
     valid_stamps = [t for t in timestamps if now - t < window_secs]
+
     if len(valid_stamps) >= max_reqs:
         return False
+
     valid_stamps.append(now)
-    _RATE_LIMIT_STORE[student_id] = valid_stamps
+    _RATE_LIMIT_STORE_POST[student_id] = valid_stamps
     return True
 
 
+def check_session_get_rate_limit(student_id: int) -> bool:
+    """Enforce max GET session requests per 15 minutes (default 60)."""
+    max_reqs = getattr(settings, 'CHAT_SESSION_GET_MAX', 60)
+    window_ms = getattr(settings, 'CHAT_SESSION_GET_WINDOW', 900000)
+    window_secs = window_ms / 1000.0
+
+    now = time.time()
+    timestamps = _RATE_LIMIT_STORE_GET.get(student_id, [])
+    valid_stamps = [t for t in timestamps if now - t < window_secs]
+
+    if len(valid_stamps) >= max_reqs:
+        return False
+
+    valid_stamps.append(now)
+    _RATE_LIMIT_STORE_GET[student_id] = valid_stamps
+    return True
+
+
+def get_chat_retry_after(student_id: int, is_post: bool = True) -> int:
+    """Calculate remaining seconds before oldest timestamp expires in window."""
+    store = _RATE_LIMIT_STORE_POST if is_post else _RATE_LIMIT_STORE_GET
+    window_ms = getattr(settings, 'CHAT_RATE_LIMIT_WINDOW_MS', 900000) if is_post else getattr(settings, 'CHAT_SESSION_GET_WINDOW', 900000)
+    window_secs = window_ms / 1000.0
+
+    timestamps = store.get(student_id, [])
+    if not timestamps:
+        return 60
+    now = time.time()
+    oldest = min(timestamps)
+    elapsed = now - oldest
+    remaining = int(window_secs - elapsed)
+    return max(1, remaining)
+
+
 def should_trigger_booking_cta(text: str) -> bool:
-    """Check if assistant should suggest booking an appointment."""
+    """Check if assistant should suggest booking an appointment.
+    Requires at least TWO booking keyword matches, or one crisis keyword,
+    to reduce false positives on generic words like 'schedule'.
+    """
     lower = text.lower()
-    return any(k in lower for k in BOOKING_KEYWORDS) or any(k in lower for k in CRISIS_KEYWORDS)
+    # Crisis text always triggers CTA
+    if any(k in lower for k in CRISIS_KEYWORDS):
+        return True
+    # Require at least 2 booking keywords to trigger CTA
+    booking_matches = sum(1 for k in BOOKING_KEYWORDS if k in lower)
+    return booking_matches >= 2
 
 
 def is_crisis_text(text: str) -> bool:
+    """Detect acute crisis or self-harm mentions."""
     lower = text.lower()
     return any(k in lower for k in CRISIS_KEYWORDS)
 
 
-def generate_chat_response(messages: List[Dict[str, str]]) -> str:
-    """
-    Call Groq (or Anthropic), or provide high-quality fallback counseling guidance if no API key is provided.
-    """
-    groq_api_key = getattr(settings, 'GROQ_API_KEY', '') or os.getenv('GROQ_API_KEY', '')
-    model = getattr(settings, 'GROQ_MODEL', 'llama3-70b-8192')
+def has_llm_api_key() -> bool:
+    """Check if Groq or Anthropic API key is configured."""
+    groq_key = getattr(settings, 'GROQ_API_KEY', '') or os.getenv('GROQ_API_KEY', '')
+    anthropic_key = getattr(settings, 'ANTHROPIC_API_KEY', '') or os.getenv('ANTHROPIC_API_KEY', '')
+    return bool(groq_key or anthropic_key)
 
+
+def stream_chat_response(messages: List[Dict[str, str]]) -> Generator[str, None, None]:
+    """
+    Yields text delta chunks from Groq, Anthropic, or crisis protocol.
+    Streams via SSE chunks.
+    """
     latest_user_text = messages[-1]['content'] if messages else ""
 
+    # Crisis protocol intervention takes precedence
     if is_crisis_text(latest_user_text):
-        return (
+        crisis_message = (
             "I hear how much pain you are experiencing right now, and I want you to know you don't have to carry this alone. "
             "Please reach out for immediate human support. You can call or text the Suicide & Crisis Lifeline at 988 anytime (24/7, free and confidential), "
             "or contact the Campus Guidance Center directly. Please let a counselor or trusted person assist you today."
         )
+        words = crisis_message.split(" ")
+        for word in words:
+            yield word + " "
+            time.sleep(0.02)
+        return
+
+    groq_api_key = getattr(settings, 'GROQ_API_KEY', '') or os.getenv('GROQ_API_KEY', '')
+    anthropic_api_key = getattr(settings, 'ANTHROPIC_API_KEY', '') or os.getenv('ANTHROPIC_API_KEY', '')
+    model = getattr(settings, 'GROQ_MODEL', 'llama3-70b-8192')
 
     if groq_api_key:
-        try:
-            headers = {
-                "Authorization": f"Bearer {groq_api_key}",
-                "Content-Type": "application/json"
-            }
-            formatted_messages = [{"role": "system", "content": SYSTEM_PROMPT}] + messages
-            payload = {
-                "model": model,
-                "messages": formatted_messages,
-                "temperature": 0.7,
-                "max_tokens": 800
-            }
-            resp = requests.post(
-                "https://api.groq.com/openai/v1/chat/completions",
-                headers=headers,
-                json=payload,
-                timeout=15
-            )
-            if resp.status_code == 200:
-                data = resp.json()
-                return data['choices'][0]['message']['content']
-            else:
-                logger.error(f"Groq API error {resp.status_code}: {resp.text}")
-        except Exception as e:
-            logger.error(f"Groq request exception: {e}")
+        headers = {
+            "Authorization": f"Bearer {groq_api_key}",
+            "Content-Type": "application/json"
+        }
+        formatted_messages = [{"role": "system", "content": SYSTEM_PROMPT}] + messages[-36:]
+        payload = {
+            "model": model,
+            "messages": formatted_messages,
+            "temperature": 0.7,
+            "max_tokens": 800,
+            "stream": True,
+        }
+        resp = requests.post(
+            "https://api.groq.com/openai/v1/chat/completions",
+            headers=headers,
+            json=payload,
+            stream=True,
+            timeout=25
+        )
+        if resp.status_code != 200:
+            raise RuntimeError(f"Groq API returned error status {resp.status_code}: {resp.text}")
 
-    # Intelligent fallback when LLM API keys are not supplied in local dev
-    return (
-        "Thank you for sharing that with me. Academic life and personal challenges can be demanding, "
-        "and taking time to reflect is a powerful first step. Remember to take steady breaths, break your tasks into "
-        "manageable segments, and be kind to yourself. If you'd like deeper support tailored to your journey, "
-        "I strongly recommend scheduling a one-on-one session with our university guidance counselors."
+        for line in resp.iter_lines():
+            if not line:
+                continue
+            line_str = line.decode('utf-8').strip()
+            if line_str == "data: [DONE]":
+                break
+            if line_str.startswith("data: "):
+                try:
+                    data = json.loads(line_str[6:])
+                    delta = data.get('choices', [{}])[0].get('delta', {})
+                    chunk = delta.get('content', '')
+                    if chunk:
+                        yield chunk
+                except json.JSONDecodeError:
+                    continue
+        return
+
+    if anthropic_api_key:
+        headers = {
+            "x-api-key": anthropic_api_key,
+            "anthropic-version": "2023-06-01",
+            "Content-Type": "application/json"
+        }
+        payload = {
+            "model": "claude-3-haiku-20240307",
+            "max_tokens": 800,
+            "system": SYSTEM_PROMPT,
+            "messages": messages[-36:],
+            "stream": True
+        }
+        resp = requests.post(
+            "https://api.anthropic.com/v1/messages",
+            headers=headers,
+            json=payload,
+            stream=True,
+            timeout=25
+        )
+        if resp.status_code != 200:
+            raise RuntimeError(f"Anthropic API returned error status {resp.status_code}")
+
+        for line in resp.iter_lines():
+            if not line:
+                continue
+            line_str = line.decode('utf-8').strip()
+            if line_str.startswith("data: "):
+                try:
+                    event = json.loads(line_str[6:])
+                    if event.get('type') == 'content_block_delta':
+                        chunk = event.get('delta', {}).get('text', '')
+                        if chunk:
+                            yield chunk
+                except json.JSONDecodeError:
+                    continue
+        return
+
+    # Fallback simulation if no API keys are set (e.g. testing)
+    fallback_text = (
+        "Thank you for sharing your thoughts with me. While navigating university coursework and personal development, "
+        "it helps to break large goals into small steps. If you would like to discuss this further, "
+        "our guidance counselors are always here to support you."
     )
+    for word in fallback_text.split(" "):
+        yield word + " "
+        time.sleep(0.01)
+
+
+def generate_chat_response(messages: List[Dict[str, str]]) -> str:
+    """Non-streaming fallback method returning accumulated text string."""
+    chunks = []
+    for chunk in stream_chat_response(messages):
+        chunks.append(chunk)
+    return "".join(chunks)
 
 
 def save_or_update_session(student: Profile, messages: List[Dict[str, str]]) -> ChatbotSession:
-    """Save or update latest student chatbot session."""
+    """
+    Save or update latest student chatbot session.
+    Enforces maximum of 36 messages in history.
+    """
+    capped_messages = messages[-36:]
     session, created = ChatbotSession.objects.get_or_create(
         student=student,
-        defaults={'messages': messages}
+        defaults={'messages': capped_messages}
     )
     if not created:
-        session.messages = messages[-36:]  # enforce 36 message limit
+        session.messages = capped_messages
         session.save(update_fields=['messages'])
 
     log_action(

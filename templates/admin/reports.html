@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}Appointment Reports & Analytics — ConnectGuidance Admin{% endblock %}
+{% block meta_description %}Generate detailed session reports and export compliance documents in PDF and CSV format.{% endblock %}
+
+{% block content %}
+<div class="admin-reports" style="max-width: 1300px; margin: 0 auto;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <div>
+            <h1 style="font-size: 1.75rem; font-weight: 700; color: #1e293b; margin: 0;">Reports & Compliance Exports</h1>
+            <p style="color: #64748b; font-size: 0.95rem; margin-top: 0.25rem;">Filter guidance appointment records and generate official PDF and CSV data exports.</p>
+        </div>
+        <div style="display: flex; gap: 0.75rem;">
+            <a href="?{{ request.GET.urlencode }}&export=csv" class="btn btn-secondary">
+                📥 Export CSV
+            </a>
+            <a href="?{{ request.GET.urlencode }}&export=pdf" class="btn btn-primary">
+                📄 Export PDF Report
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter Configuration Card -->
+    <div class="card" style="margin-bottom: 2rem;">
+        <h2 style="font-size: 1.15rem; font-weight: 600; color: #1e293b; margin-bottom: 1.25rem;">Report Filter Criteria</h2>
+        <form method="GET" action="{% url 'admin_reports' %}">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.25rem;">
+                <div class="form-group" style="margin: 0;">
+                    <label class="form-label">Start Date</label>
+                    <input type="date" name="start_date" value="{{ filters.start_date }}" class="form-input">
+                </div>
+                <div class="form-group" style="margin: 0;">
+                    <label class="form-label">End Date</label>
+                    <input type="date" name="end_date" value="{{ filters.end_date }}" class="form-input">
+                </div>
+                <div class="form-group" style="margin: 0;">
+                    <label class="form-label">Counselor</label>
+                    <select name="counselor_id" class="form-select">
+                        <option value="">All Counselors</option>
+                        {% for c in counselors %}
+                        <option value="{{ c.id }}" {% if filters.counselor_id == c.id|stringformat:"s" %}selected{% endif %}>{{ c.full_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group" style="margin: 0;">
+                    <label class="form-label">Concern Category</label>
+                    <select name="concern_type" class="form-select">
+                        <option value="">All Concerns</option>
+                        {% for val, label in concern_choices %}
+                        <option value="{{ val }}" {% if filters.concern_type == val %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group" style="margin: 0;">
+                    <label class="form-label">Status</label>
+                    <select name="status" class="form-select">
+                        <option value="">All Statuses</option>
+                        {% for val, label in status_choices %}
+                        <option value="{{ val }}" {% if filters.status == val %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div style="display: flex; gap: 0.75rem;">
+                <button type="submit" class="btn btn-primary">Generate Report Preview</button>
+                <a href="{% url 'admin_reports' %}" class="btn btn-secondary">Reset Filters</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Summary Strip -->
+    <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 1rem 1.5rem; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
+        <span style="color: #1e40af; font-weight: 600;">
+            Total Appointments Matching Filters: <strong>{{ total_count }}</strong>
+        </span>
+        <small style="color: #1d4ed8;">Previewing up to 50 entries below</small>
+    </div>
+
+    <!-- Preview Table -->
+    <div class="card">
+        <h2 style="font-size: 1.15rem; font-weight: 600; color: #1e293b; margin-bottom: 1rem;">Data Preview</h2>
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Scheduled Date</th>
+                        <th>Student</th>
+                        <th>Counselor</th>
+                        <th>Concern</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for appt in preview_appts %}
+                    <tr>
+                        <td style="font-family: monospace; font-size: 0.8rem; color: #64748b;">#{{ appt.id }}</td>
+                        <td>{{ appt.scheduled_at|date:"M d, Y @ g:i A" }}</td>
+                        <td>
+                            <strong>{{ appt.student.full_name }}</strong>
+                            <small style="color: #64748b; display: block;">ID: {{ appt.student.student_id|default:"—" }}</small>
+                        </td>
+                        <td>{{ appt.counselor.full_name }}</td>
+                        <td>{{ appt.concern_type|title }}</td>
+                        <td>
+                            <span class="badge badge-{{ appt.status }}">{{ appt.status }}</span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="empty-state">No appointments match the selected filter criteria.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

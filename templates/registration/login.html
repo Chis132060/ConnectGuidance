@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Sign In — ConnectGuidance{% endblock %}
+{% block meta_description %}Sign in to ConnectGuidance with your email and password.{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+    <div class="auth-card">
+        <h1 class="auth-title">Sign In</h1>
+        <p class="auth-subtitle">Welcome back to ConnectGuidance</p>
+
+        <!-- Query param errors -->
+        {% if error == "deactivated" %}
+        <div class="alert alert-error" role="alert" id="login-error-deactivated">
+            Your account has been deactivated. Please contact an administrator.
+        </div>
+        {% elif error == "no_profile" %}
+        <div class="alert alert-error" role="alert" id="login-error-no-profile">
+            No user profile found. Please contact support.
+        </div>
+        {% endif %}
+
+        <!-- Form validation error -->
+        {% if form_error %}
+        <div class="alert alert-error" role="alert" id="login-error-form">
+            {{ form_error }}
+        </div>
+        {% endif %}
+
+        <form method="post" action="{% url 'login' %}" id="login-form">
+            {% csrf_token %}
+            {% if next %}
+            <input type="hidden" name="next" value="{{ next }}">
+            {% endif %}
+
+            <div class="form-group">
+                <label for="login-email" class="form-label">Email</label>
+                <input type="email" name="email" id="login-email" class="form-input"
+                       placeholder="student@university.edu" autocomplete="email" required>
+            </div>
+
+            <div class="form-group">
+                <label for="login-password" class="form-label">Password</label>
+                <input type="password" name="password" id="login-password" class="form-input"
+                       placeholder="Enter your password" autocomplete="current-password" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-full" id="login-submit">Sign In</button>
+        </form>
+
+        <p class="auth-footer-text">
+            Don't have an account? <a href="{% url 'register' %}" class="auth-link" id="login-register-link">Register as a student</a>
+        </p>
+    </div>
+</div>
+{% endblock %}

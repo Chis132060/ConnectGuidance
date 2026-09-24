@@ -1,0 +1,15 @@
+<a href="{% url 'admin_overview' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_overview' %}active{% endif %}">
+    <span>📈</span> Overview
+</a>
+<a href="{% url 'admin_users' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_users' %}active{% endif %}">
+    <span>👥</span> User Management
+</a>
+<a href="{% url 'admin_audit' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_audit' %}active{% endif %}">
+    <span>📜</span> Audit Logs
+</a>
+<a href="{% url 'admin_reports' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_reports' %}active{% endif %}">
+    <span>📑</span> Reports & Exports
+</a>
+<a href="{% url 'admin_profile' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_profile' %}active{% endif %}">
+    <span>⚙️</span> Admin Profile
+</a>

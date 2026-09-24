@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}ConnectGuidance — University Guidance & Counseling{% endblock %}
+{% block meta_description %}ConnectGuidance: Streamlined guidance and counseling for students, counselors, and administrators.{% endblock %}
+
+{% block content %}
+<div class="landing-page">
+    <!-- Hero Section -->
+    <header class="landing-hero">
+        <div class="landing-hero-content">
+            <h1 class="landing-title">Connect<span class="text-primary">Guidance</span></h1>
+            <p class="landing-subtitle">
+                Streamlined guidance and counseling for your university.
+                Book appointments, connect with counselors, and access wellness support — all in one place.
+            </p>
+            <div class="landing-ctas">
+                <a href="{% url 'login' %}" class="btn btn-primary btn-lg" id="landing-login-btn">Sign In</a>
+                <a href="{% url 'register' %}" class="btn btn-outline btn-lg" id="landing-register-btn">Register as Student</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Audience Cards -->
+    <section class="landing-cards">
+        <div class="landing-card">
+            <div class="landing-card-icon">🎓</div>
+            <h3>Students</h3>
+            <p>Book counseling sessions, track your appointments, check in on your wellness, and chat with our AI assistant.</p>
+        </div>
+        <div class="landing-card">
+            <div class="landing-card-icon">🤝</div>
+            <h3>Counselors</h3>
+            <p>Manage your sessions, write confidential case notes, receive mood alerts, and support student wellbeing.</p>
+        </div>
+        <div class="landing-card">
+            <div class="landing-card-icon">📊</div>
+            <h3>Administrators</h3>
+            <p>Oversee the entire system with dashboards, reports, user management, and comprehensive audit trails.</p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="landing-footer">
+        <p>&copy; 2026 ConnectGuidance. University Guidance & Counseling Platform.</p>
+    </footer>
+</div>
+{% endblock %}

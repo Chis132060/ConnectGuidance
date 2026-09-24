@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}Book Counseling Session — ConnectGuidance{% endblock %}
+{% block meta_description %}Select a counselor and choose an available date and time slot for your guidance appointment.{% endblock %}
+
+{% block content %}
+<div class="booking-container" style="max-width: 800px; margin: 2rem auto; padding: 0 1rem;">
+    <div style="margin-bottom: 2rem;">
+        <a href="{% url 'student_appointments' %}" style="color: #64748b; text-decoration: none; font-size: 0.9rem;">&larr; Back to Appointments</a>
+        <h1 style="font-size: 1.75rem; font-weight: 700; color: #1e293b; margin-top: 0.5rem;">Book a Guidance Session</h1>
+        <p style="color: #64748b; font-size: 0.95rem;">Select your preferred counselor, pick a date to see available time slots, and describe your concern.</p>
+    </div>
+
+    <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+        <form method="POST" action="{% url 'student_book_appointment' %}" id="booking-form">
+            {% csrf_token %}
+
+            <!-- Step 1: Select Counselor -->
+            <div style="margin-bottom: 1.5rem;">
+                <label for="counselor_select" style="display: block; font-weight: 600; color: #334155; margin-bottom: 0.5rem;">1. Select Counselor</label>
+                <select id="counselor_select" class="form-select" style="width: 100%; padding: 0.6rem; border: 1px solid #cbd5e1; border-radius: 6px;" required>
+                    <option value="">-- Choose a counselor --</option>
+                    {% for c in counselors %}
+                    <option value="{{ c.id }}">{{ c.full_name }} ({{ c.department|default:"Guidance & Counseling" }})</option>
+                    {% endfor %}
+                </select>
+                <input type="hidden" name="counselor_id" id="booking-counselor-id">
+            </div>
+
+            <!-- Step 2: Select Date -->
+            <div style="margin-bottom: 1.5rem;">
+                <label for="date_select" style="display: block; font-weight: 600; color: #334155; margin-bottom: 0.5rem;">2. Select Date</label>
+                <input type="date" id="date_select" style="width: 100%; padding: 0.6rem; border: 1px solid #cbd5e1; border-radius: 6px;" required>
+            </div>
+
+            <!-- Slots loading / display -->
+            <div id="slots-section" style="margin-bottom: 1.5rem; display: none;">
+                <label style="display: block; font-weight: 600; color: #334155; margin-bottom: 0.5rem;">3. Available Hourly Slots (09:00 AM – 04:00 PM)</label>
+                <div id="slots-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 0.5rem;"></div>
+                <input type="hidden" name="scheduled_at" id="booking-scheduled-at">
+            </div>
+
+            <!-- Step 3: Concern Type & Notes -->
+            <div style="margin-bottom: 1.5rem;">
+                <label for="id_concern_type" style="display: block; font-weight: 600; color: #334155; margin-bottom: 0.5rem;">4. Primary Concern</label>
+                {{ form.concern_type }}
+            </div>
+
+            <div style="margin-bottom: 2rem;">
+                <label for="id_notes" style="display: block; font-weight: 600; color: #334155; margin-bottom: 0.5rem;">5. Notes or Expectations (Optional)</label>
+                {{ form.notes }}
+            </div>
+
+            <button type="submit" id="submit-booking-btn" style="width: 100%; background: #2563eb; color: #fff; padding: 0.75rem; border: none; border-radius: 6px; font-size: 1rem; font-weight: 600; cursor: pointer;">
+                Confirm & Request Session
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const counselorSelect = document.getElementById('counselor_select');
+    const dateSelect = document.getElementById('date_select');
+    const slotsSection = document.getElementById('slots-section');
+    const slotsContainer = document.getElementById('slots-container');
+    const hiddenCounselorId = document.getElementById('booking-counselor-id');
+    const hiddenScheduledAt = document.getElementById('booking-scheduled-at');
+
+    // Default min date to tomorrow
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    dateSelect.min = tomorrow.toISOString().split('T')[0];
+
+    async function fetchSlots() {
+        const counselorId = counselorSelect.value;
+        const dateStr = dateSelect.value;
+        hiddenCounselorId.value = counselorId;
+
+        if (!counselorId || !dateStr) {
+            slotsSection.style.display = 'none';
+            return;
+        }
+
+        slotsSection.style.display = 'block';
+        slotsContainer.innerHTML = '<p style="color: #64748b;">Loading available slots...</p>';
+
+        try {
+            const resp = await fetch(`/appointments/slots/?counselor_id=${counselorId}&date=${dateStr}`);
+            const data = await resp.json();
+
+            if (!resp.ok) {
+                slotsContainer.innerHTML = `<p style="color: #ef4444;">${data.error || 'Failed to load slots.'}</p>`;
+                return;
+            }
+
+            slotsContainer.innerHTML = '';
+            if (!data.slots || data.slots.length === 0) {
+                slotsContainer.innerHTML = '<p style="color: #64748b;">No slots available for this date.</p>';
+                return;
+            }
+
+            data.slots.forEach(slot => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.textContent = slot.formatted_time;
+                btn.style.cssText = 'padding: 0.5rem; border-radius: 6px; font-size: 0.9rem; font-weight: 500; cursor: pointer; text-align: center; border: 1px solid #cbd5e1;';
+
+                if (slot.is_available) {
+                    btn.style.background = '#f8fafc';
+                    btn.style.color = '#1e293b';
+                    btn.onclick = () => {
+                        document.querySelectorAll('#slots-container button').forEach(b => {
+                            if (b.dataset.available === 'true') {
+                                b.style.background = '#f8fafc';
+                                b.style.borderColor = '#cbd5e1';
+                                b.style.color = '#1e293b';
+                            }
+                        });
+                        btn.style.background = '#2563eb';
+                        btn.style.borderColor = '#1d4ed8';
+                        btn.style.color = '#ffffff';
+                        hiddenScheduledAt.value = slot.iso.slice(0, 16);
+                    };
+                    btn.dataset.available = 'true';
+                } else {
+                    btn.disabled = true;
+                    btn.style.background = '#f1f5f9';
+                    btn.style.color = '#94a3b8';
+                    btn.style.cursor = 'not-allowed';
+                    btn.title = slot.is_taken ? 'Already booked' : 'Past slot';
+                }
+                slotsContainer.appendChild(btn);
+            });
+        } catch (err) {
+            slotsContainer.innerHTML = '<p style="color: #ef4444;">Error fetching availability.</p>';
+        }
+    }
+
+    counselorSelect.addEventListener('change', fetchSlots);
+    dateSelect.addEventListener('change', fetchSlots);
+});
+</script>
+{% endblock %}

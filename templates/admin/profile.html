@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Administrator Profile — ConnectGuidance Admin{% endblock %}
+{% block meta_description %}Manage administrator credentials and security settings.{% endblock %}
+
+{% block content %}
+<div class="admin-profile" style="max-width: 800px; margin: 0 auto;">
+    <div style="margin-bottom: 2rem;">
+        <h1 style="font-size: 1.75rem; font-weight: 700; color: #1e293b; margin: 0;">Administrator Account Profile</h1>
+        <p style="color: #64748b; font-size: 0.95rem; margin-top: 0.25rem;">System credentials and security administration.</p>
+    </div>
+
+    <!-- Account Details Card -->
+    <div class="card" style="margin-bottom: 2rem;">
+        <h2 style="font-size: 1.25rem; font-weight: 600; color: #1e293b; margin-bottom: 1.25rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.75rem;">
+            Account Details
+        </h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem;">
+            <div>
+                <span class="form-label" style="color: #64748b;">Administrator Name</span>
+                <div style="font-size: 1rem; font-weight: 600; color: #1e293b;">{{ profile.full_name }}</div>
+            </div>
+            <div>
+                <span class="form-label" style="color: #64748b;">System Email</span>
+                <div style="font-size: 1rem; font-weight: 600; color: #1e293b;">{{ user.email }}</div>
+            </div>
+            <div>
+                <span class="form-label" style="color: #64748b;">System Role</span>
+                <div>
+                    <span class="badge badge-admin">System Administrator</span>
+                </div>
+            </div>
+            <div>
+                <span class="form-label" style="color: #64748b;">Account Status</span>
+                <div>
+                    <span class="badge badge-completed">Active Staff</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Password Change Card -->
+    <div class="card">
+        <h2 style="font-size: 1.25rem; font-weight: 600; color: #1e293b; margin-bottom: 1.25rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.75rem;">
+            Change Password
+        </h2>
+        <form method="POST" action="{% url 'admin_profile' %}">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label for="id_old_password" class="form-label">Current Password</label>
+                {{ password_form.old_password }}
+                {% if password_form.old_password.errors %}
+                <small style="color: #ef4444;">{{ password_form.old_password.errors.0 }}</small>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="id_new_password1" class="form-label">New Password</label>
+                {{ password_form.new_password1 }}
+                {% if password_form.new_password1.errors %}
+                <small style="color: #ef4444;">{{ password_form.new_password1.errors.0 }}</small>
+                {% endif %}
+                <small style="color: #64748b; display: block; margin-top: 0.25rem;">Must be at least 8 characters long.</small>
+            </div>
+
+            <div class="form-group">
+                <label for="id_new_password2" class="form-label">Confirm New Password</label>
+                {{ password_form.new_password2 }}
+                {% if password_form.new_password2.errors %}
+                <small style="color: #ef4444;">{{ password_form.new_password2.errors.0 }}</small>
+                {% endif %}
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="margin-top: 1rem;">
+                Update Password
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

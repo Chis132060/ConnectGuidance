@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+
+{% block title %}User Management — ConnectGuidance Admin{% endblock %}
+{% block meta_description %}Manage user accounts, roles, access statuses, and staff accounts.{% endblock %}
+
+{% block content %}
+<div class="admin-users" style="max-width: 1300px; margin: 0 auto;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <div>
+            <h1 style="font-size: 1.75rem; font-weight: 700; color: #1e293b; margin: 0;">User Management</h1>
+            <p style="color: #64748b; font-size: 0.95rem; margin-top: 0.25rem;">Directory of students, counselors, front desk staff, and administrators.</p>
+        </div>
+        <button type="button" class="btn btn-primary" onclick="toggleAddUserModal()">+ Add New User</button>
+    </div>
+
+    <!-- Add User Modal / Card (Collapsible) -->
+    <div id="add-user-card" class="card" style="display: none; background: #f8fafc; border-color: #cbd5e1; margin-bottom: 2rem;">
+        <h2 style="font-size: 1.15rem; font-weight: 600; color: #1e293b; margin-bottom: 1rem;">Create Staff or Student Account</h2>
+        <form method="POST" action="{% url 'admin_users' %}">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="create_user">
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 1.25rem;">
+                <div class="form-group" style="margin: 0;">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" name="full_name" class="form-input" placeholder="e.g. Dr. Jane Smith" required>
+                </div>
+                <div class="form-group" style="margin: 0;">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" name="email" class="form-input" placeholder="user@university.edu" required>
+                </div>
+                <div class="form-group" style="margin: 0;">
+                    <label class="form-label">Temporary Password</label>
+                    <input type="password" name="password" class="form-input" placeholder="Min. 8 characters" required>
+                </div>
+                <div class="form-group" style="margin: 0;">
+                    <label class="form-label">Account Role</label>
+                    <select name="role" class="form-select" required>
+                        {% for val, label in roles %}
+                        <option value="{{ val }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group" style="margin: 0;">
+                    <label class="form-label">Student ID (Optional)</label>
+                    <input type="text" name="student_id" class="form-input" placeholder="STU-0000">
+                </div>
+                <div class="form-group" style="margin: 0;">
+                    <label class="form-label">Department (Optional)</label>
+                    <input type="text" name="department" class="form-input" placeholder="e.g. Psychology / Engineering">
+                </div>
+            </div>
+            <div style="display: flex; gap: 0.75rem;">
+                <button type="submit" class="btn btn-primary btn-sm">Save & Activate Account</button>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="toggleAddUserModal()">Cancel</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Filters Strip -->
+    <div class="card" style="padding: 1rem; margin-bottom: 1.5rem;">
+        <form method="GET" action="{% url 'admin_users' %}" style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
+            <input type="text" name="q" value="{{ q }}" placeholder="Search name, ID or email..." class="form-input" style="flex: 2; min-width: 200px;">
+
+            <select name="role" class="form-select" style="flex: 1; min-width: 150px;">
+                <option value="">All Roles</option>
+                {% for val, label in roles %}
+                <option value="{{ val }}" {% if role_filter == val %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+
+            <select name="status" class="form-select" style="flex: 1; min-width: 130px;">
+                <option value="">All Statuses</option>
+                <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active Only</option>
+                <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Deactivated Only</option>
+            </select>
+
+            <button type="submit" class="btn btn-secondary">Filter</button>
+            {% if q or role_filter or status_filter %}
+            <a href="{% url 'admin_users' %}" class="btn btn-secondary" style="color: #ef4444;">Clear</a>
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- Users Table -->
+    <div class="card">
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>User #</th>
+                        <th>Student ID</th>
+                        <th>Department</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Change Role</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in page_obj %}
+                    <tr>
+                        <td>
+                            <div style="font-weight: 600; color: #1e293b;">{{ u.full_name }}</div>
+                            <div style="font-size: 0.8rem; color: #64748b;">{{ u.user.email }}</div>
+                        </td>
+                        <td>#{{ u.user_no|default:u.id }}</td>
+                        <td>{{ u.student_id|default:"—" }}</td>
+                        <td>{{ u.department|default:"—" }}</td>
+                        <td>
+                            <span class="badge badge-{{ u.role }}">{{ u.role }}</span>
+                        </td>
+                        <td>
+                            {% if u.is_active %}
+                            <span style="display: inline-flex; align-items: center; gap: 0.35rem; color: #15803d; font-size: 0.85rem; font-weight: 500;">
+                                <span style="width: 8px; height: 8px; border-radius: 50%; background: #22c55e;"></span> Active
+                            </span>
+                            {% else %}
+                            <span style="display: inline-flex; align-items: center; gap: 0.35rem; color: #b91c1c; font-size: 0.85rem; font-weight: 500;">
+                                <span style="width: 8px; height: 8px; border-radius: 50%; background: #ef4444;"></span> Inactive
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <form method="POST" action="{% url 'admin_users' %}" style="display: inline-flex; gap: 0.25rem;">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="change_role">
+                                <input type="hidden" name="target_id" value="{{ u.id }}">
+                                <select name="new_role" class="form-select" style="padding: 0.2rem 0.4rem; font-size: 0.8rem; width: auto;" onchange="this.form.submit()">
+                                    {% for val, label in roles %}
+                                    <option value="{{ val }}" {% if u.role == val %}selected{% endif %}>{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </form>
+                        </td>
+                        <td>
+                            <form method="POST" action="{% url 'admin_users' %}" style="display: inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="toggle_status">
+                                <input type="hidden" name="target_id" value="{{ u.id }}">
+                                {% if u.is_active %}
+                                    <input type="hidden" name="new_is_active" value="false">
+                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Deactivate account for {{ u.full_name }}?');">
+                                        Deactivate
+                                    </button>
+                                {% else %}
+                                    <input type="hidden" name="new_is_active" value="true">
+                                    <button type="submit" class="btn btn-success btn-sm">
+                                        Activate
+                                    </button>
+                                {% endif %}
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="empty-state">No users match your search criteria.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <div style="display: flex; justify-content: center; gap: 0.5rem; margin-top: 1.5rem;">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}&q={{ q }}&role={{ role_filter }}&status={{ status_filter }}" class="btn btn-secondary btn-sm">&larr; Previous</a>
+            {% endif %}
+            <span style="align-self: center; font-size: 0.85rem; color: #64748b;">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            </span>
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}&q={{ q }}&role={{ role_filter }}&status={{ status_filter }}" class="btn btn-secondary btn-sm">Next &rarr;</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function toggleAddUserModal() {
+    const card = document.getElementById('add-user-card');
+    card.style.display = (card.style.display === 'none' ? 'block' : 'none');
+}
+</script>
+{% endblock %}

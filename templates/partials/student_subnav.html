@@ -1,0 +1,15 @@
+<a href="{% url 'student_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'student_dashboard' %}active{% endif %}">
+    <span>📊</span> Dashboard
+</a>
+<a href="{% url 'student_appointments' %}" class="nav-link {% if request.resolver_match.url_name == 'student_appointments' or request.resolver_match.url_name == 'student_book_appointment' %}active{% endif %}">
+    <span>📅</span> Appointments
+</a>
+<a href="{% url 'student_chatbot' %}" class="nav-link {% if request.resolver_match.url_name == 'student_chatbot' %}active{% endif %}">
+    <span>🤖</span> AI Assistant
+</a>
+<a href="{% url 'student_front_desk' %}" class="nav-link {% if request.resolver_match.url_name == 'student_front_desk' %}active{% endif %}">
+    <span>🏢</span> Front Desk
+</a>
+<a href="{% url 'student_profile' %}" class="nav-link {% if request.resolver_match.url_name == 'student_profile' %}active{% endif %}">
+    <span>👤</span> My Profile
+</a>

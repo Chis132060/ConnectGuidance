@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block title %}Receptionist Desk — ConnectGuidance{% endblock %}
+{% block meta_description %}Front desk appointment booking and student check-in system.{% endblock %}
+
+{% block content %}
+<div class="receptionist-container" style="max-width: 1200px; margin: 0 auto;">
+    <header style="margin-bottom: 2rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 1rem;">
+        <h1 style="font-size: 1.75rem; font-weight: 700; color: #1e293b; margin: 0;">Front Desk Walk-in Booking</h1>
+        <p style="color: #64748b; font-size: 0.95rem; margin-top: 0.25rem;">4-Step walk-in guidance intake and provider assignment.</p>
+    </header>
+
+    <div style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 2rem;">
+        <!-- Left: 4-Step Booking Wizard -->
+        <section class="card">
+            <h2 style="font-size: 1.2rem; font-weight: 600; color: #1e293b; margin-bottom: 1.5rem;">New Walk-in Appointment Wizard</h2>
+
+            <form method="POST" action="{% url 'receptionist_book' %}" id="rec-booking-form">
+                {% csrf_token %}
+
+                <!-- Step 1: Search Student -->
+                <div class="form-group">
+                    <label class="form-label">Step 1: Locate Student Record</label>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <input type="text" id="student_search_input" placeholder="Search by student name, ID or email..." class="form-input" style="flex: 1;">
+                        <button type="button" id="search_student_btn" class="btn btn-secondary">Search</button>
+                    </div>
+                    <div id="student_search_results" style="max-height: 160px; overflow-y: auto; margin-top: 0.5rem; border: 1px solid #e2e8f0; border-radius: 6px; display: none; background: #fff;"></div>
+                    <div id="selected_student_badge" style="display: none; margin-top: 0.5rem; padding: 0.75rem; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; font-size: 0.9rem; color: #1e40af;"></div>
+                    <input type="hidden" name="student_id" id="rec_student_id" required>
+                </div>
+
+                <!-- Step 2: Counselor Selection -->
+                <div class="form-group">
+                    <label class="form-label">Step 2: Assign Counselor</label>
+                    <select name="counselor_id" id="rec_counselor_select" class="form-select">
+                        <option value="0">&starf; Next Available (Earliest Free Counselor A–Z)</option>
+                        {% for c in counselors %}
+                        <option value="{{ c.id }}">{{ c.full_name }} ({{ c.department|default:"Guidance" }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Step 3: Date & Slot -->
+                <div class="form-group">
+                    <label class="form-label">Step 3: Appointment Date & Time</label>
+                    <input type="datetime-local" name="scheduled_at" id="rec_scheduled_at" class="form-input" required>
+                    <small style="color: #64748b; font-size: 0.8rem; display: block; margin-top: 0.25rem;">Standard guidance slots are hourly between 09:00 AM and 04:00 PM.</small>
+                </div>
+
+                <!-- Step 4: Concern & Notes -->
+                <div class="form-group">
+                    <label class="form-label">Step 4: Primary Concern</label>
+                    <select name="concern_type" class="form-select" required>
+                        {% for val, label in concern_choices %}
+                        <option value="{{ val }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Intake Notes (Optional)</label>
+                    <textarea name="notes" rows="2" placeholder="Brief reason for visit or intake observations..." class="form-textarea"></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; height: 44px; margin-top: 0.5rem;">
+                    Confirm & Reserve Appointment
+                </button>
+            </form>
+        </section>
+
+        <!-- Right: Today's Appointments -->
+        <section class="card">
+            <h2 style="font-size: 1.2rem; font-weight: 600; color: #1e293b; margin-bottom: 1.5rem;">Today's Desk Schedule</h2>
+            {% if today_appointments %}
+                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                    {% for appt in today_appointments %}
+                    <div style="border-bottom: 1px solid #f1f5f9; padding-bottom: 0.75rem;">
+                        <div style="display: flex; justify-content: space-between;">
+                            <strong style="color: #1e293b;">{{ appt.student.full_name }}</strong>
+                            <span class="badge badge-{{ appt.status }}">{{ appt.status }}</span>
+                        </div>
+                        <div style="font-size: 0.85rem; color: #64748b;">Counselor: {{ appt.counselor.full_name }}</div>
+                        <div style="font-size: 0.85rem; color: #64748b;">Time: {{ appt.scheduled_at|date:"g:i A" }} &bull; {{ appt.concern_type|title }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">No appointments booked for today.</div>
+            {% endif %}
+        </section>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('student_search_input');
+    const searchBtn = document.getElementById('search_student_btn');
+    const resultsBox = document.getElementById('student_search_results');
+    const badge = document.getElementById('selected_student_badge');
+    const hiddenId = document.getElementById('rec_student_id');
+
+    async function doSearch() {
+        const q = searchInput.value.trim();
+        if (!q) return;
+
+        resultsBox.style.display = 'block';
+        resultsBox.innerHTML = '<div style="padding: 0.5rem; color: #64748b;">Searching...</div>';
+
+        try {
+            const resp = await fetch(`/receptionist/search-students/?q=${encodeURIComponent(q)}`);
+            const data = await resp.json();
+
+            if (!data.results || data.results.length === 0) {
+                resultsBox.innerHTML = '<div style="padding: 0.5rem; color: #64748b;">No active students found.</div>';
+                return;
+            }
+
+            resultsBox.innerHTML = '';
+            data.results.forEach(s => {
+                const row = document.createElement('div');
+                row.style.cssText = 'padding: 0.5rem; border-bottom: 1px solid #f1f5f9; cursor: pointer;';
+                row.innerHTML = `<strong>${s.full_name}</strong> <small style="color:#64748b;">(ID: ${s.student_id} &bull; ${s.email})</small>`;
+                row.onclick = () => {
+                    hiddenId.value = s.id;
+                    badge.style.display = 'block';
+                    badge.innerHTML = `Selected: <strong>${s.full_name}</strong> (${s.student_id}) &bull; ${s.department}`;
+                    resultsBox.style.display = 'none';
+                    searchInput.value = s.full_name;
+                };
+                resultsBox.appendChild(row);
+            });
+        } catch (err) {
+            resultsBox.innerHTML = '<div style="padding: 0.5rem; color: #ef4444;">Search error.</div>';
+        }
+    }
+
+    searchBtn.addEventListener('click', doSearch);
+    searchInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); doSearch(); } });
+});
+</script>
+{% endblock %}
