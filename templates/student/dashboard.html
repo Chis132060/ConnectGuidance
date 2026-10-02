@@ -1,46 +1,445 @@
 {% extends "base.html" %}
-
+{% load static %}
+{% block page_title %}Dashboard{% endblock %}
 {% block title %}Student Dashboard — ConnectGuidance{% endblock %}
-{% block meta_description %}ConnectGuidance student dashboard and upcoming counseling sessions.{% endblock %}
+{% block meta_description %}ConnectGuidance student wellness hub, session schedule, and counselor updates.{% endblock %}
 
 {% block content %}
-<div class="dashboard-container" style="max-width: 1000px; margin: 2rem auto; padding: 0 1rem;">
-    <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 1rem;">
-        <div>
-            <h1 style="font-size: 1.75rem; font-weight: 700; color: #1e293b;">Welcome, {{ profile.full_name }}</h1>
-            <p style="color: #64748b; font-size: 0.95rem;">Student ID: {{ profile.student_id|default:"N/A" }} &bull; Department: {{ profile.department|default:"General" }}</p>
-        </div>
-        <div style="display: flex; gap: 0.75rem;">
-            <a href="{% url 'student_book_appointment' %}" style="background: #2563eb; color: #fff; padding: 0.6rem 1.2rem; border-radius: 6px; text-decoration: none; font-weight: 500;">+ Book Session</a>
-            <a href="{% url 'student_appointments' %}" style="background: #f1f5f9; color: #334155; padding: 0.6rem 1.2rem; border-radius: 6px; text-decoration: none; font-weight: 500;">My Appointments</a>
+<div class="container-minimal">
+    
+    <!-- Welcome Header -->
+    <header class="card-minimal" style="margin-bottom: 2rem;">
+        <div style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
+            <div style="width: 64px; height: 64px; border-radius: 50%; background: var(--c-primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 600; flex-shrink: 0;">
+                {{ profile.full_name|slice:":1"|upper|default:"S" }}
+            </div>
+            <div style="flex: 1; min-width: 0;">
+                <p style="font-size: 0.875rem; color: var(--c-muted); margin-bottom: 0.25rem;">Student Wellness Hub</p>
+                <h1 style="font-size: 1.75rem; font-weight: 600; margin-bottom: 0.5rem;">Welcome back, {{ profile.full_name }}</h1>
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap; font-size: 0.875rem; color: var(--c-muted);">
+                    <span><strong>ID:</strong> {{ profile.student_id|default:"Not Assigned" }}</span>
+                    <span><strong>Dept:</strong> {{ profile.department|default:"General Academics" }}</span>
+                </div>
+            </div>
+            <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                <a href="{% url 'student_book_appointment' %}" class="btn btn-primary" id="dash-book-btn">
+                    <i data-lucide="calendar-plus" style="width:16px;height:16px;"></i>
+                    Book Session
+                </a>
+                <a href="{% url 'student_appointments' %}" class="btn btn-secondary" id="dash-appointments-btn">
+                    <i data-lucide="calendar" style="width:16px;height:16px;"></i>
+                    My Schedule
+                </a>
+            </div>
         </div>
     </header>
 
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
-        <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-            <h3 style="font-size: 0.9rem; text-transform: uppercase; color: #64748b; letter-spacing: 0.05em; margin-bottom: 0.5rem;">Upcoming Sessions</h3>
-            <p style="font-size: 2rem; font-weight: 700; color: #2563eb; margin: 0;">{{ upcoming_count }}</p>
+    <!-- Stats Grid -->
+    <div class="grid-minimal-4" style="margin-bottom: 2rem;">
+        <div class="card-minimal">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.75rem;">
+                <span style="font-size: 0.875rem; color: var(--c-muted);">Upcoming Sessions</span>
+                <i data-lucide="calendar-check" style="width:20px;height:20px;color:var(--c-primary);"></i>
+            </div>
+            <div style="font-size: 2rem; font-weight: 600; color: var(--c-primary); margin-bottom: 0.5rem;">{{ upcoming_count }}</div>
+            <div style="font-size: 0.8125rem; color: var(--c-muted);">
+                {% if upcoming_count > 0 %}Active appointments scheduled{% else %}No sessions currently booked{% endif %}
+            </div>
         </div>
-        <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-            <h3 style="font-size: 0.9rem; text-transform: uppercase; color: #64748b; letter-spacing: 0.05em; margin-bottom: 0.5rem;">Past Sessions</h3>
-            <p style="font-size: 2rem; font-weight: 700; color: #475569; margin: 0;">{{ past_count }}</p>
+
+        <div class="card-minimal">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.75rem;">
+                <span style="font-size: 0.875rem; color: var(--c-muted);">Completed</span>
+                <i data-lucide="check-circle-2" style="width:20px;height:20px;color:#15803d;"></i>
+            </div>
+            <div style="font-size: 2rem; font-weight: 600; color: #15803d; margin-bottom: 0.5rem;">{{ past_count }}</div>
+            <div style="font-size: 0.8125rem; color: var(--c-muted);">Total consultations attended</div>
+        </div>
+
+        <div class="card-minimal">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.75rem;">
+                <span style="font-size: 0.875rem; color: var(--c-muted);">Office Hours</span>
+                <i data-lucide="clock" style="width:20px;height:20px;color:var(--c-primary);"></i>
+            </div>
+            <div style="font-size: 1.5rem; font-weight: 600; color: var(--c-text); margin-bottom: 0.5rem;">Mon–Fri</div>
+            <div style="font-size: 0.8125rem; color: var(--c-muted);">09:00 AM – 04:00 PM</div>
+        </div>
+
+        <div class="card-minimal">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.75rem;">
+                <span style="font-size: 0.875rem; color: var(--c-muted);">AI Assistant</span>
+                <i data-lucide="bot" style="width:20px;height:20px;color:#f59e0b;"></i>
+            </div>
+            <div style="font-size: 1.5rem; font-weight: 600; color: var(--c-text); margin-bottom: 0.5rem;">24/7</div>
+            <a href="{% url 'student_chatbot' %}" style="font-size: 0.8125rem; color: var(--c-primary); text-decoration: none;">
+                Launch Chatbot →
+            </a>
         </div>
     </div>
 
-    <section style="background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-        <h2 style="font-size: 1.25rem; font-weight: 600; color: #1e293b; margin-bottom: 1rem;">Next Scheduled Session</h2>
-        {% if next_appointment %}
-            <div style="border-left: 4px solid #2563eb; padding-left: 1rem; margin-bottom: 1rem;">
-                <p style="font-size: 1.1rem; font-weight: 600; color: #1e293b; margin: 0;">{{ next_appointment.counselor.full_name }}</p>
-                <p style="color: #64748b; font-size: 0.95rem; margin: 0.25rem 0;">{{ next_appointment.scheduled_at|date:"l, F j, Y @ g:i A" }}</p>
-                <p style="color: #475569; font-size: 0.9rem; margin: 0.25rem 0;">Concern: <strong>{{ next_appointment.concern_type|title }}</strong></p>
-                <span style="display: inline-block; padding: 0.25rem 0.6rem; border-radius: 4px; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; background: #e0f2fe; color: #0284c7;">
-                    {{ next_appointment.status }}
-                </span>
+    <!-- Main Content Grid -->
+    <div style="display: grid; grid-template-columns: 1fr 380px; gap: 2rem; align-items: start;">
+        @media (max-width: 1024px) { grid-template-columns: 1fr; }
+        
+        <!-- Primary Column -->
+        <div>
+            
+            <!-- Next Session Card -->
+            <section class="card-minimal">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1.5rem;">
+                    <div>
+                        <p style="font-size: 0.75rem; font-weight: 600; color: var(--c-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem;">Upcoming Consultation</p>
+                        <h2 style="font-size: 1.25rem; font-weight: 600;">Next Scheduled Session</h2>
+                    </div>
+                    {% if next_appointment %}
+                        {% if next_appointment.status == 'confirmed' %}
+                            <span class="badge-confirmed">CONFIRMED</span>
+                        {% else %}
+                            <span class="badge-pending">PENDING</span>
+                        {% endif %}
+                    {% endif %}
+                </div>
+
+                {% if next_appointment %}
+                    <div style="display: flex; gap: 1.5rem; padding: 1.5rem; background: var(--c-bg); border: 1px solid var(--c-border); border-radius: 8px; margin-bottom: 1rem;">
+                        <div style="text-align: center; padding: 1rem; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: 8px; flex-shrink: 0;">
+                            <div style="font-size: 0.75rem; color: var(--c-muted); font-weight: 600; text-transform: uppercase;">{{ next_appointment.scheduled_at|date:"M" }}</div>
+                            <div style="font-size: 2rem; font-weight: 700; color: var(--c-primary); line-height: 1;">{{ next_appointment.scheduled_at|date:"d" }}</div>
+                            <div style="font-size: 0.875rem; color: var(--c-muted); margin-top: 0.25rem;">{{ next_appointment.scheduled_at|date:"g:i A" }}</div>
+                        </div>
+
+                        <div style="flex: 1;">
+                            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;">
+                                <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--c-primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">
+                                    {{ next_appointment.counselor.full_name|slice:":1"|upper }}
+                                </div>
+                                <div>
+                                    <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 0.125rem;">{{ next_appointment.counselor.full_name }}</h3>
+                                    <p style="font-size: 0.8125rem; color: var(--c-muted); margin: 0;">{{ next_appointment.counselor.department|default:"University Guidance & Psychological Services" }}</p>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem;">
+                                <span style="font-size: 0.8125rem; padding: 0.25rem 0.625rem; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: 4px;">
+                                    <i data-lucide="tag" style="width:12px;height:12px;display:inline;vertical-align:middle;margin-right:0.25rem;"></i>
+                                    {{ next_appointment.concern_type|title }}
+                                </span>
+                                <span style="font-size: 0.8125rem; padding: 0.25rem 0.625rem; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: 4px;">
+                                    <i data-lucide="map-pin" style="width:12px;height:12px;display:inline;vertical-align:middle;margin-right:0.25rem;"></i>
+                                    Room 204
+                                </span>
+                            </div>
+
+                            {% if next_appointment.notes %}
+                                <div style="padding: 0.75rem; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: 6px; font-size: 0.875rem;">
+                                    <strong>Your Note:</strong> {{ next_appointment.notes }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <a href="{% url 'student_appointments' %}" style="color: var(--c-primary); text-decoration: none; font-size: 0.9375rem; font-weight: 500;">
+                            View All Appointments →
+                        </a>
+                        {% if next_appointment.status == 'pending' or next_appointment.status == 'confirmed' %}
+                            <form action="{% url 'student_cancel_appointment' next_appointment.pk %}" method="post" style="display:inline;" onsubmit="return confirm('Are you sure you want to cancel this appointment?');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-secondary btn-sm">
+                                    <i data-lucide="x-circle" style="width:14px;height:14px;"></i>
+                                    Cancel Booking
+                                </button>
+                            </form>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <div style="text-align: center; padding: 3rem 1rem;">
+                        <div style="width: 64px; height: 64px; border-radius: 50%; background: var(--c-bg); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                            <i data-lucide="calendar-plus" style="width:32px;height:32px;color:var(--c-primary);"></i>
+                        </div>
+                        <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem;">No upcoming consultations scheduled</h3>
+                        <p style="color: var(--c-muted); margin-bottom: 1.5rem; max-width: 480px; margin-left: auto; margin-right: auto;">University guidance counseling is private, confidential, and free of charge. Schedule a consultation to discuss academic planning, emotional wellness, or career questions.</p>
+                        <a href="{% url 'student_book_appointment' %}" class="btn btn-primary">
+                            <i data-lucide="plus" style="width:16px;height:16px;"></i>
+                            Schedule a Session with a Counselor
+                        </a>
+                    </div>
+                {% endif %}
+            </section>
+
+            <!-- Daily Wellness Check-in -->
+            <section class="card-minimal">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1.5rem;">
+                    <div>
+                        <p style="font-size: 0.75rem; font-weight: 600; color: var(--c-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem;">Self-Reflection & Care</p>
+                        <h2 style="font-size: 1.25rem; font-weight: 600;">Daily Wellness Check-in</h2>
+                    </div>
+                    <span style="font-size: 0.8125rem; padding: 0.25rem 0.625rem; background: #dcfce7; border: 1px solid #86efac; border-radius: 4px; color: #15803d; font-weight: 500;">
+                        <i data-lucide="shield-check" style="width:13px;height:13px;display:inline;vertical-align:middle;margin-right:0.25rem;"></i>
+                        Confidential
+                    </span>
+                </div>
+
+                <p style="color: var(--c-muted); margin-bottom: 1.5rem;">
+                    How are you feeling today? Checking in regularly helps you reflect on your mental wellness and allows your counselor to step in if you ever need extra support.
+                </p>
+
+                <form method="post" action="{% url 'student_mood_checkin' %}" id="student-mood-form">
+                    {% csrf_token %}
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
+                        
+                        <label style="cursor: pointer;">
+                            <input type="radio" name="mood" value="good" required style="position: absolute; opacity: 0;">
+                            <div style="padding: 1.25rem 1rem; border: 2px solid var(--c-border); border-radius: 8px; text-align: center; transition: all 0.2s;">
+                                <div style="width: 48px; height: 48px; border-radius: 50%; background: #dcfce7; display: flex; align-items: center; justify-content: center; margin: 0 auto 0.75rem;">
+                                    <i data-lucide="smile" style="width:24px;height:24px;color:#15803d;"></i>
+                                </div>
+                                <strong style="display: block; margin-bottom: 0.25rem;">Good</strong>
+                                <span style="font-size: 0.8125rem; color: var(--c-muted);">Energetic & balanced</span>
+                            </div>
+                        </label>
+
+                        <label style="cursor: pointer;">
+                            <input type="radio" name="mood" value="okay" style="position: absolute; opacity: 0;">
+                            <div style="padding: 1.25rem 1rem; border: 2px solid var(--c-border); border-radius: 8px; text-align: center; transition: all 0.2s;">
+                                <div style="width: 48px; height: 48px; border-radius: 50%; background: #f0f9ff; display: flex; align-items: center; justify-content: center; margin: 0 auto 0.75rem;">
+                                    <i data-lucide="meh" style="width:24px;height:24px;color:#0284c7;"></i>
+                                </div>
+                                <strong style="display: block; margin-bottom: 0.25rem;">Okay</strong>
+                                <span style="font-size: 0.8125rem; color: var(--c-muted);">Steady, getting through</span>
+                            </div>
+                        </label>
+
+                        <label style="cursor: pointer;">
+                            <input type="radio" name="mood" value="low" style="position: absolute; opacity: 0;">
+                            <div style="padding: 1.25rem 1rem; border: 2px solid var(--c-border); border-radius: 8px; text-align: center; transition: all 0.2s;">
+                                <div style="width: 48px; height: 48px; border-radius: 50%; background: #ffedd5; display: flex; align-items: center; justify-content: center; margin: 0 auto 0.75rem;">
+                                    <i data-lucide="frown" style="width:24px;height:24px;color:#ea580c;"></i>
+                                </div>
+                                <strong style="display: block; margin-bottom: 0.25rem;">Low</strong>
+                                <span style="font-size: 0.8125rem; color: var(--c-muted);">Stressed, needing support</span>
+                            </div>
+                        </label>
+
+                    </div>
+
+                    <div class="form-group">
+                        <label for="id_mood_note">
+                            Add an optional reflection note for your counselor <span style="color: var(--c-muted); font-weight: 400;">(Optional)</span>
+                        </label>
+                        <textarea name="note" id="id_mood_note" rows="3" placeholder="Share what's on your mind today (max 500 characters)..." maxlength="500"></textarea>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 1rem; background: var(--c-bg); border: 1px solid var(--c-border); border-radius: 8px;">
+                        <div style="display: flex; align-items: start; gap: 0.5rem; font-size: 0.8125rem; color: var(--c-muted);">
+                            <i data-lucide="info" style="width:16px;height:16px;color:var(--c-primary);flex-shrink:0;margin-top:0.125rem;"></i>
+                            <span>Selecting <strong>Low</strong> alerts your counselor so they can check in with you discreetly.</span>
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="submit-mood-btn" style="flex-shrink: 0;">
+                            <i data-lucide="send" style="width:15px;height:15px;"></i>
+                            Submit
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Counselor Case Notes -->
+            <section class="card-minimal">
+                <div style="margin-bottom: 1.5rem;">
+                    <p style="font-size: 0.75rem; font-weight: 600; color: var(--c-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem;">Clinical Follow-Ups</p>
+                    <h2 style="font-size: 1.25rem; font-weight: 600;">Counselor Shared Notes</h2>
+                </div>
+
+                {% if case_notes_history %}
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        {% for note in case_notes_history %}
+                            <div style="padding: 1.25rem; background: var(--c-bg); border: 1px solid var(--c-border); border-radius: 8px;">
+                                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                        <div style="width: 32px; height: 32px; border-radius: 6px; background: var(--c-primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 0.875rem; font-weight: 600;">
+                                            <i data-lucide="file-badge" style="width:16px;height:16px;"></i>
+                                        </div>
+                                        <div>
+                                            <strong style="display: block; margin-bottom: 0.125rem;">{{ note.author_name }}</strong>
+                                            <span style="font-size: 0.8125rem; color: var(--c-muted);">{{ note.scheduled_at|date:"M j, Y @ g:i A" }}</span>
+                                        </div>
+                                    </div>
+                                    <span style="font-size: 0.8125rem; padding: 0.25rem 0.625rem; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: 4px;">{{ note.concern_type|title }}</span>
+                                </div>
+                                <div style="color: var(--c-text); line-height: 1.6;">{{ note.decrypted_content|linebreaks }}</div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div style="text-align: center; padding: 2rem 1rem;">
+                        <div style="width: 56px; height: 56px; border-radius: 8px; background: var(--c-bg); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                            <i data-lucide="file-text" style="width:28px;height:28px;color:var(--c-muted);"></i>
+                        </div>
+                        <h4 style="font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem;">No shared case notes yet</h4>
+                        <p style="font-size: 0.875rem; color: var(--c-muted); max-width: 420px; margin: 0 auto;">After your guidance consultations, non-confidential follow-up recommendations and action plans prepared by your counselor will appear here.</p>
+                    </div>
+                {% endif %}
+            </section>
+
+        </div>
+
+        <!-- Sidebar Column -->
+        <aside>
+            
+            <!-- Quick Navigation -->
+            <div class="card-minimal">
+                <p style="font-size: 0.75rem; font-weight: 600; color: var(--c-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem;">Navigation</p>
+                <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 1rem;">Quick Actions</h3>
+
+                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                    <a href="{% url 'student_book_appointment' %}" id="nav-book" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.875rem; background: var(--c-primary); color: white; border-radius: 8px; text-decoration: none; transition: opacity 0.2s;">
+                        <div style="width: 36px; height: 36px; border-radius: 6px; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <i data-lucide="calendar-plus" style="width:18px;height:18px;"></i>
+                        </div>
+                        <div style="flex: 1;">
+                            <strong style="display: block; margin-bottom: 0.125rem;">Book a Session</strong>
+                            <span style="font-size: 0.8125rem; opacity: 0.9;">Choose counselor & timeslot</span>
+                        </div>
+                        <i data-lucide="chevron-right" style="width:16px;height:16px;opacity:0.7;"></i>
+                    </a>
+
+                    <a href="{% url 'student_chatbot' %}" id="nav-chatbot" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.875rem; background: var(--c-bg); border: 1px solid var(--c-border); border-radius: 8px; text-decoration: none; color: var(--c-text); transition: opacity 0.2s;">
+                        <div style="width: 36px; height: 36px; border-radius: 6px; background: #fef3c7; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <i data-lucide="bot" style="width:18px;height:18px;color:#f59e0b;"></i>
+                        </div>
+                        <div style="flex: 1;">
+                            <strong style="display: block; margin-bottom: 0.125rem;">AI Wellness Assistant</strong>
+                            <span style="font-size: 0.8125rem; color: var(--c-muted);">Private, confidential 24/7 chat</span>
+                        </div>
+                        <i data-lucide="chevron-right" style="width:16px;height:16px;color:var(--c-muted);"></i>
+                    </a>
+
+                    <a href="{% url 'student_front_desk' %}" id="nav-frontdesk" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.875rem; background: var(--c-bg); border: 1px solid var(--c-border); border-radius: 8px; text-decoration: none; color: var(--c-text); transition: opacity 0.2s;">
+                        <div style="width: 36px; height: 36px; border-radius: 6px; background: #f0f9ff; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <i data-lucide="building" style="width:18px;height:18px;color:#0284c7;"></i>
+                        </div>
+                        <div style="flex: 1;">
+                            <strong style="display: block; margin-bottom: 0.125rem;">Front Desk & Walk-ins</strong>
+                            <span style="font-size: 0.8125rem; color: var(--c-muted);">Hours, locations & triage</span>
+                        </div>
+                        <i data-lucide="chevron-right" style="width:16px;height:16px;color:var(--c-muted);"></i>
+                    </a>
+
+                    <a href="{% url 'student_profile' %}" id="nav-profile" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.875rem; background: var(--c-bg); border: 1px solid var(--c-border); border-radius: 8px; text-decoration: none; color: var(--c-text); transition: opacity 0.2s;">
+                        <div style="width: 36px; height: 36px; border-radius: 6px; background: #f5f3ff; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <i data-lucide="user-cog" style="width:18px;height:18px;color:#7c3aed;"></i>
+                        </div>
+                        <div style="flex: 1;">
+                            <strong style="display: block; margin-bottom: 0.125rem;">Profile & Credentials</strong>
+                            <span style="font-size: 0.8125rem; color: var(--c-muted);">Update password & view info</span>
+                        </div>
+                        <i data-lucide="chevron-right" style="width:16px;height:16px;color:var(--c-muted);"></i>
+                    </a>
+                </div>
             </div>
-        {% else %}
-            <p style="color: #64748b; margin: 0;">No upcoming appointments. Need support? <a href="{% url 'student_book_appointment' %}" style="color: #2563eb; text-decoration: underline;">Schedule a session</a>.</p>
-        {% endif %}
-    </section>
+
+            <!-- Office Status -->
+            <div class="card-minimal" style="background: var(--c-bg);">
+                <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem; background: #dcfce7; border: 1px solid #86efac; border-radius: 6px; margin-bottom: 1rem;">
+                    <span style="width: 8px; height: 8px; border-radius: 50%; background: #15803d;"></span>
+                    <span style="font-size: 0.8125rem; font-weight: 600; color: #15803d;">Live Office Status • Open Now</span>
+                </div>
+
+                <h4 style="font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem;">Guidance Walk-In Desk</h4>
+                <p style="font-size: 0.875rem; color: var(--c-muted); margin-bottom: 1rem;">Immediate in-person intake triage is available today on the second floor.</p>
+
+                <div style="display: flex; gap: 0.75rem; padding: 1rem; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: 8px; margin-bottom: 1rem;">
+                    <div style="width: 42px; height: 42px; border-radius: 8px; background: var(--c-primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0;">
+                        SJ
+                    </div>
+                    <div>
+                        <strong style="display: block; font-size: 0.9375rem; margin-bottom: 0.125rem;">Dr. Sarah Jenkins, RGC</strong>
+                        <span style="display: block; font-size: 0.8125rem; color: var(--c-primary); margin-bottom: 0.375rem;">On-Duty Guidance Counselor</span>
+                        <div style="display: flex; gap: 0.75rem; font-size: 0.75rem; color: var(--c-muted);">
+                            <span><i data-lucide="map-pin" style="width:11px;height:11px;display:inline;vertical-align:middle;margin-right:0.25rem;"></i>Room 204</span>
+                            <span><i data-lucide="clock" style="width:11px;height:11px;display:inline;vertical-align:middle;margin-right:0.25rem;"></i>9:00 AM – 4:30 PM</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: flex; align-items: center; justify-content: space-around; padding: 0.875rem; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: 8px; margin-bottom: 1rem;">
+                    <div style="text-align: center;">
+                        <span style="display: block; font-size: 1.25rem; font-weight: 700; color: var(--c-primary);">1</span>
+                        <span style="font-size: 0.75rem; color: var(--c-muted);">Waiting Queue</span>
+                    </div>
+                    <div style="width: 1px; height: 32px; background: var(--c-border);"></div>
+                    <div style="text-align: center;">
+                        <span style="display: block; font-size: 1.25rem; font-weight: 700; color: #15803d;">~10 min</span>
+                        <span style="font-size: 0.75rem; color: var(--c-muted);">Est. Wait Time</span>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 0.75rem;">
+                    <a href="{% url 'student_book_appointment' %}" class="btn btn-primary btn-sm" style="flex: 1;">
+                        <i data-lucide="calendar-plus" style="width:14px;height:14px;"></i>
+                        Book Ahead
+                    </a>
+                    <a href="{% url 'student_front_desk' %}" class="btn btn-secondary btn-sm" style="flex: 1;">
+                        <i data-lucide="info" style="width:14px;height:14px;"></i>
+                        Office Info
+                    </a>
+                </div>
+            </div>
+
+            <!-- Crisis Support -->
+            <div class="card-minimal" style="border-color: #fca5a5; background: #fef2f2;">
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+                    <span style="width: 8px; height: 8px; border-radius: 50%; background: #dc2626;"></span>
+                    <h4 style="font-size: 1rem; font-weight: 600; color: #dc2626; margin: 0;">Need Immediate Help?</h4>
+                </div>
+                <p style="font-size: 0.875rem; color: #991b1b; margin-bottom: 1rem;">
+                    If you are facing an urgent emotional crisis or safety concern, free confidential help is accessible 24/7:
+                </p>
+
+                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                    <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; background: white; border: 1px solid #fca5a5; border-radius: 8px;">
+                        <div style="width: 32px; height: 32px; border-radius: 6px; background: #fee2e2; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <i data-lucide="phone-call" style="width:16px;height:16px;color:#dc2626;"></i>
+                        </div>
+                        <div>
+                            <strong style="display: block; font-size: 0.9375rem; color: #dc2626; margin-bottom: 0.125rem;">Call or Text 988</strong>
+                            <span style="font-size: 0.8125rem; color: #991b1b;">National Suicide & Crisis Lifeline</span>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; background: white; border: 1px solid #fca5a5; border-radius: 8px;">
+                        <div style="width: 32px; height: 32px; border-radius: 6px; background: #fee2e2; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <i data-lucide="siren" style="width:16px;height:16px;color:#dc2626;"></i>
+                        </div>
+                        <div>
+                            <strong style="display: block; font-size: 0.9375rem; color: #dc2626; margin-bottom: 0.125rem;">Campus Emergency: Ext. 4400</strong>
+                            <span style="font-size: 0.8125rem; color: #991b1b;">University Security & Medical Triage</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </aside>
+
+    </div>
+
 </div>
+
+<style>
+/* Mood card radio selection styles */
+input[type="radio"]:checked + div {
+    border-color: var(--c-primary) !important;
+    background: var(--c-bg) !important;
+}
+input[type="radio"]:hover + div {
+    border-color: var(--c-muted);
+}
+
+/* Responsive layout for sidebar */
+@media (max-width: 1024px) {
+    div[style*="grid-template-columns: 1fr 380px"] {
+        grid-template-columns: 1fr !important;
+    }
+}
+</style>
 {% endblock %}
