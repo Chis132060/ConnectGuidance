@@ -13,7 +13,7 @@ from django.contrib.auth.models import User
 
 from core.models import Profile, AuditLog
 from apps.common.choices import RoleChoices
-from core.services.audit import log_action
+from apps.audit.services.logging import log_action
 
 
 def can_change_role(actor: Profile, target: Profile, new_role: str) -> Tuple[bool, str]:

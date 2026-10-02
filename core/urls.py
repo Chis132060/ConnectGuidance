@@ -50,7 +50,6 @@ from core.views.chat import (
 from core.views.admin_views import (
     admin_overview_view,
     admin_users_view,
-    admin_audit_logs_view,
     admin_reports_view,
     admin_profile_view,
 )
@@ -84,7 +83,6 @@ urlpatterns = [
     # --- Administrator Views (16 screens checklist #11, #12, #13, #14, #15) ---
     path('admin-panel/', admin_overview_view, name='admin_overview'),
     path('admin-panel/users/', admin_users_view, name='admin_users'),
-    path('admin-panel/audit/', admin_audit_logs_view, name='admin_audit'),
     path('admin-panel/reports/', admin_reports_view, name='admin_reports'),
     path('admin-panel/profile/', admin_profile_view, name='admin_profile'),
 ]

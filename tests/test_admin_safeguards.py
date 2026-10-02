@@ -28,7 +28,7 @@ from core.services.reports import (
     export_appointments_csv,
     export_appointments_pdf,
 )
-from core.services.audit import log_action
+from apps.audit.services.logging import log_action
 
 
 class AdminSafeguardsTestCase(TestCase):

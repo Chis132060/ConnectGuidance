@@ -22,7 +22,7 @@ from reportlab.lib import colors
 from core.models import Appointment, Profile
 from apps.common.choices import RoleChoices, ConcernTypeChoices
 from core.services.metrics import get_admin_metrics
-from core.services.audit import log_action
+from apps.audit.services.logging import log_action
 
 
 def filter_appointments(

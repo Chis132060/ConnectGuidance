@@ -170,11 +170,11 @@ class ViewsHttpTemplateTestCase(TestCase):
         self.assertTemplateUsed(response, 'admin/users.html')
 
     def test_screen_13_admin_audit(self):
-        """13. GET /admin-panel/audit/ -> admin/audit_logs.html (HTTP 200)"""
+        """13. GET /admin-panel/audit/ -> audit/logs.html (HTTP 200)"""
         self.client.force_login(self.admin_user)
         response = self.client.get('/admin-panel/audit/')
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'admin/audit_logs.html')
+        self.assertTemplateUsed(response, 'audit/logs.html')
 
     def test_screen_14_admin_reports(self):
         """14. GET /admin-panel/reports/ -> admin/reports.html (HTTP 200)"""
