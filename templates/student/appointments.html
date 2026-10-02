@@ -1,82 +1,1041 @@
 {% extends "base.html" %}
-
+{% load static %}
+{% block page_title %}My Appointments{% endblock %}
 {% block title %}My Appointments — ConnectGuidance{% endblock %}
-{% block meta_description %}View and manage your upcoming and past counseling sessions.{% endblock %}
+{% block meta_description %}Manage and track your upcoming counseling sessions and past guidance history.{% endblock %}
 
 {% block content %}
-<div class="appointments-container" style="max-width: 1000px; margin: 2rem auto; padding: 0 1rem;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-        <div>
-            <h1 style="font-size: 1.75rem; font-weight: 700; color: #1e293b; margin: 0;">My Appointments</h1>
-            <p style="color: #64748b; font-size: 0.95rem; margin-top: 0.25rem;">Track your upcoming guidance sessions and history.</p>
-        </div>
-        <a href="{% url 'student_book_appointment' %}" style="background: #2563eb; color: #fff; padding: 0.6rem 1.2rem; border-radius: 6px; text-decoration: none; font-weight: 500;">+ Book New Session</a>
-    </div>
+<div class="appt-shell">
 
-    <!-- Upcoming Appointments -->
-    <section style="background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-        <h2 style="font-size: 1.25rem; font-weight: 600; color: #1e293b; margin-bottom: 1rem;">Upcoming & Active Sessions</h2>
-        {% if upcoming_appointments %}
-            <div style="display: flex; flex-direction: column; gap: 1rem;">
-                {% for appt in upcoming_appointments %}
-                <div style="display: flex; justify-content: space-between; align-items: center; border: 1px solid #e2e8f0; border-radius: 6px; padding: 1rem;">
-                    <div>
-                        <div style="font-weight: 600; font-size: 1.05rem; color: #1e293b;">Counselor: {{ appt.counselor.full_name }}</div>
-                        <div style="color: #64748b; font-size: 0.9rem; margin-top: 0.2rem;">{{ appt.scheduled_at|date:"l, F j, Y @ g:i A" }}</div>
-                        <div style="color: #475569; font-size: 0.85rem; margin-top: 0.2rem;">Concern: <strong>{{ appt.concern_type|title }}</strong></div>
-                        <span style="display: inline-block; margin-top: 0.4rem; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; background: {% if appt.status == 'confirmed' %}#dcfce7; color: #15803d;{% else %}#fef9c3; color: #854d0e;{% endif %}">
-                            {{ appt.status }}
-                        </span>
+    <!-- Ambient Glow Orbs -->
+    <div class="appt-orb appt-orb-1"></div>
+    <div class="appt-orb appt-orb-2"></div>
+    <div class="appt-orb appt-orb-3"></div>
+
+    <div class="appt-container">
+
+        <!-- ══════════════════════════════════════════════
+             PAGE HEADER BANNER & STATS
+        ══════════════════════════════════════════════ -->
+        <header class="appt-hero" aria-label="Appointments Header">
+            <div class="appt-hero-glow"></div>
+
+            <div class="appt-hero-top">
+                <div class="appt-hero-info">
+                    <span class="appt-kicker">
+                        <i data-lucide="calendar-range" style="width:13px;height:13px;"></i> CONSULTATION SCHEDULE
+                    </span>
+                    <h1 class="appt-title">My Appointments</h1>
+                    <p class="appt-subtitle">
+                        Manage your scheduled guidance consultations, review clinical follow-ups, or request an upcoming session with a university counselor.
+                    </p>
+                </div>
+                <div class="appt-hero-actions">
+                    <a href="{% url 'student_book_appointment' %}" class="btn-book-primary" id="book-new-session-btn">
+                        <i data-lucide="calendar-plus" style="width:18px;height:18px;"></i>
+                        <span>Book New Session</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Stats & Guarantee Bar -->
+            <div class="appt-metrics-bar">
+                <div class="appt-metric-chip">
+                    <span class="pulse-dot-cyan"></span>
+                    <span class="metric-text">Active Bookings: <strong>{{ upcoming_appointments|length }}</strong></span>
+                </div>
+                <div class="appt-metric-chip">
+                    <span class="pulse-dot-emerald"></span>
+                    <span class="metric-text">Past Consultations: <strong>{{ past_appointments|length }}</strong></span>
+                </div>
+                <div class="appt-metric-chip chip-privacy">
+                    <i data-lucide="shield-check" style="width:15px;height:15px;color:#34d399;"></i>
+                    <span class="privacy-text">100% Confidential &bull; Free Student Service</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- ══════════════════════════════════════════════
+             UPCOMING & ACTIVE SESSIONS
+        ══════════════════════════════════════════════ -->
+        <section class="appt-glass-card" aria-label="Upcoming Sessions">
+            <div class="section-header-row">
+                <div class="section-title-wrap">
+                    <div class="section-icon-wrap icon-cyan">
+                        <i data-lucide="clock" style="width:20px;height:20px;"></i>
                     </div>
                     <div>
-                        {% if appt.status == 'pending' or appt.status == 'confirmed' %}
-                        <form method="POST" action="{% url 'student_cancel_appointment' appt.id %}" onsubmit="return confirm('Are you sure you want to cancel this appointment?');">
-                            {% csrf_token %}
-                            <button type="submit" style="background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; padding: 0.4rem 0.8rem; border-radius: 4px; font-size: 0.85rem; font-weight: 500; cursor: pointer;">
-                                Cancel
-                            </button>
-                        </form>
-                        {% endif %}
+                        <h2 class="section-title">Upcoming &amp; Active Sessions</h2>
+                        <p class="section-desc">Consultations scheduled with university guidance counselors.</p>
                     </div>
                 </div>
-                {% endfor %}
+                <span class="count-badge count-cyan">{{ upcoming_appointments|length }} Active</span>
             </div>
-        {% else %}
-            <p style="color: #64748b; margin: 0;">No active appointments scheduled. <a href="{% url 'student_book_appointment' %}" style="color: #2563eb;">Book a session now</a>.</p>
-        {% endif %}
-    </section>
 
-    <!-- Past / Cancelled Appointments -->
-    <section style="background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-        <h2 style="font-size: 1.25rem; font-weight: 600; color: #1e293b; margin-bottom: 1rem;">Past & Cancelled Sessions</h2>
-        {% if past_appointments %}
-            <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
-                <thead>
-                    <tr style="border-bottom: 2px solid #f1f5f9; text-align: left; color: #64748b;">
-                        <th style="padding: 0.75rem 0.5rem;">Date & Time</th>
-                        <th style="padding: 0.75rem 0.5rem;">Counselor</th>
-                        <th style="padding: 0.75rem 0.5rem;">Concern</th>
-                        <th style="padding: 0.75rem 0.5rem;">Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for appt in past_appointments %}
-                    <tr style="border-bottom: 1px solid #f1f5f9;">
-                        <td style="padding: 0.75rem 0.5rem; color: #334155;">{{ appt.scheduled_at|date:"M d, Y @ g:i A" }}</td>
-                        <td style="padding: 0.75rem 0.5rem; color: #1e293b; font-weight: 500;">{{ appt.counselor.full_name }}</td>
-                        <td style="padding: 0.75rem 0.5rem; color: #475569;">{{ appt.concern_type|title }}</td>
-                        <td style="padding: 0.75rem 0.5rem;">
-                            <span style="display: inline-block; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; background: {% if appt.status == 'completed' %}#dcfce7; color: #15803d;{% else %}#f1f5f9; color: #64748b;{% endif %}">
-                                {{ appt.status }}
-                            </span>
-                        </td>
-                    </tr>
+            {% if upcoming_appointments %}
+                <div class="upcoming-cards-grid">
+                    {% for appt in upcoming_appointments %}
+                        <div class="appt-card-item" id="appointment-card-{{ appt.id }}">
+                            <!-- Date Ribbon -->
+                            <div class="card-ribbon">
+                                <span class="ribbon-mo">{{ appt.scheduled_at|date:"M"|upper }}</span>
+                                <span class="ribbon-dy">{{ appt.scheduled_at|date:"d" }}</span>
+                                <span class="ribbon-tm">{{ appt.scheduled_at|date:"g:i A" }}</span>
+                            </div>
+
+                            <!-- Details -->
+                            <div class="card-content">
+                                <div class="card-content-top">
+                                    <div class="counselor-identity">
+                                        <div class="counselor-avatar">
+                                            {{ appt.counselor.full_name|slice:":1"|upper }}
+                                        </div>
+                                        <div>
+                                            <h3 class="counselor-name">{{ appt.counselor.full_name }}</h3>
+                                            <span class="counselor-dept">{{ appt.counselor.department|default:"University Guidance & Psychological Services" }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="status-wrap">
+                                        {% if appt.status == 'confirmed' %}
+                                            <span class="status-pill pill-confirmed">
+                                                <span class="pulse-dot-green"></span> Confirmed
+                                            </span>
+                                        {% else %}
+                                            <span class="status-pill pill-pending">
+                                                <span class="pulse-dot-amber"></span> Awaiting Confirmation
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <div class="appt-tags-row">
+                                    <span class="tag-pill tag-date">
+                                        <i data-lucide="calendar" style="width:13px;height:13px;"></i>
+                                        {{ appt.scheduled_at|date:"l, F j, Y" }}
+                                    </span>
+                                    <span class="tag-pill tag-concern">
+                                        <i data-lucide="tag" style="width:13px;height:13px;"></i>
+                                        {{ appt.get_concern_type_display|default:appt.concern_type|title }}
+                                    </span>
+                                    <span class="tag-pill tag-location">
+                                        <i data-lucide="map-pin" style="width:13px;height:13px;"></i>
+                                        Guidance Center Room 204
+                                    </span>
+                                </div>
+
+                                {% if appt.notes %}
+                                    <div class="appt-note-preview">
+                                        <i data-lucide="message-square" style="width:14px;height:14px;color:#38bdf8;flex-shrink:0;"></i>
+                                        <span><strong>Your Note:</strong> {{ appt.notes }}</span>
+                                    </div>
+                                {% endif %}
+
+                                <div class="card-footer-row">
+                                    <span class="booked-date">
+                                        <i data-lucide="history" style="width:13px;height:13px;"></i>
+                                        Booked on {{ appt.created_at|date:"M j, Y" }}
+                                    </span>
+                                    {% if appt.status == 'pending' or appt.status == 'confirmed' %}
+                                        <form method="POST" action="{% url 'student_cancel_appointment' appt.id %}" onsubmit="return confirm('Are you sure you want to cancel your session with {{ appt.counselor.full_name }}?');">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn-cancel-appt">
+                                                <i data-lucide="x-circle" style="width:14px;height:14px;"></i>
+                                                <span>Cancel Session</span>
+                                            </button>
+                                        </form>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
                     {% endfor %}
-                </tbody>
-            </table>
-        {% else %}
-            <p style="color: #64748b; margin: 0;">No past session history recorded.</p>
-        {% endif %}
-    </section>
+                </div>
+            {% else %}
+                <div class="appt-empty-state">
+                    <div class="empty-icon-circle">
+                        <i data-lucide="calendar-plus" style="width:30px;height:30px;color:#38bdf8;"></i>
+                    </div>
+                    <h3 class="empty-state-title">No upcoming consultations scheduled</h3>
+                    <p class="empty-state-desc">
+                        Our licensed counselors are available to support you through academic workload, career directions, stress, and personal wellness.
+                    </p>
+                    <a href="{% url 'student_book_appointment' %}" class="btn-book-cta">
+                        <i data-lucide="plus" style="width:16px;height:16px;"></i>
+                        <span>Schedule a Session with a Counselor</span>
+                    </a>
+                </div>
+            {% endif %}
+        </section>
+
+        <!-- ══════════════════════════════════════════════
+             PAST & COMPLETED SESSIONS (HISTORY)
+        ══════════════════════════════════════════════ -->
+        <section class="appt-glass-card" aria-label="Session History">
+            <div class="section-header-row">
+                <div class="section-title-wrap">
+                    <div class="section-icon-wrap icon-indigo">
+                        <i data-lucide="archive" style="width:20px;height:20px;"></i>
+                    </div>
+                    <div>
+                        <h2 class="section-title">Past &amp; Completed Consultations</h2>
+                        <p class="section-desc">Historical records of previous guidance meetings and consultations.</p>
+                    </div>
+                </div>
+                <span class="count-badge count-neutral">{{ past_appointments|length }} Records</span>
+            </div>
+
+            {% if past_appointments %}
+                <div class="history-table-wrapper">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>Date &amp; Time</th>
+                                <th>Counselor</th>
+                                <th>Primary Concern</th>
+                                <th>Status</th>
+                                <th style="text-align: right;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for appt in past_appointments %}
+                                <tr>
+                                    <td>
+                                        <div class="td-datetime">
+                                            <i data-lucide="calendar" style="width:15px;height:15px;color:#38bdf8;"></i>
+                                            <div>
+                                                <strong>{{ appt.scheduled_at|date:"M d, Y" }}</strong>
+                                                <span>{{ appt.scheduled_at|date:"g:i A" }}</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="td-counselor">
+                                            <div class="csl-chip-avi">{{ appt.counselor.full_name|slice:":1"|upper }}</div>
+                                            <span>{{ appt.counselor.full_name }}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="concern-pill">
+                                            {{ appt.get_concern_type_display|default:appt.concern_type|title }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="appt-status-tag status-{{ appt.status }}">
+                                            {{ appt.get_status_display|default:appt.status|title }}
+                                        </span>
+                                    </td>
+                                    <td style="text-align: right;">
+                                        <a href="{% url 'student_book_appointment' %}" class="btn-rebook" title="Schedule another session">
+                                            <span>Book Again</span>
+                                            <i data-lucide="arrow-right" style="width:13px;height:13px;"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="history-empty-box">
+                    <div class="empty-icon-circle icon-circle-muted">
+                        <i data-lucide="history" style="width:26px;height:26px;color:#64748b;"></i>
+                    </div>
+                    <h4 class="empty-sub-title">No past consultation history</h4>
+                    <p class="empty-sub-desc">As you conclude guidance sessions with university counselors, your record summary will appear here.</p>
+                </div>
+            {% endif %}
+        </section>
+
+        <!-- ══════════════════════════════════════════════
+             WELLNESS & POLICY INFO CARDS
+        ══════════════════════════════════════════════ -->
+        <section class="appt-info-grid">
+            <div class="info-card">
+                <div class="info-icon-badge info-cyan">
+                    <i data-lucide="shield-check" style="width:20px;height:20px;"></i>
+                </div>
+                <div class="info-text-body">
+                    <h4>Confidentiality Assured</h4>
+                    <p>All guidance conversations and shared records are strictly private under University counseling policies and ethical standards.</p>
+                </div>
+            </div>
+
+            <div class="info-card">
+                <div class="info-icon-badge info-sapphire">
+                    <i data-lucide="clock" style="width:20px;height:20px;"></i>
+                </div>
+                <div class="info-text-body">
+                    <h4>Flexible Rescheduling</h4>
+                    <p>Need to reschedule? You can cancel ahead of time and select another available date and timeslot that fits your academic schedule.</p>
+                </div>
+            </div>
+
+            <div class="info-card">
+                <div class="info-icon-badge info-emerald">
+                    <i data-lucide="bot" style="width:20px;height:20px;"></i>
+                </div>
+                <div class="info-text-body">
+                    <h4>24/7 AI Companion</h4>
+                    <p>Have immediate questions or need self-help techniques between sessions? Chat with our <a href="{% url 'student_chatbot' %}" class="info-anchor">AI Guidance Assistant &rarr;</a></p>
+                </div>
+            </div>
+        </section>
+
+    </div>
 </div>
+
+<style>
+/* ═══════════════════════════════════════════════════════
+   APPOINTMENTS — Sapphire Ocean Dark Glassmorphism
+   ═══════════════════════════════════════════════════════ */
+
+.appt-shell {
+    width: 100%;
+    min-height: 100%;
+    background: linear-gradient(140deg, #020817 0%, #0a1628 40%, #061022 70%, #0d1f3c 100%);
+    padding: 2rem 2.5rem 3.5rem;
+    position: relative;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+/* Ambient glow orbs */
+.appt-orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(90px);
+    pointer-events: none;
+    z-index: 1;
+    animation: apptOrbDrift 14s ease-in-out infinite alternate;
+}
+.appt-orb-1 {
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(37,99,235,0.35), transparent 70%);
+    top: -120px;
+    right: -80px;
+}
+.appt-orb-2 {
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(6,182,212,0.25), transparent 70%);
+    bottom: -60px;
+    left: -60px;
+    animation-delay: -6s;
+}
+.appt-orb-3 {
+    width: 280px;
+    height: 280px;
+    background: radial-gradient(circle, rgba(99,102,241,0.22), transparent 70%);
+    top: 40%;
+    left: 45%;
+    animation-delay: -10s;
+}
+@keyframes apptOrbDrift {
+    from { transform: translate(0, 0) scale(1); }
+    to   { transform: translate(22px, 16px) scale(1.06); }
+}
+
+.appt-container {
+    position: relative;
+    z-index: 5;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+    animation: apptFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes apptFadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ═══════════════════════════════════════
+   HERO BANNER
+   ═══════════════════════════════════════ */
+.appt-hero {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, rgba(10,25,47,0.85) 0%, rgba(13,38,77,0.7) 50%, rgba(14,116,203,0.3) 100%);
+    border: 1px solid rgba(56, 189, 248, 0.22);
+    border-radius: 20px;
+    padding: 2.25rem 2.5rem;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+.appt-hero-glow {
+    position: absolute;
+    top: -50%;
+    right: 15%;
+    width: 350px;
+    height: 350px;
+    background: radial-gradient(circle, rgba(14,165,233,0.22), transparent 70%);
+    pointer-events: none;
+    border-radius: 50%;
+}
+
+.appt-hero-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+}
+.appt-hero-info {
+    max-width: 680px;
+}
+.appt-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #38bdf8;
+    background: rgba(56, 189, 248, 0.12);
+    border: 1px solid rgba(56, 189, 248, 0.28);
+    padding: 0.25rem 0.75rem;
+    border-radius: 99px;
+    margin-bottom: 0.65rem;
+}
+.appt-title {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #f8fafc;
+    margin: 0 0 0.4rem;
+    font-family: 'Poppins', sans-serif;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+}
+.appt-subtitle {
+    font-size: 0.92rem;
+    color: #94a3b8;
+    margin: 0;
+    line-height: 1.55;
+}
+
+.btn-book-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    background: linear-gradient(135deg, #2563eb 0%, #0ea5e9 100%);
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 0.94rem;
+    padding: 0.85rem 1.6rem;
+    border-radius: 12px;
+    text-decoration: none;
+    box-shadow: 0 4px 18px rgba(37, 99, 235, 0.45);
+    transition: all 0.22s ease;
+    white-space: nowrap;
+}
+.btn-book-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 26px rgba(14, 165, 233, 0.55);
+    color: #ffffff;
+}
+
+/* Metrics bar */
+.appt-metrics-bar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    flex-wrap: wrap;
+}
+.appt-metric-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 9px;
+    padding: 0.4rem 0.85rem;
+    font-size: 0.82rem;
+    color: #94a3b8;
+}
+.metric-text strong {
+    color: #f8fafc;
+    font-weight: 700;
+}
+.chip-privacy {
+    margin-left: auto;
+    background: rgba(16, 185, 129, 0.1);
+    border-color: rgba(16, 185, 129, 0.25);
+    color: #34d399;
+    font-weight: 600;
+}
+@media (max-width: 768px) {
+    .chip-privacy { margin-left: 0; }
+}
+
+/* ═══════════════════════════════════════
+   SECTION FOUNDATION
+   ═══════════════════════════════════════ */
+.appt-glass-card {
+    background: rgba(255, 255, 255, 0.035);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border-radius: 20px;
+    padding: 2rem 2.25rem;
+    transition: border-color 0.25s;
+}
+.appt-glass-card:hover {
+    border-color: rgba(56, 189, 248, 0.22);
+}
+
+.section-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.75rem;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+.section-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+.section-icon-wrap {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.icon-cyan   { background: rgba(6, 182, 212, 0.15); color: #38bdf8; border: 1px solid rgba(6, 182, 212, 0.25); }
+.icon-indigo { background: rgba(99, 102, 241, 0.15); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.25); }
+
+.section-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #f8fafc;
+    margin: 0 0 0.15rem;
+    font-family: 'Poppins', sans-serif;
+    letter-spacing: -0.01em;
+}
+.section-desc {
+    font-size: 0.84rem;
+    color: #94a3b8;
+    margin: 0;
+}
+
+.count-badge {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.76rem;
+    font-weight: 700;
+    padding: 0.35rem 0.85rem;
+    border-radius: 99px;
+}
+.count-cyan    { background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.3); color: #38bdf8; }
+.count-neutral { background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.12); color: #94a3b8; }
+
+/* ═══════════════════════════════════════
+   UPCOMING APPOINTMENTS GRID
+   ═══════════════════════════════════════ */
+.upcoming-cards-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.appt-card-item {
+    display: flex;
+    gap: 1.5rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 1.5rem;
+    align-items: center;
+    transition: all 0.22s ease;
+}
+.appt-card-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(56, 189, 248, 0.3);
+    transform: translateY(-2px);
+}
+@media (max-width: 680px) {
+    .appt-card-item { flex-direction: column; align-items: flex-start; }
+}
+
+.card-ribbon {
+    width: 95px;
+    height: 95px;
+    background: linear-gradient(135deg, #1e40af 0%, #0284c7 100%);
+    border-radius: 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    flex-shrink: 0;
+    box-shadow: 0 6px 18px rgba(37, 99, 235, 0.35);
+}
+.ribbon-mo {
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    color: #bae6fd;
+}
+.ribbon-dy {
+    font-size: 1.9rem;
+    font-weight: 800;
+    line-height: 1.05;
+    font-family: 'Poppins', sans-serif;
+}
+.ribbon-tm {
+    font-size: 0.7rem;
+    color: #e0f2fe;
+    font-weight: 600;
+}
+
+.card-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    width: 100%;
+}
+.card-content-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+.counselor-identity {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+}
+.counselor-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 11px;
+    background: linear-gradient(135deg, #0ea5e9, #2563eb);
+    color: #ffffff;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+.counselor-name {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #f8fafc;
+    margin: 0;
+}
+.counselor-dept {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    display: block;
+    margin-top: 0.1rem;
+}
+
+.status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.3rem 0.8rem;
+    border-radius: 99px;
+}
+.pill-confirmed {
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid rgba(16, 185, 129, 0.35);
+    color: #34d399;
+}
+.pill-pending {
+    background: rgba(245, 158, 11, 0.15);
+    border: 1px solid rgba(245, 158, 11, 0.35);
+    color: #fbbf24;
+}
+
+.appt-tags-row {
+    display: flex;
+    gap: 0.55rem;
+    flex-wrap: wrap;
+    margin-top: 0.15rem;
+}
+.tag-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 0.28rem 0.7rem;
+    border-radius: 8px;
+}
+.tag-date {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #cbd5e1;
+}
+.tag-concern {
+    background: rgba(37, 99, 235, 0.15);
+    border: 1px solid rgba(37, 99, 235, 0.3);
+    color: #93c5fd;
+}
+.tag-location {
+    background: rgba(6, 182, 212, 0.12);
+    border: 1px solid rgba(6, 182, 212, 0.25);
+    color: #67e8f9;
+}
+
+.appt-note-preview {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    background: rgba(56, 189, 248, 0.05);
+    border: 1px dashed rgba(56, 189, 248, 0.25);
+    border-radius: 10px;
+    padding: 0.55rem 0.85rem;
+    font-size: 0.82rem;
+    color: #cbd5e1;
+}
+
+.card-footer-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 0.85rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    margin-top: 0.25rem;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+.booked-date {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.78rem;
+    color: #64748b;
+}
+.btn-cancel-appt {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #fca5a5;
+    padding: 0.45rem 0.95rem;
+    border-radius: 9px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.18s;
+}
+.btn-cancel-appt:hover {
+    background: rgba(239, 68, 68, 0.25);
+    color: #ffffff;
+}
+
+/* Empty State */
+.appt-empty-state {
+    text-align: center;
+    padding: 3rem 1.5rem;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px dashed rgba(255, 255, 255, 0.12);
+    border-radius: 16px;
+}
+.empty-icon-circle {
+    width: 64px;
+    height: 64px;
+    border-radius: 18px;
+    background: rgba(56, 189, 248, 0.1);
+    border: 1px solid rgba(56, 189, 248, 0.25);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.15rem;
+}
+.empty-state-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #f8fafc;
+    margin: 0 0 0.5rem;
+}
+.empty-state-desc {
+    color: #94a3b8;
+    font-size: 0.9rem;
+    max-width: 520px;
+    margin: 0 auto 1.6rem;
+    line-height: 1.55;
+}
+.btn-book-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: linear-gradient(135deg, #2563eb 0%, #0ea5e9 100%);
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 0.94rem;
+    padding: 0.8rem 1.6rem;
+    border-radius: 12px;
+    text-decoration: none;
+    box-shadow: 0 4px 18px rgba(37, 99, 235, 0.45);
+    transition: all 0.22s ease;
+}
+.btn-book-cta:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 26px rgba(14, 165, 233, 0.55);
+    color: #ffffff;
+}
+
+/* ═══════════════════════════════════════
+   HISTORY TABLE
+   ═══════════════════════════════════════ */
+.history-table-wrapper {
+    overflow-x: auto;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.history-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+    color: #cbd5e1;
+}
+.history-table thead th {
+    background: rgba(255, 255, 255, 0.04);
+    padding: 0.95rem 1.25rem;
+    text-align: left;
+    font-size: 0.74rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #94a3b8;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.history-table tbody td {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    vertical-align: middle;
+}
+.history-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.td-datetime {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+}
+.td-datetime strong {
+    display: block;
+    color: #f8fafc;
+    font-size: 0.9rem;
+}
+.td-datetime span {
+    display: block;
+    font-size: 0.75rem;
+    color: #94a3b8;
+}
+
+.td-counselor {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    font-weight: 600;
+    color: #e2e8f0;
+}
+.csl-chip-avi {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #0ea5e9, #2563eb);
+    color: #ffffff;
+    font-size: 0.78rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.concern-pill {
+    display: inline-block;
+    padding: 0.25rem 0.65rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: rgba(37, 99, 235, 0.12);
+    border: 1px solid rgba(37, 99, 235, 0.25);
+    color: #93c5fd;
+}
+
+.appt-status-tag {
+    display: inline-block;
+    padding: 0.25rem 0.65rem;
+    border-radius: 99px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: capitalize;
+}
+.status-completed { background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); color: #34d399; }
+.status-cancelled { background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #fca5a5; }
+.status-pending   { background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3); color: #fbbf24; }
+
+.btn-rebook {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: #38bdf8;
+    font-weight: 600;
+    font-size: 0.84rem;
+    text-decoration: none;
+    transition: all 0.18s;
+}
+.btn-rebook:hover {
+    color: #7dd3fc;
+    transform: translateX(2px);
+}
+
+.history-empty-box {
+    text-align: center;
+    padding: 2.25rem 1.5rem;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px dashed rgba(255, 255, 255, 0.1);
+    border-radius: 14px;
+}
+.icon-circle-muted {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.empty-sub-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #e2e8f0;
+    margin: 0.65rem 0 0.25rem;
+}
+.empty-sub-desc {
+    font-size: 0.84rem;
+    color: #94a3b8;
+    max-width: 440px;
+    margin: 0 auto;
+    line-height: 1.5;
+}
+
+/* ═══════════════════════════════════════
+   INFO GRID (POLICIES & WELLNESS)
+   ═══════════════════════════════════════ */
+.appt-info-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+}
+@media (max-width: 880px) {
+    .appt-info-grid { grid-template-columns: 1fr; }
+}
+
+.info-card {
+    background: rgba(255, 255, 255, 0.035);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-radius: 18px;
+    padding: 1.5rem;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+}
+.info-icon-badge {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.info-cyan     { background: rgba(6, 182, 212, 0.15); color: #38bdf8; border: 1px solid rgba(6, 182, 212, 0.25); }
+.info-sapphire { background: rgba(37, 99, 235, 0.15); color: #60a5fa; border: 1px solid rgba(37, 99, 235, 0.25); }
+.info-emerald  { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.25); }
+
+.info-text-body h4 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #f8fafc;
+    margin: 0 0 0.35rem;
+}
+.info-text-body p {
+    font-size: 0.82rem;
+    color: #94a3b8;
+    margin: 0;
+    line-height: 1.5;
+}
+.info-anchor {
+    color: #38bdf8;
+    text-decoration: none;
+    font-weight: 600;
+}
+.info-anchor:hover {
+    text-decoration: underline;
+}
+
+/* Pulse dots */
+.pulse-dot-cyan {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #38bdf8;
+    box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.35);
+    animation: dotPulse 2s infinite;
+}
+.pulse-dot-emerald {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #34d399;
+    box-shadow: 0 0 0 2px rgba(52, 211, 153, 0.35);
+    animation: dotPulse 2s infinite;
+}
+.pulse-dot-green {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #34d399;
+    box-shadow: 0 0 0 2px rgba(52, 211, 153, 0.35);
+    animation: dotPulse 2s infinite;
+}
+.pulse-dot-amber {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #fbbf24;
+    box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.35);
+    animation: dotPulse 2s infinite;
+}
+@keyframes dotPulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%      { opacity: 0.5; transform: scale(0.85); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .appt-shell {
+        padding: 1.25rem 1rem 2.5rem;
+    }
+    .appt-hero {
+        padding: 1.5rem 1.25rem;
+    }
+    .appt-glass-card {
+        padding: 1.25rem 1.25rem;
+    }
+}
+</style>
 {% endblock %}

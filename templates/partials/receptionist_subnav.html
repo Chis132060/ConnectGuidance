@@ -1,3 +1,4 @@
-<a href="{% url 'receptionist_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'receptionist_dashboard' %}active{% endif %}">
-    <span>🛎️</span> Front Desk Booking
+<a href="{% url 'receptionist_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'receptionist_dashboard' %}active{% endif %}" data-tooltip="Front Desk Booking">
+    <i data-lucide="calendar-clock" class="nav-icon"></i>
+    <span class="nav-label">Front Desk Booking</span>
 </a>

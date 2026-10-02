@@ -1,3 +1,4 @@
-<a href="{% url 'counselor_workspace' %}" class="nav-link {% if request.resolver_match.url_name == 'counselor_workspace' or request.resolver_match.url_name == 'case_note' %}active{% endif %}">
-    <span>📋</span> Clinical Workspace
+<a href="{% url 'counselor_workspace' %}" class="nav-link {% if request.resolver_match.url_name == 'counselor_workspace' or request.resolver_match.url_name == 'case_note' %}active{% endif %}" data-tooltip="Clinical Workspace">
+    <i data-lucide="stethoscope" class="nav-icon"></i>
+    <span class="nav-label">Clinical Workspace</span>
 </a>

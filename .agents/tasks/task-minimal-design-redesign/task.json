@@ -1,0 +1,7 @@
+{
+  "task_id": "task-minimal-design-redesign",
+  "task_description": "Redesign all user-facing pages (landing, auth, student, counselor, admin, receptionist) with minimal, clean aesthetic — reduce visual complexity, maximize whitespace, simplify color palette, and create cohesive minimal design system",
+  "status": "pending",
+  "feature_order": ["FEAT-001", "FEAT-002"],
+  "blocked_reason": null
+}

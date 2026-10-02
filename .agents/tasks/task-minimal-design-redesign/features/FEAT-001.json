@@ -1,0 +1,29 @@
+{
+  "id": "FEAT-001",
+  "type": "refactor",
+  "description": "Create minimal design system in static/css/minimal.css with clean aesthetic: 2-color palette (primary #2563EB blue, neutral #64748B slate), single sans-serif font (Inter), generous whitespace (1.5-2rem spacing), flat design with subtle 1px borders, remove all gradients/glassmorphism/animations/orbs, unified minimal button/form/card styles, mobile-first responsive grid",
+  "status": "pending",
+  "steps": [
+    "Create static/css/minimal.css with minimal design tokens: --color-primary: #2563EB (blue), --color-text: #0F172A (slate-900), --color-muted: #64748B (slate-500), --color-bg: #F8FAFC (slate-50), --color-surface: #FFFFFF, --color-border: #E2E8F0 (slate-200), --spacing-xs: 0.5rem, --spacing-sm: 1rem, --spacing-md: 1.5rem, --spacing-lg: 2rem, --spacing-xl: 3rem, --radius: 8px, --font-sans: 'Inter', system-ui, sans-serif",
+    "Define minimal component styles in minimal.css: .btn-minimal (flat design, 1px border, no shadows, hover: subtle background change), .card-minimal (white background, 1px border, 8px radius, 1.5rem padding, no shadows), .form-input-minimal (1px border, 8px radius, clean focus state with primary color border only), .alert-minimal (flat colored backgrounds, no icons, simple text)",
+    "Add responsive grid utilities: .container-minimal (max-width: 1200px, padding: 2rem, margin: 0 auto), .grid-minimal-2, .grid-minimal-3, .grid-minimal-4 with mobile breakpoints collapsing to single column",
+    "Remove all CSS animations, transitions, gradients, box-shadows (except focus states), backdrop-filters, glassmorphism effects, animated orbs, pulse animations, gradient text, and complex hover effects",
+    "Preserve base.html structure but simplify sidebar: remove gradient brand icon, remove sidebar collapse animation, flat navigation with simple hover states, remove user avatar gradients",
+    "Update base.html <head> to load minimal.css instead of app.css: <link rel='stylesheet' href='{% static \"css/minimal.css\" %}'>"
+  ],
+  "acceptance_criteria": [
+    "minimal.css exists with complete minimal design system (colors, spacing, typography, components)",
+    "All visual complexity removed: no gradients, no shadows (except :focus), no animations, no glassmorphism",
+    "Color palette limited to 2 colors: primary blue (#2563EB) and neutral slate shades",
+    "Typography unified to single sans-serif font family (Inter)",
+    "Component styles are flat, clean, and consistent across buttons, forms, cards, alerts",
+    "base.html loads minimal.css successfully"
+  ],
+  "verification": [
+    "Run python manage.py check → 0 issues",
+    "Inspect static/css/minimal.css → confirm design tokens defined, no gradients/animations in any rule",
+    "Run python manage.py runserver and visit any page → verify minimal.css loads, no 404 errors in browser console"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

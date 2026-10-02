@@ -1,144 +1,627 @@
 {% extends "base.html" %}
+{% block page_title %}Book a Session{% endblock %}
 
 {% block title %}Book Counseling Session — ConnectGuidance{% endblock %}
 {% block meta_description %}Select a counselor and choose an available date and time slot for your guidance appointment.{% endblock %}
 
 {% block content %}
-<div class="booking-container" style="max-width: 800px; margin: 2rem auto; padding: 0 1rem;">
-    <div style="margin-bottom: 2rem;">
-        <a href="{% url 'student_appointments' %}" style="color: #64748b; text-decoration: none; font-size: 0.9rem;">&larr; Back to Appointments</a>
-        <h1 style="font-size: 1.75rem; font-weight: 700; color: #1e293b; margin-top: 0.5rem;">Book a Guidance Session</h1>
-        <p style="color: #64748b; font-size: 0.95rem;">Select your preferred counselor, pick a date to see available time slots, and describe your concern.</p>
-    </div>
 
-    <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-        <form method="POST" action="{% url 'student_book_appointment' %}" id="booking-form">
-            {% csrf_token %}
+<style>
+/* ═══════════════════════════════════════════════════════
+   BOOK APPOINTMENT — Premium Redesign (Amethyst · Violet · Dark)
+   ═══════════════════════════════════════════════════════ */
 
-            <!-- Step 1: Select Counselor -->
-            <div style="margin-bottom: 1.5rem;">
-                <label for="counselor_select" style="display: block; font-weight: 600; color: #334155; margin-bottom: 0.5rem;">1. Select Counselor</label>
-                <select id="counselor_select" class="form-select" style="width: 100%; padding: 0.6rem; border: 1px solid #cbd5e1; border-radius: 6px;" required>
-                    <option value="">-- Choose a counselor --</option>
-                    {% for c in counselors %}
-                    <option value="{{ c.id }}">{{ c.full_name }} ({{ c.department|default:"Guidance & Counseling" }})</option>
-                    {% endfor %}
-                </select>
-                <input type="hidden" name="counselor_id" id="booking-counselor-id">
+.bk-shell {
+    min-height: 100%;
+    background: linear-gradient(140deg, #020817 0%, #0a1628 40%, #061022 70%, #0d1f3c 100%);
+    padding: 2rem 1.5rem 4rem;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Ambient blobs */
+.bk-blob {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(90px);
+    opacity: 0.35;
+    pointer-events: none;
+    animation: bkBlobDrift 14s ease-in-out infinite alternate;
+}
+.bk-blob-1 { width: 480px; height: 480px; background: radial-gradient(circle, rgba(37,99,235,0.4), transparent 70%); top: -150px; left: -100px; }
+.bk-blob-2 { width: 340px; height: 340px; background: radial-gradient(circle, rgba(6,182,212,0.3), transparent 70%); bottom: -80px; right: -60px; animation-delay: -5s; }
+.bk-blob-3 { width: 240px; height: 240px; background: radial-gradient(circle, rgba(99,102,241,0.3), transparent 70%); top: 40%; left: 60%; animation-delay: -9s; }
+@keyframes bkBlobDrift {
+    from { transform: translate(0, 0) scale(1); }
+    to   { transform: translate(30px, 20px) scale(1.06); }
+}
+
+/* ── Page wrapper ── */
+.bk-wrap {
+    position: relative;
+    z-index: 10;
+    max-width: 720px;
+    margin: 0 auto;
+    animation: bkFadeIn 0.5s cubic-bezier(0.22,1,0.36,1) both;
+}
+@keyframes bkFadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Header row ── */
+.bk-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+.bk-back {
+    color: rgba(196,181,253,0.6);
+    text-decoration: none;
+    font-size: 0.82rem;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-top: 0.35rem;
+    transition: color 0.2s;
+    white-space: nowrap;
+}
+.bk-back:hover { color: #c4b5fd; }
+.bk-title-block h1 {
+    margin: 0;
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1.2;
+}
+.bk-title-block p {
+    margin: 0.35rem 0 0;
+    font-size: 0.85rem;
+    color: rgba(196,181,253,0.6);
+    line-height: 1.5;
+}
+
+/* ── Step Progress Bar ── */
+.bk-steps {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 2rem;
+}
+.bk-step {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    flex: 1;
+    position: relative;
+}
+.bk-step:not(:last-child)::after {
+    content: '';
+    flex: 1;
+    height: 2px;
+    background: rgba(255,255,255,0.1);
+    margin: 0 0.4rem;
+    border-radius: 2px;
+    transition: background 0.4s;
+}
+.bk-step.done::after { background: rgba(139,92,246,0.55); }
+.bk-step-num {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.78rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    border: 2px solid rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.35);
+    background: rgba(255,255,255,0.05);
+    transition: all 0.3s;
+}
+.bk-step.active .bk-step-num {
+    background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+    border-color: transparent;
+    color: #fff;
+    box-shadow: 0 0 14px rgba(139,92,246,0.6);
+}
+.bk-step.done .bk-step-num {
+    background: rgba(139,92,246,0.25);
+    border-color: rgba(139,92,246,0.5);
+    color: #c4b5fd;
+}
+.bk-step-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: rgba(255,255,255,0.3);
+    white-space: nowrap;
+    transition: color 0.3s;
+}
+.bk-step.active .bk-step-label { color: #c4b5fd; }
+.bk-step.done  .bk-step-label  { color: rgba(196,181,253,0.55); }
+
+/* ── Glass Card ── */
+.bk-card {
+    background: rgba(255,255,255,0.055);
+    border: 1px solid rgba(255,255,255,0.11);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.35);
+}
+
+/* ── Section Labels ── */
+.bk-section {
+    margin-bottom: 1.75rem;
+}
+.bk-section:last-of-type { margin-bottom: 0; }
+
+.bk-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: rgba(196,181,253,0.75);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.65rem;
+}
+.bk-label-num {
+    width: 22px; height: 22px;
+    background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+}
+
+/* ── Inputs ── */
+.bk-select,
+.bk-date-input,
+.bk-textarea,
+.bk-concern-select {
+    width: 100%;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.13);
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+    color: #f1f5f9;
+    font-size: 0.92rem;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    box-sizing: border-box;
+    appearance: none;
+    -webkit-appearance: none;
+}
+.bk-select:focus,
+.bk-date-input:focus,
+.bk-textarea:focus,
+.bk-concern-select:focus {
+    border-color: rgba(139,92,246,0.55);
+    box-shadow: 0 0 0 3px rgba(139,92,246,0.15);
+    background: rgba(139,92,246,0.08);
+}
+.bk-select option,
+.bk-concern-select option {
+    background: #1e1a3c;
+    color: #f1f5f9;
+}
+.bk-select:invalid,
+.bk-select option[value=""] { color: rgba(148,163,184,0.55); }
+
+/* Date input — style the calendar icon */
+.bk-date-input::-webkit-calendar-picker-indicator {
+    filter: invert(0.6) sepia(1) hue-rotate(240deg) saturate(2);
+    cursor: pointer;
+}
+
+.bk-textarea {
+    resize: vertical;
+    min-height: 90px;
+    line-height: 1.55;
+}
+
+/* Counselor select wrapper with icon */
+.bk-select-wrap {
+    position: relative;
+}
+.bk-select-wrap::after {
+    content: '';
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 10px; height: 10px;
+    border-right: 2px solid rgba(196,181,253,0.5);
+    border-bottom: 2px solid rgba(196,181,253,0.5);
+    transform: translateY(-65%) rotate(45deg);
+    pointer-events: none;
+}
+
+/* Two-column row for counselor + date */
+.bk-two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+}
+@media (max-width: 580px) {
+    .bk-two-col { grid-template-columns: 1fr; }
+}
+
+/* ── Time Slots ── */
+#bkSlotsSection {
+    display: none;
+    animation: bkFadeIn 0.35s ease both;
+}
+.bk-slots-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 0.6rem;
+}
+.bk-slot-btn {
+    padding: 0.6rem 0.5rem;
+    border-radius: 10px;
+    font-size: 0.83rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    border: 1px solid rgba(255,255,255,0.14);
+    background: rgba(255,255,255,0.06);
+    color: #e2e8f0;
+    transition: all 0.2s;
+}
+.bk-slot-btn:hover:not(:disabled) {
+    background: rgba(139,92,246,0.2);
+    border-color: rgba(139,92,246,0.45);
+    transform: translateY(-1px);
+}
+.bk-slot-btn.selected {
+    background: linear-gradient(135deg, #8b5cf6, #6d28d9) !important;
+    border-color: transparent !important;
+    color: #fff !important;
+    box-shadow: 0 4px 14px rgba(109,40,217,0.45);
+    transform: translateY(-1px);
+}
+.bk-slot-btn:disabled {
+    background: rgba(255,255,255,0.03);
+    border-color: rgba(255,255,255,0.06);
+    color: rgba(148,163,184,0.35);
+    cursor: not-allowed;
+    text-decoration: line-through;
+}
+.bk-slots-loading {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: rgba(196,181,253,0.6);
+    font-size: 0.85rem;
+    padding: 0.5rem 0;
+}
+.bk-slots-dot {
+    width: 6px; height: 6px;
+    background: #a78bfa;
+    border-radius: 50%;
+    animation: dotBounce 1.1s ease-in-out infinite;
+}
+.bk-slots-dot:nth-child(2) { animation-delay: 0.18s; }
+.bk-slots-dot:nth-child(3) { animation-delay: 0.36s; }
+@keyframes dotBounce {
+    0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+    40%            { transform: translateY(-5px); opacity: 1; }
+}
+
+/* Divider */
+.bk-divider {
+    border: none;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    margin: 1.75rem 0;
+}
+
+/* ── Submit Button ── */
+.bk-submit {
+    width: 100%;
+    padding: 0.9rem;
+    background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(109,40,217,0.45);
+    transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    letter-spacing: 0.01em;
+}
+.bk-submit:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(109,40,217,0.55); }
+.bk-submit:active { transform: translateY(0); }
+.bk-submit svg { width: 18px; height: 18px; }
+
+/* Override Django form widget styles */
+#id_concern_type,
+#id_notes {
+    width: 100%;
+    background: rgba(255,255,255,0.07) !important;
+    border: 1px solid rgba(255,255,255,0.13) !important;
+    border-radius: 12px !important;
+    padding: 0.75rem 1rem !important;
+    color: #f1f5f9 !important;
+    font-size: 0.92rem !important;
+    font-family: inherit !important;
+    outline: none !important;
+    transition: border-color 0.2s, box-shadow 0.2s !important;
+    box-sizing: border-box !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+}
+#id_concern_type:focus,
+#id_notes:focus {
+    border-color: rgba(139,92,246,0.55) !important;
+    box-shadow: 0 0 0 3px rgba(139,92,246,0.15) !important;
+    background: rgba(139,92,246,0.08) !important;
+}
+#id_concern_type option { background: #1e1a3c; color: #f1f5f9; }
+#id_notes { resize: vertical; min-height: 90px; line-height: 1.55; }
+
+/* ── Messages / alerts ── */
+.bk-alerts { margin-bottom: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem; }
+.bk-alert {
+    padding: 0.7rem 1rem;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    display: flex; align-items: center; gap: 0.5rem;
+}
+.bk-alert-success { background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.28); color: #6ee7b7; }
+.bk-alert-error   { background: rgba(239,68,68,0.12);  border: 1px solid rgba(239,68,68,0.28);  color: #fca5a5; }
+.bk-alert-info    { background: rgba(139,92,246,0.12); border: 1px solid rgba(139,92,246,0.28); color: #c4b5fd; }
+</style>
+
+<div class="bk-shell">
+    <!-- Ambient blobs -->
+    <div class="bk-blob bk-blob-1"></div>
+    <div class="bk-blob bk-blob-2"></div>
+    <div class="bk-blob bk-blob-3"></div>
+
+    <div class="bk-wrap">
+
+        <!-- Header -->
+        <div class="bk-header">
+            <a href="{% url 'student_appointments' %}" class="bk-back">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+                Appointments
+            </a>
+            <div class="bk-title-block">
+                <h1>Book a Guidance Session</h1>
+                <p>Select your preferred counselor, pick a date &amp; time slot, and share your concern.</p>
             </div>
+        </div>
 
-            <!-- Step 2: Select Date -->
-            <div style="margin-bottom: 1.5rem;">
-                <label for="date_select" style="display: block; font-weight: 600; color: #334155; margin-bottom: 0.5rem;">2. Select Date</label>
-                <input type="date" id="date_select" style="width: 100%; padding: 0.6rem; border: 1px solid #cbd5e1; border-radius: 6px;" required>
+        <!-- Step progress -->
+        <div class="bk-steps" id="bkSteps">
+            <div class="bk-step active" id="step1">
+                <div class="bk-step-num">1</div>
+                <div class="bk-step-label">Counselor</div>
             </div>
-
-            <!-- Slots loading / display -->
-            <div id="slots-section" style="margin-bottom: 1.5rem; display: none;">
-                <label style="display: block; font-weight: 600; color: #334155; margin-bottom: 0.5rem;">3. Available Hourly Slots (09:00 AM – 04:00 PM)</label>
-                <div id="slots-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 0.5rem;"></div>
-                <input type="hidden" name="scheduled_at" id="booking-scheduled-at">
+            <div class="bk-step" id="step2">
+                <div class="bk-step-num">2</div>
+                <div class="bk-step-label">Date &amp; Time</div>
             </div>
-
-            <!-- Step 3: Concern Type & Notes -->
-            <div style="margin-bottom: 1.5rem;">
-                <label for="id_concern_type" style="display: block; font-weight: 600; color: #334155; margin-bottom: 0.5rem;">4. Primary Concern</label>
-                {{ form.concern_type }}
+            <div class="bk-step" id="step3">
+                <div class="bk-step-num">3</div>
+                <div class="bk-step-label">Details</div>
             </div>
-
-            <div style="margin-bottom: 2rem;">
-                <label for="id_notes" style="display: block; font-weight: 600; color: #334155; margin-bottom: 0.5rem;">5. Notes or Expectations (Optional)</label>
-                {{ form.notes }}
+            <div class="bk-step" id="step4">
+                <div class="bk-step-num">4</div>
+                <div class="bk-step-label">Confirm</div>
             </div>
+        </div>
 
-            <button type="submit" id="submit-booking-btn" style="width: 100%; background: #2563eb; color: #fff; padding: 0.75rem; border: none; border-radius: 6px; font-size: 1rem; font-weight: 600; cursor: pointer;">
-                Confirm & Request Session
-            </button>
-        </form>
-    </div>
-</div>
+        {% if messages %}
+        <div class="bk-alerts">
+            {% for message in messages %}
+            <div class="bk-alert bk-alert-{{ message.tags|default:'info' }}">
+                {% if message.tags == 'success' %}
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                {% elif message.tags == 'error' %}
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+                {% else %}
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                {% endif %}
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Glass card -->
+        <div class="bk-card">
+            <form method="POST" action="{% url 'student_book_appointment' %}" id="bookingForm">
+                {% csrf_token %}
+
+                <!-- Row: Counselor + Date -->
+                <div class="bk-two-col">
+                    <!-- 1. Counselor -->
+                    <div class="bk-section">
+                        <div class="bk-label">
+                            <div class="bk-label-num">1</div>
+                            Select Counselor
+                        </div>
+                        <div class="bk-select-wrap">
+                            <select id="counselorSelect" class="bk-select" required>
+                                <option value="" disabled selected>Choose a counselor…</option>
+                                {% for c in counselors %}
+                                <option value="{{ c.id }}">{{ c.full_name }}{% if c.department %} · {{ c.department }}{% endif %}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <input type="hidden" name="counselor_id" id="bkCounselorId">
+                    </div>
+
+                    <!-- 2. Date -->
+                    <div class="bk-section">
+                        <div class="bk-label">
+                            <div class="bk-label-num">2</div>
+                            Pick a Date
+                        </div>
+                        <input type="date" id="dateSelect" class="bk-date-input" required>
+                    </div>
+                </div>
+
+                <!-- 3. Time Slots -->
+                <div class="bk-section" id="bkSlotsSection">
+                    <div class="bk-label">
+                        <div class="bk-label-num">3</div>
+                        Available Time Slots
+                        <span style="font-size:0.7rem; color: rgba(148,163,184,0.5); font-weight:400; text-transform:none; letter-spacing:0;">09:00 AM – 04:00 PM</span>
+                    </div>
+                    <div id="bkSlotsContainer" class="bk-slots-grid"></div>
+                    <input type="hidden" name="scheduled_at" id="bkScheduledAt">
+                </div>
+
+                <hr class="bk-divider">
+
+                <!-- 4. Concern Type -->
+                <div class="bk-section">
+                    <div class="bk-label">
+                        <div class="bk-label-num">4</div>
+                        Primary Concern
+                    </div>
+                    {{ form.concern_type }}
+                </div>
+
+                <!-- 5. Notes -->
+                <div class="bk-section">
+                    <div class="bk-label">
+                        <div class="bk-label-num">5</div>
+                        Notes or Expectations
+                        <span style="font-size:0.7rem; color: rgba(148,163,184,0.4); font-weight:400; text-transform:none; letter-spacing:0;">Optional</span>
+                    </div>
+                    {{ form.notes }}
+                </div>
+
+                <hr class="bk-divider">
+
+                <!-- Submit -->
+                <button type="submit" id="submitBtn" class="bk-submit">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5"/></svg>
+                    Confirm &amp; Request Session
+                </button>
+            </form>
+        </div>
+
+    </div><!-- /bk-wrap -->
+</div><!-- /bk-shell -->
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const counselorSelect = document.getElementById('counselor_select');
-    const dateSelect = document.getElementById('date_select');
-    const slotsSection = document.getElementById('slots-section');
-    const slotsContainer = document.getElementById('slots-container');
-    const hiddenCounselorId = document.getElementById('booking-counselor-id');
-    const hiddenScheduledAt = document.getElementById('booking-scheduled-at');
+(function () {
+    'use strict';
 
-    // Default min date to tomorrow
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    dateSelect.min = tomorrow.toISOString().split('T')[0];
+    const counselorEl  = document.getElementById('counselorSelect');
+    const dateEl       = document.getElementById('dateSelect');
+    const slotsSection = document.getElementById('bkSlotsSection');
+    const slotsGrid    = document.getElementById('bkSlotsContainer');
+    const hiddenCounselor = document.getElementById('bkCounselorId');
+    const hiddenTime   = document.getElementById('bkScheduledAt');
+
+    // Step indicators
+    const steps = {
+        1: document.getElementById('step1'),
+        2: document.getElementById('step2'),
+        3: document.getElementById('step3'),
+        4: document.getElementById('step4'),
+    };
+
+    function markStep(n) {
+        for (let i = 1; i <= 4; i++) {
+            steps[i].classList.remove('active', 'done');
+            if (i < n)  steps[i].classList.add('done');
+            if (i === n) steps[i].classList.add('active');
+        }
+    }
+
+    // Min date = tomorrow
+    const tmr = new Date();
+    tmr.setDate(tmr.getDate() + 1);
+    dateEl.min = tmr.toISOString().split('T')[0];
 
     async function fetchSlots() {
-        const counselorId = counselorSelect.value;
-        const dateStr = dateSelect.value;
-        hiddenCounselorId.value = counselorId;
+        const cid  = counselorEl.value;
+        const date = dateEl.value;
+        hiddenCounselor.value = cid;
 
-        if (!counselorId || !dateStr) {
+        if (!cid || !date) {
             slotsSection.style.display = 'none';
+            markStep(cid ? 2 : 1);
             return;
         }
 
         slotsSection.style.display = 'block';
-        slotsContainer.innerHTML = '<p style="color: #64748b;">Loading available slots...</p>';
+        markStep(3);
+        slotsGrid.innerHTML = `
+            <div class="bk-slots-loading">
+                <div class="bk-slots-dot"></div>
+                <div class="bk-slots-dot"></div>
+                <div class="bk-slots-dot"></div>
+                <span>Loading available slots…</span>
+            </div>`;
 
         try {
-            const resp = await fetch(`/appointments/slots/?counselor_id=${counselorId}&date=${dateStr}`);
+            const resp = await fetch(`/appointments/slots/?counselor_id=${cid}&date=${date}`);
             const data = await resp.json();
 
             if (!resp.ok) {
-                slotsContainer.innerHTML = `<p style="color: #ef4444;">${data.error || 'Failed to load slots.'}</p>`;
+                slotsGrid.innerHTML = `<p style="color:#f87171; font-size:0.85rem;">${data.error || 'Failed to load slots.'}</p>`;
                 return;
             }
 
-            slotsContainer.innerHTML = '';
+            slotsGrid.innerHTML = '';
             if (!data.slots || data.slots.length === 0) {
-                slotsContainer.innerHTML = '<p style="color: #64748b;">No slots available for this date.</p>';
+                slotsGrid.innerHTML = '<p style="color:rgba(196,181,253,0.5); font-size:0.85rem;">No slots available for this date. Try another day.</p>';
                 return;
             }
 
-            data.slots.forEach(slot => {
+            data.slots.forEach((slot, idx) => {
                 const btn = document.createElement('button');
                 btn.type = 'button';
+                btn.className = 'bk-slot-btn';
                 btn.textContent = slot.formatted_time;
-                btn.style.cssText = 'padding: 0.5rem; border-radius: 6px; font-size: 0.9rem; font-weight: 500; cursor: pointer; text-align: center; border: 1px solid #cbd5e1;';
+                btn.style.animationDelay = (idx * 0.04) + 's';
+                btn.style.animation = 'bkFadeIn 0.3s ease both';
 
                 if (slot.is_available) {
-                    btn.style.background = '#f8fafc';
-                    btn.style.color = '#1e293b';
-                    btn.onclick = () => {
-                        document.querySelectorAll('#slots-container button').forEach(b => {
-                            if (b.dataset.available === 'true') {
-                                b.style.background = '#f8fafc';
-                                b.style.borderColor = '#cbd5e1';
-                                b.style.color = '#1e293b';
-                            }
-                        });
-                        btn.style.background = '#2563eb';
-                        btn.style.borderColor = '#1d4ed8';
-                        btn.style.color = '#ffffff';
-                        hiddenScheduledAt.value = slot.iso.slice(0, 16);
-                    };
                     btn.dataset.available = 'true';
+                    btn.onclick = () => {
+                        document.querySelectorAll('.bk-slot-btn[data-available="true"]')
+                            .forEach(b => b.classList.remove('selected'));
+                        btn.classList.add('selected');
+                        hiddenTime.value = slot.iso.slice(0, 16);
+                        markStep(4);
+                    };
                 } else {
                     btn.disabled = true;
-                    btn.style.background = '#f1f5f9';
-                    btn.style.color = '#94a3b8';
-                    btn.style.cursor = 'not-allowed';
                     btn.title = slot.is_taken ? 'Already booked' : 'Past slot';
                 }
-                slotsContainer.appendChild(btn);
+
+                slotsGrid.appendChild(btn);
             });
+
         } catch (err) {
-            slotsContainer.innerHTML = '<p style="color: #ef4444;">Error fetching availability.</p>';
+            slotsGrid.innerHTML = '<p style="color:#f87171; font-size:0.85rem;">Error fetching availability. Please try again.</p>';
         }
     }
 
-    counselorSelect.addEventListener('change', fetchSlots);
-    dateSelect.addEventListener('change', fetchSlots);
-});
+    counselorEl.addEventListener('change', fetchSlots);
+    dateEl.addEventListener('change', fetchSlots);
+
+    // Initial step state
+    markStep(1);
+})();
 </script>
+
 {% endblock %}

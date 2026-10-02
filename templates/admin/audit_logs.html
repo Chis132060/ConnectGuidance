@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% block page_title %}Audit Logs{% endblock %}
 
 {% block title %}System Audit Logs — ConnectGuidance Admin{% endblock %}
 {% block meta_description %}Immutable audit log trails of user actions and security events.{% endblock %}
@@ -10,8 +11,9 @@
             <h1 style="font-size: 1.75rem; font-weight: 700; color: #1e293b; margin: 0;">System Audit Logs</h1>
             <p style="color: #64748b; font-size: 0.95rem; margin-top: 0.25rem;">Immutable compliance logs of appointment operations, authentication events, and clinical note modifications.</p>
         </div>
-        <a href="?action={{ action_filter }}&table={{ table_filter }}&export=true" class="btn btn-secondary">
-            📥 Export CSV
+        <a href="?action={{ action_filter }}&table={{ table_filter }}&export=true" class="btn btn-secondary" style="display:inline-flex;align-items:center;gap:0.45rem;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            Export CSV
         </a>
     </div>
 

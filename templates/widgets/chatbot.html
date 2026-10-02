@@ -1,51 +1,76 @@
-<!-- Floating AI Chatbot Widget Overlay (Stitch Token Styling) -->
+<!-- Floating AI Chatbot Widget Overlay (Sapphire Ocean Styling & SVG Icons) -->
 <div id="cg-chatbot-widget" style="position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 999; font-family: 'Inter', sans-serif;">
-    <!-- Amber Floating Action Button (FAB) -->
-    <button id="cg-chat-fab" style="width: 56px; height: 56px; border-radius: 50%; background: #b45309; color: #ffffff; border: none; box-shadow: 0 4px 14px rgba(180, 83, 9, 0.4); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; transition: transform 0.2s ease;" title="Ask AI Guidance Assistant">
-        💬
+    <!-- Sapphire Oceanic Floating Action Button (FAB) -->
+    <button id="cg-chat-fab" style="width: 58px; height: 58px; border-radius: 50%; background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%); color: #ffffff; border: 1.5px solid rgba(255,255,255,0.3); box-shadow: 0 8px 24px rgba(14, 165, 233, 0.45); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);" title="Ask AI Guidance Assistant">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            <path d="M8 10h.01"></path>
+            <path d="M12 10h.01"></path>
+            <path d="M16 10h.01"></path>
+        </svg>
     </button>
 
-    <!-- Overlay Panel (380x560, radius 16px) -->
-    <div id="cg-chat-panel" style="display: none; width: 380px; height: 560px; background: #ffffff; border-radius: 16px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.15), 0 8px 10px -6px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; flex-direction: column; overflow: hidden; position: absolute; bottom: 70px; right: 0;">
+    <!-- Overlay Panel (380x560, radius 18px) -->
+    <div id="cg-chat-panel" style="display: none; width: 380px; height: 560px; background: #0a1628; border-radius: 18px; box-shadow: 0 20px 45px -10px rgba(0,0,0,0.6), 0 0 0 1px rgba(56, 189, 248, 0.25); flex-direction: column; overflow: hidden; position: absolute; bottom: 72px; right: 0; backdrop-filter: blur(20px);">
         <!-- Header -->
-        <div style="background: #0f172a; color: #ffffff; padding: 0.85rem 1rem; display: flex; justify-content: space-between; align-items: center;">
-            <div style="display: flex; align-items: center; gap: 0.5rem;">
-                <div style="width: 10px; height: 10px; border-radius: 50%; background: #22c55e;"></div>
+        <div style="background: linear-gradient(135deg, #0d234a 0%, #091528 100%); color: #ffffff; padding: 0.9rem 1.1rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(56, 189, 248, 0.2);">
+            <div style="display: flex; align-items: center; gap: 0.65rem;">
+                <div style="position: relative; width: 10px; height: 10px;">
+                    <div style="width: 10px; height: 10px; border-radius: 50%; background: #34d399;"></div>
+                    <div style="position: absolute; inset: -2px; border-radius: 50%; background: rgba(52, 211, 153, 0.4); animation: pulseDot 2s infinite;"></div>
+                </div>
                 <div>
-                    <strong style="font-size: 0.9rem; display: block;">Guidance Assistant</strong>
-                    <span style="font-size: 0.75rem; color: #94a3b8;">Online &bull; 24/7 Support</span>
+                    <strong style="font-size: 0.92rem; display: flex; align-items: center; gap: 0.35rem; color: #f8fafc; font-weight: 700;">
+                        Guidance Assistant
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.5"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+                    </strong>
+                    <span style="font-size: 0.73rem; color: #94a3b8;">Online &bull; 24/7 Confidential Support</span>
                 </div>
             </div>
-            <div style="display: flex; gap: 0.5rem;">
-                <button id="cg-chat-reset" style="background: transparent; border: none; color: #94a3b8; font-size: 0.8rem; cursor: pointer;" title="New Conversation">🔄</button>
-                <button id="cg-chat-close" style="background: transparent; border: none; color: #94a3b8; font-size: 1.1rem; cursor: pointer;" title="Minimize">&times;</button>
+            <div style="display: flex; gap: 0.45rem; align-items: center;">
+                <button id="cg-chat-reset" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #cbd5e1; width: 28px; height: 28px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;" title="New Conversation">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path><path d="M8 16H3v5"></path></svg>
+                </button>
+                <button id="cg-chat-close" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #cbd5e1; width: 28px; height: 28px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;" title="Minimize">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
             </div>
         </div>
 
         <!-- Crisis Disclaimer (Dismissible) -->
-        <div id="cg-crisis-banner" style="background: #fef2f2; border-bottom: 1px solid #fee2e2; padding: 0.5rem 0.75rem; font-size: 0.75rem; color: #991b1b; display: flex; justify-content: space-between; align-items: center;">
-            <span>Crisis? Call/Text <strong>988</strong> anytime for 24/7 immediate help.</span>
-            <button onclick="document.getElementById('cg-crisis-banner').style.display='none'" style="background: none; border: none; color: #991b1b; cursor: pointer; font-size: 0.9rem;">&times;</button>
+        <div id="cg-crisis-banner" style="background: rgba(239, 68, 68, 0.12); border-bottom: 1px solid rgba(239, 68, 68, 0.25); padding: 0.55rem 0.85rem; font-size: 0.74rem; color: #fca5a5; display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 0.45rem;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                <span>Crisis? Call/Text <strong style="color: #fecaca;">988</strong> for 24/7 immediate help.</span>
+            </div>
+            <button onclick="document.getElementById('cg-crisis-banner').style.display='none'" style="background: none; border: none; color: #fca5a5; cursor: pointer; display: flex; align-items: center; padding: 2px;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
         </div>
 
         <!-- Booking CTA Card (hidden by default) -->
-        <div id="cg-widget-cta" style="display: none; background: #eff6ff; border-bottom: 1px solid #bfdbfe; padding: 0.6rem 0.85rem; font-size: 0.8rem; color: #1e40af; justify-content: space-between; align-items: center;">
-            <span>Would you like to book a guidance session?</span>
-            <a href="{% url 'student_book_appointment' %}" style="background: #2563eb; color: #fff; padding: 0.25rem 0.5rem; border-radius: 4px; text-decoration: none; font-weight: 600; font-size: 0.75rem;">Book</a>
+        <div id="cg-widget-cta" style="display: none; background: rgba(56, 189, 248, 0.1); border-bottom: 1px solid rgba(56, 189, 248, 0.25); padding: 0.65rem 0.95rem; font-size: 0.78rem; color: #bae6fd; justify-content: space-between; align-items: center;">
+            <span>Would you like to book a session with a counselor?</span>
+            <a href="{% url 'student_book_appointment' %}" style="background: linear-gradient(135deg, #2563eb, #0ea5e9); color: #fff; padding: 0.3rem 0.75rem; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 0.74rem; box-shadow: 0 2px 8px rgba(37,99,235,0.4); display: inline-flex; align-items: center; gap: 0.3rem;">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect><line x1="16" x2="16" y1="2" y2="6"></line><line x1="8" x2="8" y1="2" y2="6"></line><line x1="3" x2="21" y1="10" y2="10"></line></svg>
+                Book
+            </a>
         </div>
 
         <!-- Messages Area -->
-        <div id="cg-widget-messages" style="flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem; background: #f8fafc;">
-            <div style="align-self: flex-start; max-width: 85%; background: #ffffff; border: 1px solid #e2e8f0; padding: 0.65rem 0.85rem; border-radius: 12px; font-size: 0.85rem; color: #334155; line-height: 1.4;">
+        <div id="cg-widget-messages" style="flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem; background: #061022;">
+            <div style="align-self: flex-start; max-width: 85%; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); padding: 0.75rem 0.95rem; border-radius: 14px; font-size: 0.85rem; color: #f1f5f9; line-height: 1.45;">
                 Hi there! How can I assist your academic or personal wellness today?
             </div>
         </div>
 
         <!-- Composer -->
-        <div style="border-top: 1px solid #e2e8f0; padding: 0.75rem; background: #ffffff;">
-            <form id="cg-widget-form" style="display: flex; gap: 0.5rem;">
-                <input type="text" id="cg-widget-input" placeholder="Type a message..." style="flex: 1; padding: 0.5rem 0.75rem; border: 1px solid #cbd5e1; border-radius: 20px; font-size: 0.85rem; outline: none;" autocomplete="off" required>
-                <button type="submit" id="cg-widget-send" style="background: #b45309; color: #ffffff; border: none; width: 34px; height: 34px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.85rem;">➔</button>
+        <div style="border-top: 1px solid rgba(255, 255, 255, 0.09); padding: 0.8rem; background: #0a1628;">
+            <form id="cg-widget-form" style="display: flex; gap: 0.55rem; align-items: center;">
+                <input type="text" id="cg-widget-input" placeholder="Type a message..." style="flex: 1; padding: 0.6rem 0.95rem; background: rgba(2, 8, 23, 0.7); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 99px; font-size: 0.84rem; color: #f8fafc; outline: none; transition: border-color 0.2s;" autocomplete="off" required>
+                <button type="submit" id="cg-widget-send" style="background: linear-gradient(135deg, #2563eb 0%, #0ea5e9 100%); color: #ffffff; border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(37,99,235,0.4); flex-shrink: 0; transition: transform 0.18s;" title="Send">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                </button>
             </form>
         </div>
     </div>
@@ -75,7 +100,7 @@ document.addEventListener('DOMContentLoaded', function() {
     resetBtn.addEventListener('click', () => {
         widgetMessages = [];
         widgetSessionId = null;
-        msgBox.innerHTML = '<div style="align-self: flex-start; max-width: 85%; background: #ffffff; border: 1px solid #e2e8f0; padding: 0.65rem 0.85rem; border-radius: 12px; font-size: 0.85rem; color: #334155; line-height: 1.4;">New conversation started. How can I help?</div>';
+        msgBox.innerHTML = '<div style="align-self: flex-start; max-width: 85%; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); padding: 0.75rem 0.95rem; border-radius: 14px; font-size: 0.85rem; color: #f1f5f9; line-height: 1.45;">New conversation started. How can I help?</div>';
         cta.style.display = 'none';
     });
 
@@ -85,13 +110,13 @@ document.addEventListener('DOMContentLoaded', function() {
         b.style.cssText = `
             align-self: ${isUser ? 'flex-end' : 'flex-start'};
             max-width: 85%;
-            background: ${isUser ? '#2563eb' : '#ffffff'};
-            color: ${isUser ? '#ffffff' : '#334155'};
-            border: ${isUser ? 'none' : '1px solid #e2e8f0'};
-            padding: 0.65rem 0.85rem;
-            border-radius: 12px;
+            background: ${isUser ? 'linear-gradient(135deg, #2563eb, #0284c7)' : 'rgba(255, 255, 255, 0.05)'};
+            color: ${isUser ? '#ffffff' : '#f1f5f9'};
+            border: ${isUser ? 'none' : '1px solid rgba(255, 255, 255, 0.1)'};
+            padding: 0.7rem 0.95rem;
+            border-radius: 14px;
             font-size: 0.85rem;
-            line-height: 1.4;
+            line-height: 1.45;
             word-break: break-word;
         `;
         b.textContent = text;

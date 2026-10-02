@@ -1,55 +1,447 @@
 {% extends "base.html" %}
-
-{% block title %}Front Desk Information — ConnectGuidance{% endblock %}
+{% block page_title %}Front Desk{% endblock %}
+{% block title %}Front Desk — ConnectGuidance{% endblock %}
 {% block meta_description %}Information on how to book in person, operating hours, and guidance center policies.{% endblock %}
 
 {% block content %}
-<div class="front-desk-container" style="max-width: 900px; margin: 0 auto;">
-    <div style="margin-bottom: 2rem;">
-        <h1 style="font-size: 1.75rem; font-weight: 700; color: #1e293b; margin: 0;">University Guidance Front Desk</h1>
-        <p style="color: #64748b; font-size: 0.95rem; margin-top: 0.25rem;">Information for in-person consultations, walk-in services, and emergency crisis response.</p>
+<style>
+/* ═══════════════════════════════════════════════════════
+   FRONT DESK — Premium Redesign · Sapphire Ocean Blue
+   ═══════════════════════════════════════════════════════ */
+
+.fd-shell {
+    min-height: 100%;
+    background: linear-gradient(140deg, #020817 0%, #0a1628 40%, #061022 70%, #0d1f3c 100%);
+    padding: 2rem 2.5rem 3rem;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Ambient orbs */
+.fd-orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(85px);
+    pointer-events: none;
+    animation: fdOrb 14s ease-in-out infinite alternate;
+}
+.fd-orb-1 { width: 520px; height: 520px; background: radial-gradient(circle, rgba(37,99,235,0.4), transparent); top: -150px; right: -100px; }
+.fd-orb-2 { width: 380px; height: 380px; background: radial-gradient(circle, rgba(6,182,212,0.3), transparent); bottom: -80px; left: -80px; animation-delay: -6s; }
+.fd-orb-3 { width: 260px; height: 260px; background: radial-gradient(circle, rgba(99,102,241,0.3), transparent); top: 40%; left: 35%; animation-delay: -10s; }
+@keyframes fdOrb {
+    from { transform: translate(0, 0) scale(1); }
+    to   { transform: translate(25px, 18px) scale(1.05); }
+}
+
+/* ── Page header ── */
+.fd-page-header {
+    position: relative;
+    z-index: 10;
+    margin-bottom: 2rem;
+    animation: fdFadeUp 0.5s ease both;
+}
+.fd-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #38bdf8;
+    background: rgba(56,189,248,0.1);
+    border: 1px solid rgba(56,189,248,0.2);
+    padding: 0.3rem 0.75rem;
+    border-radius: 99px;
+    margin-bottom: 0.85rem;
+}
+.fd-page-header h1 {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #f0f9ff;
+    margin: 0 0 0.4rem;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+}
+.fd-page-header p {
+    color: rgba(148,163,184,0.75);
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+@keyframes fdFadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Grid layout ── */
+.fd-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+    position: relative;
+    z-index: 10;
+}
+@media (max-width: 680px) { .fd-grid { grid-template-columns: 1fr; } }
+
+.fd-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.09);
+    backdrop-filter: blur(18px);
+    border-radius: 18px;
+    padding: 1.75rem;
+    position: relative;
+    overflow: hidden;
+    animation: fdFadeUp 0.5s ease both;
+    transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
+}
+.fd-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(56,189,248,0.22);
+    box-shadow: 0 12px 40px rgba(6,182,212,0.1);
+}
+.fd-card.full-width { grid-column: 1 / -1; }
+.fd-card.crisis-card {
+    border-color: rgba(239,68,68,0.25);
+    background: rgba(239,68,68,0.06);
+}
+.fd-card.crisis-card:hover {
+    border-color: rgba(239,68,68,0.4);
+    box-shadow: 0 12px 40px rgba(239,68,68,0.1);
+}
+
+/* card top accent line */
+.fd-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 1.75rem; right: 1.75rem;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(56,189,248,0.5), transparent);
+    border-radius: 0 0 2px 2px;
+}
+.fd-card.crisis-card::before {
+    background: linear-gradient(90deg, transparent, rgba(239,68,68,0.6), transparent);
+}
+
+/* stagger animations */
+.fd-card:nth-child(1) { animation-delay: 0.05s; }
+.fd-card:nth-child(2) { animation-delay: 0.1s; }
+.fd-card:nth-child(3) { animation-delay: 0.15s; }
+.fd-card:nth-child(4) { animation-delay: 0.2s; }
+
+/* ── Card section label ── */
+.fd-card-label {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 1.25rem;
+}
+.fd-card-icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, rgba(37,99,235,0.35), rgba(6,182,212,0.2));
+    border: 1px solid rgba(56,189,248,0.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+.fd-card.crisis-card .fd-card-icon {
+    background: linear-gradient(135deg, rgba(239,68,68,0.3), rgba(220,38,38,0.15));
+    border-color: rgba(239,68,68,0.25);
+}
+.fd-card-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin: 0;
+}
+
+/* ── Info rows ── */
+.fd-info-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    margin-bottom: 1rem;
+}
+.fd-info-row:last-child { margin-bottom: 0; }
+.fd-info-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: #38bdf8;
+}
+.fd-info-value {
+    font-size: 0.9rem;
+    color: rgba(226,232,240,0.85);
+    line-height: 1.5;
+}
+
+/* ── Status badge ── */
+.fd-open-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #34d399;
+    background: rgba(52,211,153,0.1);
+    border: 1px solid rgba(52,211,153,0.25);
+    padding: 0.28rem 0.7rem;
+    border-radius: 99px;
+    margin-top: 0.5rem;
+}
+.fd-open-dot {
+    width: 6px; height: 6px;
+    background: #34d399;
+    border-radius: 50%;
+    box-shadow: 0 0 6px #34d399;
+    animation: fdPulse 2s ease-in-out infinite;
+}
+@keyframes fdPulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.4; }
+}
+
+/* ── Step list ── */
+.fd-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 0;
+    list-style: none;
+    margin: 0;
+    counter-reset: fd-step;
+}
+.fd-step-item {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    counter-increment: fd-step;
+}
+.fd-step-num {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1d4ed8, #0284c7);
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 3px 10px rgba(37,99,235,0.4);
+    margin-top: 1px;
+}
+.fd-step-content strong {
+    color: #e2e8f0;
+    font-size: 0.88rem;
+    display: block;
+    margin-bottom: 0.2rem;
+}
+.fd-step-content span {
+    color: rgba(148,163,184,0.75);
+    font-size: 0.83rem;
+    line-height: 1.5;
+}
+
+/* ── Crisis hotline chips ── */
+.fd-hotlines {
+    display: flex;
+    gap: 0.85rem;
+    flex-wrap: wrap;
+    margin-top: 0.5rem;
+}
+.fd-hotline-chip {
+    background: rgba(239,68,68,0.1);
+    border: 1px solid rgba(239,68,68,0.25);
+    border-radius: 12px;
+    padding: 0.7rem 1.1rem;
+    transition: background 0.2s, transform 0.2s;
+}
+.fd-hotline-chip:hover { background: rgba(239,68,68,0.18); transform: translateY(-1px); }
+.fd-hotline-chip-label {
+    font-size: 0.73rem;
+    color: rgba(252,165,165,0.7);
+    display: block;
+    margin-bottom: 0.2rem;
+}
+.fd-hotline-chip-num {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #fca5a5;
+    letter-spacing: -0.01em;
+}
+.fd-crisis-desc {
+    font-size: 0.85rem;
+    color: rgba(252,165,165,0.7);
+    line-height: 1.55;
+    margin: 0 0 1rem;
+}
+
+/* ── Quick-book CTA ── */
+.fd-cta-bar {
+    position: relative;
+    z-index: 10;
+    margin-top: 1.25rem;
+    background: linear-gradient(135deg, rgba(37,99,235,0.18), rgba(6,182,212,0.1));
+    border: 1px solid rgba(56,189,248,0.22);
+    border-radius: 16px;
+    padding: 1.25rem 1.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    animation: fdFadeUp 0.5s 0.25s ease both;
+}
+.fd-cta-text strong { color: #f0f9ff; font-size: 0.95rem; }
+.fd-cta-text p { color: rgba(148,163,184,0.65); font-size: 0.82rem; margin: 0.2rem 0 0; }
+.fd-cta-btn {
+    background: linear-gradient(135deg, #2563eb, #0284c7);
+    color: #fff;
+    padding: 0.6rem 1.3rem;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 0.88rem;
+    white-space: nowrap;
+    box-shadow: 0 4px 16px rgba(37,99,235,0.4);
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.fd-cta-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(37,99,235,0.55); }
+</style>
+
+<div class="fd-shell">
+    <!-- Ambient orbs -->
+    <div class="fd-orb fd-orb-1"></div>
+    <div class="fd-orb fd-orb-2"></div>
+    <div class="fd-orb fd-orb-3"></div>
+
+    <!-- Page Header -->
+    <div class="fd-page-header">
+        <div class="fd-kicker" style="display:inline-flex;align-items:center;gap:0.45rem;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+            University Guidance Center
+        </div>
+        <h1>University Guidance Front Desk</h1>
+        <p>Information for in-person consultations, walk-in services, and emergency crisis response.</p>
     </div>
 
-    <div class="card" style="margin-bottom: 2rem;">
-        <h2 style="font-size: 1.25rem; font-weight: 600; color: #1e293b; margin-bottom: 1rem;">Operating Hours & Location</h2>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
-            <div>
-                <strong style="color: #334155; display: block; margin-bottom: 0.25rem;">Office Location</strong>
-                <p style="color: #64748b; margin: 0;">Student Center Building, 2nd Floor, Room 204</p>
-                <p style="color: #64748b; margin: 0.25rem 0 0 0;">Main University Campus</p>
+    <!-- Info Grid -->
+    <div class="fd-grid">
+
+        <!-- Card 1: Location -->
+        <div class="fd-card">
+            <div class="fd-card-label">
+                <div class="fd-card-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                </div>
+                <h2 class="fd-card-title">Office Location</h2>
             </div>
-            <div>
-                <strong style="color: #334155; display: block; margin-bottom: 0.25rem;">Office Schedule</strong>
-                <p style="color: #64748b; margin: 0;">Monday – Friday: 08:00 AM – 05:00 PM</p>
-                <p style="color: #64748b; margin: 0.25rem 0 0 0;">Closed on Weekends and University Holidays</p>
+            <div class="fd-info-row">
+                <span class="fd-info-label">Building</span>
+                <span class="fd-info-value">Student Center Building, 2nd Floor, Room 204</span>
+            </div>
+            <div class="fd-info-row">
+                <span class="fd-info-label">Campus</span>
+                <span class="fd-info-value">Main University Campus</span>
+            </div>
+            <div class="fd-open-badge">
+                <div class="fd-open-dot"></div>
+                Currently Accepting Walk-Ins
             </div>
         </div>
-    </div>
 
-    <div class="card" style="margin-bottom: 2rem;">
-        <h2 style="font-size: 1.25rem; font-weight: 600; color: #1e293b; margin-bottom: 1rem;">Walk-In Procedures</h2>
-        <ol style="padding-left: 1.5rem; color: #475569; display: flex; flex-direction: column; gap: 0.75rem;">
-            <li><strong>Check-In at Reception Desk:</strong> Present your valid Student ID card to the attending staff member.</li>
-            <li><strong>Intake Triage:</strong> The receptionist will record your primary concern (academic, personal, emotional, or career) and check real-time counselor availability.</li>
-            <li><strong>Assignment:</strong> If an opening exists, you will be booked into the earliest available slot. If fully booked, a scheduled session for a future date will be reserved.</li>
-        </ol>
-    </div>
-
-    <div class="card" style="background: #fef2f2; border-color: #fee2e2;">
-        <h2 style="font-size: 1.25rem; font-weight: 600; color: #991b1b; margin-bottom: 0.75rem;">24/7 Immediate Crisis Support</h2>
-        <p style="color: #b91c1c; font-size: 0.95rem; margin-bottom: 1rem;">
-            If you or someone you know is experiencing acute emotional crisis, self-harm thoughts, or overwhelming distress, immediate confidential help is available 24/7.
-        </p>
-        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-            <div style="background: #ffffff; padding: 0.75rem 1.25rem; border-radius: 8px; border: 1px solid #fecaca;">
-                <span style="font-size: 0.8rem; color: #64748b; display: block;">National Suicide & Crisis Lifeline</span>
-                <strong style="font-size: 1.25rem; color: #b91c1c;">Dial 988</strong>
+        <!-- Card 2: Hours -->
+        <div class="fd-card">
+            <div class="fd-card-label">
+                <div class="fd-card-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                </div>
+                <h2 class="fd-card-title">Office Schedule</h2>
             </div>
-            <div style="background: #ffffff; padding: 0.75rem 1.25rem; border-radius: 8px; border: 1px solid #fecaca;">
-                <span style="font-size: 0.8rem; color: #64748b; display: block;">Campus Security Emergency Dispatch</span>
-                <strong style="font-size: 1.25rem; color: #b91c1c;">(555) 019-9111</strong>
+            <div class="fd-info-row">
+                <span class="fd-info-label">Weekdays</span>
+                <span class="fd-info-value">Monday – Friday &nbsp;·&nbsp; 08:00 AM – 05:00 PM</span>
+            </div>
+            <div class="fd-info-row">
+                <span class="fd-info-label">Weekends &amp; Holidays</span>
+                <span class="fd-info-value">Closed on weekends and all university-declared holidays.</span>
             </div>
         </div>
+
+        <!-- Card 3: Walk-In Procedures (full width) -->
+        <div class="fd-card full-width">
+            <div class="fd-card-label">
+                <div class="fd-card-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect><path d="M9 14h6"></path><path d="M9 18h6"></path><path d="M9 10h6"></path></svg>
+                </div>
+                <h2 class="fd-card-title">Walk-In Procedures</h2>
+            </div>
+            <ul class="fd-steps">
+                <li class="fd-step-item">
+                    <div class="fd-step-num">1</div>
+                    <div class="fd-step-content">
+                        <strong>Check-In at Reception Desk</strong>
+                        <span>Present your valid Student ID card to the attending staff member upon arrival.</span>
+                    </div>
+                </li>
+                <li class="fd-step-item">
+                    <div class="fd-step-num">2</div>
+                    <div class="fd-step-content">
+                        <strong>Intake Triage</strong>
+                        <span>The receptionist will record your primary concern — academic, personal, emotional, or career — and check real-time counselor availability.</span>
+                    </div>
+                </li>
+                <li class="fd-step-item">
+                    <div class="fd-step-num">3</div>
+                    <div class="fd-step-content">
+                        <strong>Assignment</strong>
+                        <span>If an opening exists, you will be booked into the earliest available slot. If fully booked, a scheduled session for a future date will be reserved.</span>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Card 4: Crisis Support (full width) -->
+        <div class="fd-card full-width crisis-card">
+            <div class="fd-card-label">
+                <div class="fd-card-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                </div>
+                <h2 class="fd-card-title">24/7 Immediate Crisis Support</h2>
+            </div>
+            <p class="fd-crisis-desc">
+                If you or someone you know is experiencing acute emotional crisis, self-harm thoughts, or overwhelming distress,
+                immediate confidential help is available 24/7. You are not alone.
+            </p>
+            <div class="fd-hotlines">
+                <div class="fd-hotline-chip">
+                    <span class="fd-hotline-chip-label">National Suicide &amp; Crisis Lifeline</span>
+                    <span class="fd-hotline-chip-num">Dial 988</span>
+                </div>
+                <div class="fd-hotline-chip">
+                    <span class="fd-hotline-chip-label">Campus Security Emergency Dispatch</span>
+                    <span class="fd-hotline-chip-num">(555) 019-9111</span>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- /fd-grid -->
+
+    <!-- Quick Book CTA -->
+    <div class="fd-cta-bar">
+        <div class="fd-cta-text">
+            <strong>Prefer an online booking?</strong>
+            <p>Skip the line — book your counseling session directly from here.</p>
+        </div>
+        <a href="{% url 'student_book_appointment' %}" class="fd-cta-btn" style="display:inline-flex;align-items:center;gap:0.45rem;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect><line x1="16" x2="16" y1="2" y2="6"></line><line x1="8" x2="8" y1="2" y2="6"></line><line x1="3" x2="21" y1="10" y2="10"></line><line x1="12" x2="12" y1="14" y2="18"></line><line x1="10" x2="14" y1="16" y2="16"></line></svg>
+            Book a Session Online
+        </a>
     </div>
+
 </div>
 {% endblock %}
