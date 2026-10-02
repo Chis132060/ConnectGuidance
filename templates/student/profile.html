@@ -1,87 +1,141 @@
 {% extends "base.html" %}
-
+{% block page_title %}My Profile{% endblock %}
 {% block title %}My Profile — ConnectGuidance{% endblock %}
 {% block meta_description %}View your student account details and change your login password.{% endblock %}
 
 {% block content %}
-<div class="profile-container" style="max-width: 800px; margin: 0 auto;">
-    <div style="margin-bottom: 2rem;">
-        <h1 style="font-size: 1.75rem; font-weight: 700; color: #1e293b; margin: 0;">Student Account Profile</h1>
-        <p style="color: #64748b; font-size: 0.95rem; margin-top: 0.25rem;">Manage your university credentials and security settings.</p>
-    </div>
-
-    <!-- Account Details Card (Read-Only) -->
-    <div class="card" style="margin-bottom: 2rem;">
-        <h2 style="font-size: 1.25rem; font-weight: 600; color: #1e293b; margin-bottom: 1.25rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.75rem;">
-            Account Information
-        </h2>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem;">
-            <div>
-                <span class="form-label" style="color: #64748b;">Full Name</span>
-                <div style="font-size: 1rem; font-weight: 600; color: #1e293b;">{{ profile.full_name }}</div>
+<div class="container-minimal">
+    
+    <!-- Page Header -->
+    <header class="card-minimal" style="margin-bottom: 2rem;">
+        <div style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
+            <div style="width: 68px; height: 68px; border-radius: 50%; background: var(--c-primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.75rem; font-weight: 700; flex-shrink: 0;">
+                {{ profile.full_name|slice:":1"|upper|default:"S" }}
             </div>
-            <div>
-                <span class="form-label" style="color: #64748b;">Student ID Number</span>
-                <div style="font-size: 1rem; font-weight: 600; color: #1e293b;">{{ profile.student_id|default:"Not Assigned" }}</div>
-            </div>
-            <div>
-                <span class="form-label" style="color: #64748b;">University Email</span>
-                <div style="font-size: 1rem; font-weight: 600; color: #1e293b;">{{ user.email }}</div>
-            </div>
-            <div>
-                <span class="form-label" style="color: #64748b;">System User #</span>
-                <div style="font-size: 1rem; font-weight: 600; color: #1e293b;">#{{ profile.user_no|default:profile.id }}</div>
-            </div>
-            <div>
-                <span class="form-label" style="color: #64748b;">Academic Department</span>
-                <div style="font-size: 1rem; font-weight: 600; color: #1e293b;">{{ profile.department|default:"General Academics" }}</div>
-            </div>
-            <div>
-                <span class="form-label" style="color: #64748b;">Account Status</span>
-                <div>
-                    <span class="badge badge-confirmed">Active Student</span>
-                </div>
+            <div style="flex: 1; min-width: 0;">
+                <h1 style="font-size: 1.75rem; font-weight: 600; margin-bottom: 0.375rem;">{{ profile.full_name }}</h1>
+                <p style="color: var(--c-muted); margin-bottom: 0.5rem;">Student Account · {{ profile.department|default:"General Academics" }}</p>
+                <span style="display: inline-flex; align-items: center; gap: 0.375rem; padding: 0.25rem 0.75rem; background: #dcfce7; border: 1px solid #86efac; border-radius: 16px; font-size: 0.8125rem; font-weight: 600; color: #15803d;">
+                    <span style="width: 7px; height: 7px; border-radius: 50%; background: #15803d;"></span>
+                    Active Student
+                </span>
             </div>
         </div>
-    </div>
+    </header>
 
-    <!-- Password Change Card -->
-    <div class="card">
-        <h2 style="font-size: 1.25rem; font-weight: 600; color: #1e293b; margin-bottom: 1.25rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.75rem;">
-            Change Password
-        </h2>
+    <!-- Messages -->
+    {% if messages %}
+    <div style="margin-bottom: 2rem;">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'success' }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Account Information Card -->
+    <section class="card-minimal">
+        <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem;">
+            <div style="width: 36px; height: 36px; border-radius: 8px; background: var(--c-bg); display: flex; align-items: center; justify-content: center;">
+                <i data-lucide="user" style="width:18px;height:18px;color:var(--c-primary);"></i>
+            </div>
+            <h2 style="font-size: 1.25rem; font-weight: 600; margin: 0;">Account Information</h2>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem;">
+            
+            <div>
+                <span style="display: block; font-size: 0.8125rem; color: var(--c-muted); font-weight: 500; margin-bottom: 0.375rem;">Full Name</span>
+                <span style="display: block; font-size: 1rem; color: var(--c-text); font-weight: 500;">{{ profile.full_name }}</span>
+            </div>
+
+            <div>
+                <span style="display: block; font-size: 0.8125rem; color: var(--c-muted); font-weight: 500; margin-bottom: 0.375rem;">Student ID Number</span>
+                <span style="display: block; font-size: 1rem; color: var(--c-text); font-weight: 500;">{{ profile.student_id|default:"Not Assigned" }}</span>
+            </div>
+
+            <div>
+                <span style="display: block; font-size: 0.8125rem; color: var(--c-muted); font-weight: 500; margin-bottom: 0.375rem;">University Email</span>
+                <span style="display: block; font-size: 1rem; color: var(--c-text); font-weight: 500;">{{ user.email }}</span>
+            </div>
+
+            <div>
+                <span style="display: block; font-size: 0.8125rem; color: var(--c-muted); font-weight: 500; margin-bottom: 0.375rem;">System User #</span>
+                <span style="display: block; font-size: 1rem; color: var(--c-text); font-weight: 500;">#{{ profile.user_no|default:profile.id }}</span>
+            </div>
+
+            <div>
+                <span style="display: block; font-size: 0.8125rem; color: var(--c-muted); font-weight: 500; margin-bottom: 0.375rem;">Academic Department</span>
+                <span style="display: block; font-size: 1rem; color: var(--c-text); font-weight: 500;">{{ profile.department|default:"General Academics" }}</span>
+            </div>
+
+            <div>
+                <span style="display: block; font-size: 0.8125rem; color: var(--c-muted); font-weight: 500; margin-bottom: 0.375rem;">Account Status</span>
+                <span style="display: inline-flex; align-items: center; gap: 0.375rem; padding: 0.25rem 0.75rem; background: #dcfce7; border: 1px solid #86efac; border-radius: 16px; font-size: 0.8125rem; font-weight: 600; color: #15803d;">
+                    <span style="width: 7px; height: 7px; border-radius: 50%; background: #15803d;"></span>
+                    Active Student
+                </span>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Change Password Card -->
+    <section class="card-minimal">
+        <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem;">
+            <div style="width: 36px; height: 36px; border-radius: 8px; background: var(--c-bg); display: flex; align-items: center; justify-content: center;">
+                <i data-lucide="lock" style="width:18px;height:18px;color:var(--c-primary);"></i>
+            </div>
+            <h2 style="font-size: 1.25rem; font-weight: 600; margin: 0;">Change Password</h2>
+        </div>
+
         <form method="POST" action="{% url 'student_profile' %}">
             {% csrf_token %}
+            
+            <div style="display: grid; grid-template-columns: 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                
+                <div class="form-group">
+                    <label for="id_old_password" class="form-label">Current Password</label>
+                    {{ password_form.old_password }}
+                    {% if password_form.old_password.errors %}
+                    <span class="field-error">{{ password_form.old_password.errors.0 }}</span>
+                    {% endif %}
+                </div>
 
-            <div class="form-group">
-                <label for="id_old_password" class="form-label">Current Password</label>
-                {{ password_form.old_password }}
-                {% if password_form.old_password.errors %}
-                <small style="color: #ef4444;">{{ password_form.old_password.errors.0 }}</small>
-                {% endif %}
+                <div class="form-group">
+                    <label for="id_new_password1" class="form-label">New Password</label>
+                    {{ password_form.new_password1 }}
+                    {% if password_form.new_password1.errors %}
+                    <span class="field-error">{{ password_form.new_password1.errors.0 }}</span>
+                    {% endif %}
+                    <small class="form-help">Minimum 8 characters</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="id_new_password2" class="form-label">Confirm New Password</label>
+                    {{ password_form.new_password2 }}
+                    {% if password_form.new_password2.errors %}
+                    <span class="field-error">{{ password_form.new_password2.errors.0 }}</span>
+                    {% endif %}
+                </div>
+
             </div>
 
-            <div class="form-group">
-                <label for="id_new_password1" class="form-label">New Password</label>
-                {{ password_form.new_password1 }}
-                {% if password_form.new_password1.errors %}
-                <small style="color: #ef4444;">{{ password_form.new_password1.errors.0 }}</small>
-                {% endif %}
-                <small style="color: #64748b; display: block; margin-top: 0.25rem;">Must be at least 8 characters long.</small>
-            </div>
-
-            <div class="form-group">
-                <label for="id_new_password2" class="form-label">Confirm New Password</label>
-                {{ password_form.new_password2 }}
-                {% if password_form.new_password2.errors %}
-                <small style="color: #ef4444;">{{ password_form.new_password2.errors.0 }}</small>
-                {% endif %}
-            </div>
-
-            <button type="submit" class="btn btn-primary" style="margin-top: 1rem;">
+            <button type="submit" class="btn btn-primary">
+                <i data-lucide="key" style="width:16px;height:16px;"></i>
                 Update Password
             </button>
         </form>
-    </div>
+    </section>
+
 </div>
+
+<style>
+@media (max-width: 768px) {
+    div[style*="grid-template-columns: repeat(2, 1fr)"] {
+        grid-template-columns: 1fr !important;
+    }
+}
+</style>
 {% endblock %}
