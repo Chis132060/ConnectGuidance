@@ -156,11 +156,11 @@ class ViewsHttpTemplateTestCase(TestCase):
     # Administrator Screens (5 routes)
     # -------------------------------------------------------------------------
     def test_screen_11_admin_overview(self):
-        """11. GET /admin-panel/ -> admin/overview.html (HTTP 200)"""
+        """11. GET /admin-panel/ -> analytics/overview.html (HTTP 200)"""
         self.client.force_login(self.admin_user)
         response = self.client.get('/admin-panel/')
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'admin/overview.html')
+        self.assertTemplateUsed(response, 'analytics/overview.html')
 
     def test_screen_12_admin_users(self):
         """12. GET /admin-panel/users/ -> admin/users.html (HTTP 200)"""
@@ -177,11 +177,11 @@ class ViewsHttpTemplateTestCase(TestCase):
         self.assertTemplateUsed(response, 'audit/logs.html')
 
     def test_screen_14_admin_reports(self):
-        """14. GET /admin-panel/reports/ -> admin/reports.html (HTTP 200)"""
+        """14. GET /admin-panel/reports/ -> analytics/reports.html (HTTP 200)"""
         self.client.force_login(self.admin_user)
         response = self.client.get('/admin-panel/reports/')
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'admin/reports.html')
+        self.assertTemplateUsed(response, 'analytics/reports.html')
 
     def test_screen_15_admin_profile(self):
         """15. GET /admin-panel/profile/ -> admin/profile.html (HTTP 200)"""

@@ -22,8 +22,8 @@ from core.services.admin_users import (
     update_user_status,
     create_user_by_admin,
 )
-from core.services.metrics import get_admin_metrics
-from core.services.reports import (
+from apps.analytics.services.metrics import get_admin_metrics
+from apps.analytics.services.reports import (
     filter_appointments,
     export_appointments_csv,
     export_appointments_pdf,

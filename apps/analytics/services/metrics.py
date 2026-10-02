@@ -1,5 +1,5 @@
 """
-core/services/metrics.py — Executive KPIs and analytics for GuidanceConnect.
+apps/analytics/services/metrics.py — Executive KPIs and analytics for GuidanceConnect.
 
 Port of Next.js lib/admin-metrics.ts (FLOWS §19, PLAN step 69).
 Computes:

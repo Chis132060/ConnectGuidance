@@ -5,7 +5,7 @@ from django.utils import timezone
 from core.models import Appointment, Profile
 from apps.common.choices import RoleChoices, AppointmentStatusChoices
 from .slots import is_counselor_slot_free
-from .audit import log_action
+from apps.audit.services.logging import log_action
 
 ALLOWED_TRANSITIONS = {
     AppointmentStatusChoices.PENDING: [

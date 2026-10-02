@@ -1,5 +1,5 @@
 """
-core/services/reports.py — Reporting and data export service for GuidanceConnect.
+apps/analytics/services/reports.py — Reporting and data export service for GuidanceConnect.
 
 Implements FLOWS §20 and PLAN steps 67–68:
 - Dynamic appointment filtering (dates, department, concern_type, status, counselor)
@@ -21,7 +21,7 @@ from reportlab.lib import colors
 
 from core.models import Appointment, Profile
 from apps.common.choices import RoleChoices, ConcernTypeChoices
-from core.services.metrics import get_admin_metrics
+from apps.analytics.services.metrics import get_admin_metrics
 from apps.audit.services.logging import log_action
 
 

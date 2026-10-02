@@ -48,9 +48,7 @@ from core.views.chat import (
 
 # Phase 7 & 8: Administrator Views
 from core.views.admin_views import (
-    admin_overview_view,
     admin_users_view,
-    admin_reports_view,
     admin_profile_view,
 )
 
@@ -80,9 +78,7 @@ urlpatterns = [
     path('chat/session/', chat_session_get_view, name='chat_session_get'),
     path('chat/', chat_stream_post_view, name='chat_stream_post'),
 
-    # --- Administrator Views (16 screens checklist #11, #12, #13, #14, #15) ---
-    path('admin-panel/', admin_overview_view, name='admin_overview'),
+    # --- Administrator Views (16 screens checklist #12, #15) ---
     path('admin-panel/users/', admin_users_view, name='admin_users'),
-    path('admin-panel/reports/', admin_reports_view, name='admin_reports'),
     path('admin-panel/profile/', admin_profile_view, name='admin_profile'),
 ]

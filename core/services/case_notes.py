@@ -4,7 +4,7 @@ from django.db import transaction
 from core.models import Appointment, CaseNote, Profile
 from apps.common.choices import RoleChoices
 from .encryption import encrypt_text, decrypt_text
-from .audit import log_action
+from apps.audit.services.logging import log_action
 
 
 @transaction.atomic
