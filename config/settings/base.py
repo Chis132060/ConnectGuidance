@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     'apps.authentication',
     'apps.audit',
     'apps.analytics',
+    'apps.users',
     'core',
 ]
 

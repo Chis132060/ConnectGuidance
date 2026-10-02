@@ -1,5 +1,5 @@
 """
-core/services/admin_users.py — Admin user management and RBAC safeguards for GuidanceConnect.
+apps/users/services/management.py — Admin user management and RBAC safeguards for GuidanceConnect.
 
 Implements RLS §5 and FLOWS §17-18:
 - Safeguards preventing self-demotion, last-admin removal, self-deactivation, and last active admin deactivation.

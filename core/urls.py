@@ -46,12 +46,6 @@ from core.views.chat import (
     chat_stream_post_view,
 )
 
-# Phase 7 & 8: Administrator Views
-from core.views.admin_views import (
-    admin_users_view,
-    admin_profile_view,
-)
-
 urlpatterns = [
     # --- Student Views (16 screens checklist #4, #5, #6, #7, #8) ---
     path('student/', student_dashboard_view, name='student_dashboard'),
@@ -77,8 +71,4 @@ urlpatterns = [
     # --- AI Chatbot Endpoints ---
     path('chat/session/', chat_session_get_view, name='chat_session_get'),
     path('chat/', chat_stream_post_view, name='chat_stream_post'),
-
-    # --- Administrator Views (16 screens checklist #12, #15) ---
-    path('admin-panel/users/', admin_users_view, name='admin_users'),
-    path('admin-panel/profile/', admin_profile_view, name='admin_profile'),
 ]

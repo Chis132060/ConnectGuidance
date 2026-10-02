@@ -1,14 +1,12 @@
 """
-core/views/admin_views.py — Administrator views for GuidanceConnect Django replica.
+apps/users/views.py — User management views for GuidanceConnect.
 
 Implements FLOWS §17-18:
 - /admin-panel/users/ — User management, role transitions, status toggling, and user creation
 - /admin-panel/profile/ — Administrator profile and password modification
 """
 
-import csv
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponse, HttpResponseForbidden
 from django.contrib import messages
 from django.views.decorators.http import require_http_methods
 from django.core.exceptions import ValidationError
@@ -20,7 +18,7 @@ from django.contrib.auth import update_session_auth_hash
 from apps.authentication.guards import require_admin
 from core.models import Profile
 from apps.common.choices import RoleChoices
-from core.services.admin_users import (
+from apps.users.services.management import (
     update_user_role,
     update_user_status,
     create_user_by_admin,
@@ -120,7 +118,7 @@ def admin_users_view(request):
         'status_filter': status_filter,
         'roles': RoleChoices.choices,
     }
-    return render(request, 'admin/users.html', context)
+    return render(request, 'users/users.html', context)
 
 
 @require_admin
@@ -148,4 +146,4 @@ def admin_profile_view(request):
         'user': request.user,
         'password_form': password_form,
     }
-    return render(request, 'admin/profile.html', context)
+    return render(request, 'users/profile.html', context)

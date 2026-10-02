@@ -15,7 +15,7 @@ from django.http import HttpResponse
 
 from core.models import Profile, Appointment, CaseNote, AuditLog
 from apps.common.choices import RoleChoices, AppointmentStatusChoices, ConcernTypeChoices
-from core.services.admin_users import (
+from apps.users.services.management import (
     can_change_role,
     update_user_role,
     can_change_active_status,

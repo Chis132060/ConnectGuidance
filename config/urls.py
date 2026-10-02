@@ -22,5 +22,6 @@ urlpatterns = [
     path('', include('apps.authentication.urls')),
     path('', include('apps.audit.urls')),
     path('admin-panel/', include('apps.analytics.urls')),
+    path('admin-panel/', include('apps.users.urls')),
     path('', include('core.urls')),
 ]
