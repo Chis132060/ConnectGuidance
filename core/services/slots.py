@@ -2,7 +2,7 @@ import datetime
 from typing import List, Dict, Any, Optional
 from django.utils import timezone
 from core.models import Appointment, Profile
-from core.choices import RoleChoices, AppointmentStatusChoices
+from apps.common.choices import RoleChoices, AppointmentStatusChoices
 
 HOURLY_START = 9
 HOURLY_END = 16  # 16:00 is the last slot of the day

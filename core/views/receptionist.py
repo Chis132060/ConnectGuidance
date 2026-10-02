@@ -18,7 +18,7 @@ from django.utils.dateparse import parse_date
 
 from core.guards import require_receptionist
 from core.models import Profile, Appointment
-from core.choices import RoleChoices, ConcernTypeChoices, AppointmentStatusChoices
+from apps.common.choices import RoleChoices, ConcernTypeChoices, AppointmentStatusChoices
 from core.forms import ReceptionistBookingForm
 from core.services.receptionist import (
     search_students,

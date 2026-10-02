@@ -2,7 +2,7 @@ from typing import Dict, Any, Optional
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from core.models import Profile, Appointment, StudentMoodAlert
-from core.choices import RoleChoices, AppointmentStatusChoices
+from apps.common.choices import RoleChoices, AppointmentStatusChoices
 from .audit import log_action
 
 

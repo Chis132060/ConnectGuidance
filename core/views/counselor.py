@@ -17,7 +17,7 @@ from django.utils import timezone
 
 from core.guards import require_counselor
 from core.models import Appointment, StudentMoodAlert, CaseNote
-from core.choices import AppointmentStatusChoices
+from apps.common.choices import AppointmentStatusChoices
 from core.forms import CaseNoteForm
 from core.services.appointments import counselor_update_status
 from core.services.case_notes import save_case_note, get_decrypted_case_note

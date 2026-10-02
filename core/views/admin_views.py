@@ -23,7 +23,7 @@ from django.contrib.auth import update_session_auth_hash
 
 from core.guards import require_admin
 from core.models import Profile, Appointment, AuditLog
-from core.choices import RoleChoices, AppointmentStatusChoices, ConcernTypeChoices
+from apps.common.choices import RoleChoices, AppointmentStatusChoices, ConcernTypeChoices
 from core.services.metrics import get_admin_metrics
 from core.services.reports import (
     filter_appointments,

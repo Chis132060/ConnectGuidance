@@ -2,7 +2,7 @@ from typing import Optional, Dict, Any
 from django.core.exceptions import ValidationError, PermissionDenied
 from django.db import transaction
 from core.models import Appointment, CaseNote, Profile
-from core.choices import RoleChoices
+from apps.common.choices import RoleChoices
 from .encryption import encrypt_text, decrypt_text
 from .audit import log_action
 

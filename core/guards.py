@@ -2,7 +2,7 @@ from functools import wraps
 from django.shortcuts import redirect
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
-from .choices import RoleChoices
+from apps.common.choices import RoleChoices
 
 ROLE_HOMES = {
     RoleChoices.ADMIN: '/admin-panel/',

@@ -1,0 +1,59 @@
+{% extends "common/base.html" %}
+{% load static %}
+
+{% block title %}ConnectGuidance — University Guidance & Counseling{% endblock %}
+{% block meta_description %}ConnectGuidance: Streamlined guidance and counseling for students, counselors, and administrators.{% endblock %}
+
+{% block content %}
+<div class="landing-page">
+    <!-- Hero Section -->
+    <header class="landing-hero">
+        <div class="landing-hero-content">
+            <div class="landing-eyebrow">
+                <i data-lucide="sparkles" style="width:14px;height:14px;"></i>
+                University Guidance &amp; Psychological Counseling
+            </div>
+            <h1 class="landing-title">Connect<span class="highlight">Guidance</span></h1>
+            <p class="landing-subtitle">
+                Streamlined guidance and counseling for your university.
+                Book appointments, connect with certified counselors, and access 24/7 wellness support — all in one unified platform.
+            </p>
+            <div class="landing-ctas">
+                <a href="{% url 'login' %}" class="btn btn-primary btn-lg" id="landing-login-btn">
+                    <i data-lucide="log-in" style="width:18px;height:18px;"></i>
+                    Sign In
+                </a>
+                <a href="{% url 'register' %}" class="btn btn-secondary btn-lg" id="landing-register-btn">
+                    <i data-lucide="user-plus" style="width:18px;height:18px;"></i>
+                    Register as Student
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Audience Cards -->
+    <section class="landing-cards">
+        <div class="landing-card">
+            <div class="landing-card-icon" style="background:#eff6ff;color:#2563eb;">
+                <i data-lucide="graduation-cap" style="width:28px;height:28px;"></i>
+            </div>
+            <h3>Students</h3>
+            <p>Book confidential counseling sessions, track your scheduled appointments, complete daily wellness check-ins, and chat with our supportive AI assistant.</p>
+        </div>
+        <div class="landing-card">
+            <div class="landing-card-icon" style="background:#f0fdfa;color:#0d9488;">
+                <i data-lucide="heart-handshake" style="width:28px;height:28px;"></i>
+            </div>
+            <h3>Counselors</h3>
+            <p>Manage clinical sessions, write AES-encrypted case notes, monitor mood tracking alerts, and provide responsive care for student wellbeing.</p>
+        </div>
+        <div class="landing-card">
+            <div class="landing-card-icon" style="background:#f5f3ff;color:#7c3aed;">
+                <i data-lucide="shield-check" style="width:28px;height:28px;"></i>
+            </div>
+            <h3>Administrators</h3>
+            <p>Oversee department metrics with real-time analytics, user role administration, full audit trail logging, and institutional export reports.</p>
+        </div>
+    </section>
+</div>
+{% endblock %}

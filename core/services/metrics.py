@@ -15,7 +15,7 @@ from django.utils import timezone
 from django.db.models import Count, Q
 
 from core.models import Appointment, Profile
-from core.choices import RoleChoices, AppointmentStatusChoices, ConcernTypeChoices
+from apps.common.choices import RoleChoices, AppointmentStatusChoices, ConcernTypeChoices
 
 
 def get_admin_metrics() -> Dict[str, Any]:

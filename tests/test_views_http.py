@@ -10,7 +10,7 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 
 from core.models import Profile, Appointment, CaseNote
-from core.choices import RoleChoices, AppointmentStatusChoices, ConcernTypeChoices
+from apps.common.choices import RoleChoices, AppointmentStatusChoices, ConcernTypeChoices
 
 
 class ViewsHttpTemplateTestCase(TestCase):

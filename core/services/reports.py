@@ -20,7 +20,7 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
 
 from core.models import Appointment, Profile
-from core.choices import RoleChoices, ConcernTypeChoices
+from apps.common.choices import RoleChoices, ConcernTypeChoices
 from core.services.metrics import get_admin_metrics
 from core.services.audit import log_action
 

@@ -25,7 +25,7 @@ from django.contrib.auth import update_session_auth_hash
 
 from core.guards import require_student
 from core.models import Profile, Appointment, CaseNote
-from core.choices import RoleChoices, AppointmentStatusChoices
+from apps.common.choices import RoleChoices, AppointmentStatusChoices
 from core.forms import AppointmentBookingForm, MoodCheckInForm
 from core.services.slots import get_available_slots_for_counselor
 from core.services.appointments import book_appointment, student_cancel_appointment

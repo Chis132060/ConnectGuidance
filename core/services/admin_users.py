@@ -12,7 +12,7 @@ from django.db import transaction
 from django.contrib.auth.models import User
 
 from core.models import Profile, AuditLog
-from core.choices import RoleChoices
+from apps.common.choices import RoleChoices
 from core.services.audit import log_action
 
 

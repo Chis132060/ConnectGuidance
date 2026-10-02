@@ -14,7 +14,7 @@ from django.utils import timezone
 from django.http import HttpResponse
 
 from core.models import Profile, Appointment, CaseNote, AuditLog
-from core.choices import RoleChoices, AppointmentStatusChoices, ConcernTypeChoices
+from apps.common.choices import RoleChoices, AppointmentStatusChoices, ConcernTypeChoices
 from core.services.admin_users import (
     can_change_role,
     update_user_role,

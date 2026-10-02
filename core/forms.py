@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from .models import Profile, Appointment, CaseNote, StudentMoodAlert
-from .choices import ConcernTypeChoices, RoleChoices, AppointmentStatusChoices
+from apps.common.choices import ConcernTypeChoices, RoleChoices, AppointmentStatusChoices
 
 
 class StudentRegistrationForm(forms.Form):

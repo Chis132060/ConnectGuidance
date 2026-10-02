@@ -13,7 +13,7 @@ from django.utils import timezone
 from django.core.exceptions import PermissionDenied, ValidationError
 
 from core.models import Profile, Appointment, CaseNote, AuditLog
-from core.choices import RoleChoices, AppointmentStatusChoices, ConcernTypeChoices
+from apps.common.choices import RoleChoices, AppointmentStatusChoices, ConcernTypeChoices
 from core.services.case_notes import save_case_note, get_decrypted_case_note
 from core.services.encryption import encrypt_text, decrypt_text
 

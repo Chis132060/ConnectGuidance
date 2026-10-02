@@ -8,7 +8,7 @@ from django.urls import reverse
 from django.http import HttpResponse
 
 from core.models import Profile
-from core.choices import RoleChoices
+from apps.common.choices import RoleChoices
 from core.guards import (
     role_required,
     require_student,

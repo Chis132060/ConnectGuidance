@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.utils import timezone
 from core.models import Appointment, Profile
-from core.choices import RoleChoices, AppointmentStatusChoices
+from apps.common.choices import RoleChoices, AppointmentStatusChoices
 from .slots import is_counselor_slot_free
 from .audit import log_action
 

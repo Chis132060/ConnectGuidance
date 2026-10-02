@@ -11,7 +11,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from core.models import Profile, Appointment, StudentMoodAlert, ChatbotSession, AuditLog
-from core.choices import RoleChoices, AppointmentStatusChoices, ConcernTypeChoices
+from apps.common.choices import RoleChoices, AppointmentStatusChoices, ConcernTypeChoices
 from core.services.mood import process_mood_checkin
 from core.services.chat import (
     check_chat_rate_limit,
