@@ -9,7 +9,7 @@ from django.http import HttpResponse
 
 from core.models import Profile
 from apps.common.choices import RoleChoices
-from core.guards import (
+from apps.authentication.guards import (
     role_required,
     require_student,
     require_counselor,

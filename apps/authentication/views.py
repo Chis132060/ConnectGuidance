@@ -1,5 +1,5 @@
 """
-core/views/auth.py — Authentication views for GuidanceConnect Django replica.
+apps/authentication/views.py — Authentication views for GuidanceConnect Django replica.
 
 Implements FLOWS §1-6: landing, login, logout, register, password_change, role_home.
 All business logic delegates to existing services/forms/guards.
@@ -13,8 +13,8 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django.views.decorators.http import require_http_methods
 
-from core.forms import StudentRegistrationForm
-from core.guards import get_profile_or_none, get_role_home
+from .forms import StudentRegistrationForm
+from .guards import get_profile_or_none, get_role_home
 
 
 # ---------------------------------------------------------------------------
@@ -39,7 +39,7 @@ def landing_view(request):
         auth_logout(request)
         return redirect('/login/?error=no_profile')
 
-    return render(request, 'public/landing.html')
+    return render(request, 'common/landing.html')
 
 
 # ---------------------------------------------------------------------------
@@ -110,7 +110,7 @@ def login_view(request):
         'form_error': form_error,
         'next': next_url,
     }
-    return render(request, 'registration/login.html', context)
+    return render(request, 'authentication/login.html', context)
 
 
 # ---------------------------------------------------------------------------
@@ -181,7 +181,7 @@ def register_view(request):
     else:
         form = StudentRegistrationForm()
 
-    return render(request, 'registration/register.html', {'form': form})
+    return render(request, 'authentication/register.html', {'form': form})
 
 
 # ---------------------------------------------------------------------------
@@ -212,7 +212,7 @@ def password_change_view(request):
     else:
         form = PasswordChangeForm(user=request.user)
 
-    return render(request, 'registration/password_change.html', {'form': form})
+    return render(request, 'authentication/password_change.html', {'form': form})
 
 
 # ---------------------------------------------------------------------------

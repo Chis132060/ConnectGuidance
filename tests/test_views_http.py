@@ -79,22 +79,22 @@ class ViewsHttpTemplateTestCase(TestCase):
     # Public Screens (3 routes)
     # -------------------------------------------------------------------------
     def test_screen_01_landing(self):
-        """1. GET / -> public/landing.html (HTTP 200)"""
+        """1. GET / -> common/landing.html (HTTP 200)"""
         response = self.client.get('/')
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'public/landing.html')
+        self.assertTemplateUsed(response, 'common/landing.html')
 
     def test_screen_02_login(self):
-        """2. GET /login/ -> registration/login.html (HTTP 200)"""
+        """2. GET /login/ -> authentication/login.html (HTTP 200)"""
         response = self.client.get('/login/')
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'registration/login.html')
+        self.assertTemplateUsed(response, 'authentication/login.html')
 
     def test_screen_03_register(self):
-        """3. GET /register/ -> registration/register.html (HTTP 200)"""
+        """3. GET /register/ -> authentication/register.html (HTTP 200)"""
         response = self.client.get('/register/')
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'registration/register.html')
+        self.assertTemplateUsed(response, 'authentication/register.html')
 
     # -------------------------------------------------------------------------
     # Student Screens (5 routes + widget overlay)

@@ -16,7 +16,7 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 from django.utils.dateparse import parse_date
 
-from core.guards import require_receptionist
+from apps.authentication.guards import require_receptionist
 from core.models import Profile, Appointment
 from apps.common.choices import RoleChoices, ConcernTypeChoices, AppointmentStatusChoices
 from core.forms import ReceptionistBookingForm

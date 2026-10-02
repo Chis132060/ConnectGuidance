@@ -23,7 +23,7 @@ from django.utils.dateparse import parse_date
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
 
-from core.guards import require_student
+from apps.authentication.guards import require_student
 from core.models import Profile, Appointment, CaseNote
 from apps.common.choices import RoleChoices, AppointmentStatusChoices
 from core.forms import AppointmentBookingForm, MoodCheckInForm

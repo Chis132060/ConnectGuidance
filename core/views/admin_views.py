@@ -21,7 +21,7 @@ from django.db.models import Q
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
 
-from core.guards import require_admin
+from apps.authentication.guards import require_admin
 from core.models import Profile, Appointment, AuditLog
 from apps.common.choices import RoleChoices, AppointmentStatusChoices, ConcernTypeChoices
 from core.services.metrics import get_admin_metrics

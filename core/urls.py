@@ -2,25 +2,16 @@
 core/urls.py — Application URL routing for GuidanceConnect Django replica.
 
 Organized by domain/phase:
-- Auth & Public (Phase 3)
 - Student Appointments, Dashboard, Profile & Front Desk (Phases 4, 6, 7)
 - Counselor Workspace & Case Notes (Phases 4 & 5)
 - Receptionist Desk & Walk-in Booking (Phase 4)
 - AI Chatbot (Phase 6)
 - Administrator Overview, Users, Audit, Reports & Profile (Phases 7 & 8)
+
+Note: Auth & Public routes moved to apps.authentication.urls
 """
 
 from django.urls import path
-
-# Phase 3: Auth & Public
-from core.views.auth import (
-    landing_view,
-    login_view,
-    logout_view,
-    register_view,
-    password_change_view,
-    role_home_view,
-)
 
 # Phase 4, 6, 7: Student Views
 from core.views.student import (
@@ -65,14 +56,6 @@ from core.views.admin_views import (
 )
 
 urlpatterns = [
-    # --- Phase 3: Auth + Public ---
-    path('', landing_view, name='landing'),
-    path('login/', login_view, name='login'),
-    path('logout/', logout_view, name='logout'),
-    path('register/', register_view, name='register'),
-    path('password_change/', password_change_view, name='password_change'),
-    path('role-home/', role_home_view, name='role_home'),
-
     # --- Student Views (16 screens checklist #4, #5, #6, #7, #8) ---
     path('student/', student_dashboard_view, name='student_dashboard'),
     path('student/mood/', student_mood_checkin_view, name='student_mood_checkin'),

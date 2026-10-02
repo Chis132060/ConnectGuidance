@@ -15,7 +15,7 @@ from django.views.decorators.http import require_http_methods
 from django.core.exceptions import ValidationError, PermissionDenied
 from django.utils import timezone
 
-from core.guards import require_counselor
+from apps.authentication.guards import require_counselor
 from core.models import Appointment, StudentMoodAlert, CaseNote
 from apps.common.choices import AppointmentStatusChoices
 from core.forms import CaseNoteForm
