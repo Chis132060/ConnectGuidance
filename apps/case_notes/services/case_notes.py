@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError, PermissionDenied
 from django.db import transaction
 from core.models import Appointment, CaseNote, Profile
 from apps.common.choices import RoleChoices
-from .encryption import encrypt_text, decrypt_text
+from apps.case_notes.services.encryption import encrypt_text, decrypt_text
 from apps.audit.services.logging import log_action
 
 

@@ -23,5 +23,6 @@ urlpatterns = [
     path('', include('apps.audit.urls')),
     path('admin-panel/', include('apps.analytics.urls')),
     path('admin-panel/', include('apps.users.urls')),
+    path('', include('apps.case_notes.urls')),
     path('', include('core.urls')),
 ]

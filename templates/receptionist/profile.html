@@ -1,0 +1,141 @@
+{% extends "common/base.html" %}
+{% load static %}
+
+{% block page_title %}Receptionist Profile{% endblock %}
+{% block title %}Receptionist Profile — ConnectGuidance{% endblock %}
+{% block meta_description %}Manage receptionist staff credentials and security settings.{% endblock %}
+
+{% block extra_css %}
+<style>
+.r-alert { display:flex; align-items:center; gap:.75rem; padding:.875rem 1.25rem; border-radius:10px; font-size:.875rem; font-weight:500; margin-bottom:.75rem; }
+.r-alert.is-error   { background:#fef2f2; color:#991b1b; border:1px solid #fecaca; }
+.r-alert.is-success { background:#ecfdf5; color:#065f46; border:1px solid #a7f3d0; }
+.pw-input         { width:100%; padding:.625rem .875rem; border:1px solid #e2e8f0; border-radius:8px; font-size:.9375rem; color:#0f172a; outline:none; transition:border-color .15s; }
+.pw-input.is-invalid { border-color:#fecaca; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="receptionist-profile-container" style="max-width: 980px; margin: 0 auto;">
+
+    {% if messages %}
+    <div style="margin-bottom:1.5rem;">
+        {% for message in messages %}
+        <div class="r-alert {% if message.tags == 'error' %}is-error{% else %}is-success{% endif %}">
+            <i data-lucide="{% if message.tags == 'error' %}alert-circle{% else %}check-circle-2{% endif %}" style="width:18px;height:18px;flex-shrink:0;"></i>
+            <span>{{ message }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Hero Profile Card -->
+    <div class="card" style="padding: 1.75rem 2rem; margin-bottom: 1.5rem;">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem;">
+            <div style="display: flex; align-items: center; gap: 1.25rem;">
+                <div style="width: 68px; height: 68px; border-radius: 50%; background: linear-gradient(135deg, #d97706, #b45309); color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 1.75rem; font-weight: 700; box-shadow: 0 4px 12px rgba(217, 119, 6, 0.25); flex-shrink: 0; border: 3px solid #ffffff;">
+                    {{ profile.full_name|slice:":1"|upper|default:"R" }}
+                </div>
+                <div>
+                    <div style="display: flex; align-items: center; gap: 0.625rem; flex-wrap: wrap; margin-bottom: 0.35rem;">
+                        <h1 style="font-size: 1.5rem; font-weight: 800; color: #0f172a; margin: 0; letter-spacing: -0.02em;">
+                            {{ profile.full_name }}
+                        </h1>
+                        <span style="display: inline-flex; align-items: center; gap: 0.375rem; padding: 0.25rem 0.6875rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; background: #fefce8; color: #a16207; border: 1px solid #fde68a;">
+                            <span style="width: 6px; height: 6px; border-radius: 50%; background: #d97706;"></span>
+                            Front Desk Staff
+                        </span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.625rem; font-size: 0.875rem; color: #64748b; flex-wrap: wrap;">
+                        <span style="font-weight: 500;">Receptionist</span>
+                        <span style="color: #cbd5e1;">&bull;</span>
+                        <span style="font-weight: 500; color: #334155;">{{ profile.department|default:"Guidance Center" }}</span>
+                        <span style="color: #cbd5e1;">&bull;</span>
+                        <span style="font-family: monospace; background: #f1f5f9; padding: 0.125rem 0.4375rem; border-radius: 6px; font-size: 0.8125rem; font-weight: 600; color: #1e293b; border: 1px solid #e2e8f0;">Staff #{{ profile.user_no|default:profile.id }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                <a href="{% url 'receptionist_dashboard' %}" class="btn btn-secondary">
+                    <i data-lucide="layout-dashboard" style="width: 16px; height: 16px;"></i>
+                    Back to Dashboard
+                </a>
+            </div>
+        </div>
+
+        <!-- Quick Info Row -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #f1f5f9;">
+            <div>
+                <div style="font-size: 0.75rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem;">Email Address</div>
+                <div style="font-size: 0.9375rem; font-weight: 600; color: #0f172a;">{{ user.email }}</div>
+            </div>
+            <div>
+                <div style="font-size: 0.75rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem;">Username</div>
+                <div style="font-size: 0.9375rem; font-weight: 600; color: #0f172a;">{{ user.username }}</div>
+            </div>
+            <div>
+                <div style="font-size: 0.75rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem;">Department</div>
+                <div style="font-size: 0.9375rem; font-weight: 600; color: #0f172a;">{{ profile.department|default:"Guidance Center" }}</div>
+            </div>
+            <div>
+                <div style="font-size: 0.75rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem;">Account Status</div>
+                <span style="display: inline-flex; align-items: center; gap: 0.375rem; padding: 0.25rem 0.625rem; border-radius: 9999px; font-size: 0.8125rem; font-weight: 600; background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0;">
+                    <span style="width: 6px; height: 6px; border-radius: 50%; background: #10b981;"></span>
+                    Active
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Password Change Card -->
+    <div class="card" style="padding: 1.75rem 2rem;">
+        <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem; padding-bottom: 1.25rem; border-bottom: 1px solid #f1f5f9;">
+            <div style="width: 40px; height: 40px; border-radius: 10px; background: #fefce8; color: #d97706; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <i data-lucide="lock-keyhole" style="width: 20px; height: 20px;"></i>
+            </div>
+            <div>
+                <h2 style="font-size: 1.0625rem; font-weight: 700; color: #0f172a; margin: 0;">Change Password</h2>
+                <p style="font-size: 0.8125rem; color: #64748b; margin: 0;">Update your login credentials securely.</p>
+            </div>
+        </div>
+
+        <form method="post" novalidate style="max-width: 480px;">
+            {% csrf_token %}
+            {% for field in password_form %}
+            <div style="margin-bottom: 1.25rem;">
+                <label for="{{ field.id_for_label }}" style="display: block; font-size: 0.875rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">
+                    {{ field.label }}
+                </label>
+                {% if field.errors %}
+                <div style="margin-bottom: 0.5rem;">
+                    {% for error in field.errors %}
+                    <p style="font-size: 0.8125rem; color: #dc2626; margin: 0;">{{ error }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                <input
+                    type="password"
+                    id="{{ field.id_for_label }}"
+                    name="{{ field.html_name }}"
+                    class="pw-input {% if field.errors %}is-invalid{% endif %}"
+                    autocomplete="{% if field.html_name == 'old_password' %}current-password{% else %}new-password{% endif %}"
+                >
+                {% if field.help_text %}
+                <p style="font-size: 0.75rem; color: #94a3b8; margin-top: 0.375rem;">{{ field.help_text }}</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+
+            <div style="display: flex; gap: 0.75rem; margin-top: 1.75rem;">
+                <button type="submit" class="btn btn-primary" id="save-password-btn">
+                    <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
+                    Update Password
+                </button>
+                <a href="{% url 'receptionist_dashboard' %}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+
+</div>
+{% endblock %}

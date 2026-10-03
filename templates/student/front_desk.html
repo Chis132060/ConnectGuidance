@@ -1,447 +1,393 @@
 {% extends "common/base.html" %}
 {% block page_title %}Front Desk{% endblock %}
-{% block title %}Front Desk — ConnectGuidance{% endblock %}
+{% block title %}Front Desk — FSUU Guidance & Counseling{% endblock %}
 {% block meta_description %}Information on how to book in person, operating hours, and guidance center policies.{% endblock %}
 
 {% block content %}
-<style>
-/* ═══════════════════════════════════════════════════════
-   FRONT DESK — Premium Redesign · Sapphire Ocean Blue
-   ═══════════════════════════════════════════════════════ */
-
-.fd-shell {
-    min-height: 100%;
-    background: linear-gradient(140deg, #020817 0%, #0a1628 40%, #061022 70%, #0d1f3c 100%);
-    padding: 2rem 2.5rem 3rem;
-    position: relative;
-    overflow: hidden;
-}
-
-/* Ambient orbs */
-.fd-orb {
-    position: fixed;
-    border-radius: 50%;
-    filter: blur(85px);
-    pointer-events: none;
-    animation: fdOrb 14s ease-in-out infinite alternate;
-}
-.fd-orb-1 { width: 520px; height: 520px; background: radial-gradient(circle, rgba(37,99,235,0.4), transparent); top: -150px; right: -100px; }
-.fd-orb-2 { width: 380px; height: 380px; background: radial-gradient(circle, rgba(6,182,212,0.3), transparent); bottom: -80px; left: -80px; animation-delay: -6s; }
-.fd-orb-3 { width: 260px; height: 260px; background: radial-gradient(circle, rgba(99,102,241,0.3), transparent); top: 40%; left: 35%; animation-delay: -10s; }
-@keyframes fdOrb {
-    from { transform: translate(0, 0) scale(1); }
-    to   { transform: translate(25px, 18px) scale(1.05); }
-}
-
-/* ── Page header ── */
-.fd-page-header {
-    position: relative;
-    z-index: 10;
-    margin-bottom: 2rem;
-    animation: fdFadeUp 0.5s ease both;
-}
-.fd-kicker {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.72rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: #38bdf8;
-    background: rgba(56,189,248,0.1);
-    border: 1px solid rgba(56,189,248,0.2);
-    padding: 0.3rem 0.75rem;
-    border-radius: 99px;
-    margin-bottom: 0.85rem;
-}
-.fd-page-header h1 {
-    font-size: 2rem;
-    font-weight: 800;
-    color: #f0f9ff;
-    margin: 0 0 0.4rem;
-    line-height: 1.15;
-    letter-spacing: -0.02em;
-}
-.fd-page-header p {
-    color: rgba(148,163,184,0.75);
-    font-size: 0.9rem;
-    margin: 0;
-}
-
-@keyframes fdFadeUp {
-    from { opacity: 0; transform: translateY(18px); }
-    to   { opacity: 1; transform: translateY(0); }
-}
-
-/* ── Grid layout ── */
-.fd-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.25rem;
-    position: relative;
-    z-index: 10;
-}
-@media (max-width: 680px) { .fd-grid { grid-template-columns: 1fr; } }
-
-.fd-card {
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.09);
-    backdrop-filter: blur(18px);
-    border-radius: 18px;
-    padding: 1.75rem;
-    position: relative;
-    overflow: hidden;
-    animation: fdFadeUp 0.5s ease both;
-    transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
-}
-.fd-card:hover {
-    transform: translateY(-2px);
-    border-color: rgba(56,189,248,0.22);
-    box-shadow: 0 12px 40px rgba(6,182,212,0.1);
-}
-.fd-card.full-width { grid-column: 1 / -1; }
-.fd-card.crisis-card {
-    border-color: rgba(239,68,68,0.25);
-    background: rgba(239,68,68,0.06);
-}
-.fd-card.crisis-card:hover {
-    border-color: rgba(239,68,68,0.4);
-    box-shadow: 0 12px 40px rgba(239,68,68,0.1);
-}
-
-/* card top accent line */
-.fd-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 1.75rem; right: 1.75rem;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, rgba(56,189,248,0.5), transparent);
-    border-radius: 0 0 2px 2px;
-}
-.fd-card.crisis-card::before {
-    background: linear-gradient(90deg, transparent, rgba(239,68,68,0.6), transparent);
-}
-
-/* stagger animations */
-.fd-card:nth-child(1) { animation-delay: 0.05s; }
-.fd-card:nth-child(2) { animation-delay: 0.1s; }
-.fd-card:nth-child(3) { animation-delay: 0.15s; }
-.fd-card:nth-child(4) { animation-delay: 0.2s; }
-
-/* ── Card section label ── */
-.fd-card-label {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    margin-bottom: 1.25rem;
-}
-.fd-card-icon {
-    width: 36px; height: 36px;
-    border-radius: 10px;
-    background: linear-gradient(135deg, rgba(37,99,235,0.35), rgba(6,182,212,0.2));
-    border: 1px solid rgba(56,189,248,0.2);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1rem;
-    flex-shrink: 0;
-}
-.fd-card.crisis-card .fd-card-icon {
-    background: linear-gradient(135deg, rgba(239,68,68,0.3), rgba(220,38,38,0.15));
-    border-color: rgba(239,68,68,0.25);
-}
-.fd-card-title {
-    font-size: 1rem;
-    font-weight: 700;
-    color: #f1f5f9;
-    margin: 0;
-}
-
-/* ── Info rows ── */
-.fd-info-row {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    margin-bottom: 1rem;
-}
-.fd-info-row:last-child { margin-bottom: 0; }
-.fd-info-label {
-    font-size: 0.72rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.07em;
-    color: #38bdf8;
-}
-.fd-info-value {
-    font-size: 0.9rem;
-    color: rgba(226,232,240,0.85);
-    line-height: 1.5;
-}
-
-/* ── Status badge ── */
-.fd-open-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: #34d399;
-    background: rgba(52,211,153,0.1);
-    border: 1px solid rgba(52,211,153,0.25);
-    padding: 0.28rem 0.7rem;
-    border-radius: 99px;
-    margin-top: 0.5rem;
-}
-.fd-open-dot {
-    width: 6px; height: 6px;
-    background: #34d399;
-    border-radius: 50%;
-    box-shadow: 0 0 6px #34d399;
-    animation: fdPulse 2s ease-in-out infinite;
-}
-@keyframes fdPulse {
-    0%, 100% { opacity: 1; }
-    50%       { opacity: 0.4; }
-}
-
-/* ── Step list ── */
-.fd-steps {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    padding: 0;
-    list-style: none;
-    margin: 0;
-    counter-reset: fd-step;
-}
-.fd-step-item {
-    display: flex;
-    gap: 1rem;
-    align-items: flex-start;
-    counter-increment: fd-step;
-}
-.fd-step-num {
-    width: 28px; height: 28px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #1d4ed8, #0284c7);
-    color: #fff;
-    font-size: 0.72rem;
-    font-weight: 800;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-    box-shadow: 0 3px 10px rgba(37,99,235,0.4);
-    margin-top: 1px;
-}
-.fd-step-content strong {
-    color: #e2e8f0;
-    font-size: 0.88rem;
-    display: block;
-    margin-bottom: 0.2rem;
-}
-.fd-step-content span {
-    color: rgba(148,163,184,0.75);
-    font-size: 0.83rem;
-    line-height: 1.5;
-}
-
-/* ── Crisis hotline chips ── */
-.fd-hotlines {
-    display: flex;
-    gap: 0.85rem;
-    flex-wrap: wrap;
-    margin-top: 0.5rem;
-}
-.fd-hotline-chip {
-    background: rgba(239,68,68,0.1);
-    border: 1px solid rgba(239,68,68,0.25);
-    border-radius: 12px;
-    padding: 0.7rem 1.1rem;
-    transition: background 0.2s, transform 0.2s;
-}
-.fd-hotline-chip:hover { background: rgba(239,68,68,0.18); transform: translateY(-1px); }
-.fd-hotline-chip-label {
-    font-size: 0.73rem;
-    color: rgba(252,165,165,0.7);
-    display: block;
-    margin-bottom: 0.2rem;
-}
-.fd-hotline-chip-num {
-    font-size: 1.2rem;
-    font-weight: 800;
-    color: #fca5a5;
-    letter-spacing: -0.01em;
-}
-.fd-crisis-desc {
-    font-size: 0.85rem;
-    color: rgba(252,165,165,0.7);
-    line-height: 1.55;
-    margin: 0 0 1rem;
-}
-
-/* ── Quick-book CTA ── */
-.fd-cta-bar {
-    position: relative;
-    z-index: 10;
-    margin-top: 1.25rem;
-    background: linear-gradient(135deg, rgba(37,99,235,0.18), rgba(6,182,212,0.1));
-    border: 1px solid rgba(56,189,248,0.22);
-    border-radius: 16px;
-    padding: 1.25rem 1.75rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    flex-wrap: wrap;
-    animation: fdFadeUp 0.5s 0.25s ease both;
-}
-.fd-cta-text strong { color: #f0f9ff; font-size: 0.95rem; }
-.fd-cta-text p { color: rgba(148,163,184,0.65); font-size: 0.82rem; margin: 0.2rem 0 0; }
-.fd-cta-btn {
-    background: linear-gradient(135deg, #2563eb, #0284c7);
-    color: #fff;
-    padding: 0.6rem 1.3rem;
-    border-radius: 10px;
-    text-decoration: none;
-    font-weight: 700;
-    font-size: 0.88rem;
-    white-space: nowrap;
-    box-shadow: 0 4px 16px rgba(37,99,235,0.4);
-    transition: transform 0.2s, box-shadow 0.2s;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-.fd-cta-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(37,99,235,0.55); }
-</style>
-
-<div class="fd-shell">
-    <!-- Ambient orbs -->
-    <div class="fd-orb fd-orb-1"></div>
-    <div class="fd-orb fd-orb-2"></div>
-    <div class="fd-orb fd-orb-3"></div>
-
-    <!-- Page Header -->
-    <div class="fd-page-header">
-        <div class="fd-kicker" style="display:inline-flex;align-items:center;gap:0.45rem;">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-            University Guidance Center
+<div class="page-header">
+    <div class="page-header-content">
+        <div>
+            <div class="breadcrumb">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                <span>FRONT DESK</span>
+            </div>
+            <h1>Father Saturnino Urios University Guidance Front Desk</h1>
+            <p class="page-description">Information for in-person consultations, walk-in services, and emergency crisis response.</p>
         </div>
-        <h1>University Guidance Front Desk</h1>
-        <p>Information for in-person consultations, walk-in services, and emergency crisis response.</p>
+    </div>
+</div>
+
+<div class="page-content">
+    <!-- Info Cards Grid -->
+    <div class="info-cards-grid">
+        <!-- Location Card -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                </div>
+                <h2>Office Location</h2>
+            </div>
+            <div class="card-content">
+                <div class="info-item">
+                    <div class="info-label">Building</div>
+                    <div class="info-value">Student Center Building, 2nd Floor, Room 204</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Campus</div>
+                    <div class="info-value">Father Saturnino Urios University (Main Campus)</div>
+                </div>
+                <div class="status-badge">
+                    <span class="status-dot active"></span>
+                    Currently Accepting Walk-Ins
+                </div>
+            </div>
+        </div>
+
+        <!-- Hours Card -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                </div>
+                <h2>Office Schedule</h2>
+            </div>
+            <div class="card-content">
+                <div class="info-item">
+                    <div class="info-label">Weekdays</div>
+                    <div class="info-value">Monday – Friday · 08:00 AM – 05:00 PM</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Weekends & Holidays</div>
+                    <div class="info-value">Closed on weekends and all university-declared holidays.</div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Info Grid -->
-    <div class="fd-grid">
-
-        <!-- Card 1: Location -->
-        <div class="fd-card">
-            <div class="fd-card-label">
-                <div class="fd-card-icon">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                </div>
-                <h2 class="fd-card-title">Office Location</h2>
+    <!-- Walk-In Procedures -->
+    <section class="section">
+        <div class="section-header">
+            <div class="section-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
             </div>
-            <div class="fd-info-row">
-                <span class="fd-info-label">Building</span>
-                <span class="fd-info-value">Student Center Building, 2nd Floor, Room 204</span>
-            </div>
-            <div class="fd-info-row">
-                <span class="fd-info-label">Campus</span>
-                <span class="fd-info-value">Main University Campus</span>
-            </div>
-            <div class="fd-open-badge">
-                <div class="fd-open-dot"></div>
-                Currently Accepting Walk-Ins
+            <div>
+                <h2>Walk-In Procedures</h2>
+                <p class="section-description">Steps to access guidance services in person</p>
             </div>
         </div>
 
-        <!-- Card 2: Hours -->
-        <div class="fd-card">
-            <div class="fd-card-label">
-                <div class="fd-card-icon">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+        <div class="steps-list">
+            <div class="step-item">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h3>Check-In at Reception Desk</h3>
+                    <p>Present your valid Student ID card to the attending staff member upon arrival.</p>
                 </div>
-                <h2 class="fd-card-title">Office Schedule</h2>
             </div>
-            <div class="fd-info-row">
-                <span class="fd-info-label">Weekdays</span>
-                <span class="fd-info-value">Monday – Friday &nbsp;·&nbsp; 08:00 AM – 05:00 PM</span>
-            </div>
-            <div class="fd-info-row">
-                <span class="fd-info-label">Weekends &amp; Holidays</span>
-                <span class="fd-info-value">Closed on weekends and all university-declared holidays.</span>
-            </div>
-        </div>
-
-        <!-- Card 3: Walk-In Procedures (full width) -->
-        <div class="fd-card full-width">
-            <div class="fd-card-label">
-                <div class="fd-card-icon">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect><path d="M9 14h6"></path><path d="M9 18h6"></path><path d="M9 10h6"></path></svg>
+            <div class="step-item">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h3>Intake Triage</h3>
+                    <p>The receptionist will record your primary concern — academic, personal, emotional, or career — and check real-time counselor availability.</p>
                 </div>
-                <h2 class="fd-card-title">Walk-In Procedures</h2>
             </div>
-            <ul class="fd-steps">
-                <li class="fd-step-item">
-                    <div class="fd-step-num">1</div>
-                    <div class="fd-step-content">
-                        <strong>Check-In at Reception Desk</strong>
-                        <span>Present your valid Student ID card to the attending staff member upon arrival.</span>
-                    </div>
-                </li>
-                <li class="fd-step-item">
-                    <div class="fd-step-num">2</div>
-                    <div class="fd-step-content">
-                        <strong>Intake Triage</strong>
-                        <span>The receptionist will record your primary concern — academic, personal, emotional, or career — and check real-time counselor availability.</span>
-                    </div>
-                </li>
-                <li class="fd-step-item">
-                    <div class="fd-step-num">3</div>
-                    <div class="fd-step-content">
-                        <strong>Assignment</strong>
-                        <span>If an opening exists, you will be booked into the earliest available slot. If fully booked, a scheduled session for a future date will be reserved.</span>
-                    </div>
-                </li>
-            </ul>
-        </div>
-
-        <!-- Card 4: Crisis Support (full width) -->
-        <div class="fd-card full-width crisis-card">
-            <div class="fd-card-label">
-                <div class="fd-card-icon">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-                </div>
-                <h2 class="fd-card-title">24/7 Immediate Crisis Support</h2>
-            </div>
-            <p class="fd-crisis-desc">
-                If you or someone you know is experiencing acute emotional crisis, self-harm thoughts, or overwhelming distress,
-                immediate confidential help is available 24/7. You are not alone.
-            </p>
-            <div class="fd-hotlines">
-                <div class="fd-hotline-chip">
-                    <span class="fd-hotline-chip-label">National Suicide &amp; Crisis Lifeline</span>
-                    <span class="fd-hotline-chip-num">Dial 988</span>
-                </div>
-                <div class="fd-hotline-chip">
-                    <span class="fd-hotline-chip-label">Campus Security Emergency Dispatch</span>
-                    <span class="fd-hotline-chip-num">(555) 019-9111</span>
+            <div class="step-item">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h3>Assignment</h3>
+                    <p>If an opening exists, you will be booked into the earliest available slot. If fully booked, a scheduled session for a future date will be reserved.</p>
                 </div>
             </div>
         </div>
+    </section>
 
-    </div><!-- /fd-grid -->
+    <!-- Crisis Support Alert -->
+    <div class="alert alert-danger-prominent">
+        <div class="alert-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        </div>
+        <div class="alert-content">
+            <h3>24/7 Immediate Crisis Support</h3>
+            <p>If you or someone you know is experiencing acute emotional crisis, self-harm thoughts, or overwhelming distress, immediate confidential help is available 24/7. You are not alone.</p>
+            
+            <div class="crisis-contacts">
+                <div class="crisis-contact-card">
+                    <div class="crisis-label">National Suicide & Crisis Lifeline</div>
+                    <div class="crisis-number">Dial 988</div>
+                </div>
+                <div class="crisis-contact-card">
+                    <div class="crisis-label">Campus Security Emergency Dispatch</div>
+                    <div class="crisis-number">(555) 019-9111</div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Quick Book CTA -->
-    <div class="fd-cta-bar">
-        <div class="fd-cta-text">
-            <strong>Prefer an online booking?</strong>
+    <div class="cta-banner">
+        <div class="cta-content">
+            <h3>Prefer an Online Booking?</h3>
             <p>Skip the line — book your counseling session directly from here.</p>
         </div>
-        <a href="{% url 'student_book_appointment' %}" class="fd-cta-btn" style="display:inline-flex;align-items:center;gap:0.45rem;">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect><line x1="16" x2="16" y1="2" y2="6"></line><line x1="8" x2="8" y1="2" y2="6"></line><line x1="3" x2="21" y1="10" y2="10"></line><line x1="12" x2="12" y1="14" y2="18"></line><line x1="10" x2="14" y1="16" y2="16"></line></svg>
+        <a href="{% url 'student_book_appointment' %}" class="btn-primary">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect><line x1="16" x2="16" y1="2" y2="6"></line><line x1="8" x2="8" y1="2" y2="6"></line><line x1="3" x2="21" y1="10" y2="10"></line></svg>
             Book a Session Online
         </a>
     </div>
-
 </div>
+
+<style>
+/* Front Desk Page Specific Styles */
+.info-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-4);
+    margin-bottom: var(--space-6);
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    margin-bottom: var(--space-4);
+    padding-bottom: var(--space-4);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.card-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-md);
+    background: var(--bg-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--brand-primary);
+    flex-shrink: 0;
+}
+
+.card-header h2 {
+    font-size: var(--text-base);
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.card-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+}
+
+.info-label {
+    font-size: var(--text-xs);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-tertiary);
+}
+
+.info-value {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--text-secondary);
+    width: fit-content;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--text-tertiary);
+}
+
+.status-dot.active {
+    background: #10b981;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+}
+
+/* Steps List */
+.steps-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.step-item {
+    display: flex;
+    gap: var(--space-4);
+    align-items: flex-start;
+}
+
+.step-number {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--brand-primary);
+    color: white;
+    font-size: var(--text-sm);
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.step-content h3 {
+    font-size: var(--text-base);
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 var(--space-1) 0;
+}
+
+.step-content p {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: 1.6;
+}
+
+/* Crisis Alert - Prominent Style */
+.alert-danger-prominent {
+    background: #fef2f2;
+    border: 2px solid #fecaca;
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    display: flex;
+    gap: var(--space-4);
+    align-items: flex-start;
+}
+
+.alert-danger-prominent .alert-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-md);
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #dc2626;
+    flex-shrink: 0;
+}
+
+.alert-danger-prominent .alert-content h3 {
+    font-size: var(--text-lg);
+    font-weight: 700;
+    color: #991b1b;
+    margin: 0 0 var(--space-2) 0;
+}
+
+.alert-danger-prominent .alert-content p {
+    font-size: var(--text-base);
+    color: #991b1b;
+    margin: 0 0 var(--space-4) 0;
+    line-height: 1.6;
+}
+
+.crisis-contacts {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-3);
+}
+
+.crisis-contact-card {
+    background: white;
+    border: 1px solid #fecaca;
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+}
+
+.crisis-label {
+    font-size: var(--text-xs);
+    font-weight: 600;
+    color: #991b1b;
+    margin-bottom: var(--space-2);
+}
+
+.crisis-number {
+    font-size: var(--text-xl);
+    font-weight: 800;
+    color: #dc2626;
+    letter-spacing: -0.01em;
+}
+
+/* CTA Banner */
+.cta-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    padding: var(--space-5);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    margin-top: var(--space-6);
+}
+
+.cta-content h3 {
+    font-size: var(--text-base);
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 4px 0;
+}
+
+.cta-content p {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .info-cards-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .crisis-contacts {
+        grid-template-columns: 1fr;
+    }
+
+    .cta-banner {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .cta-banner .btn-primary {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 768px) {
+    .alert-danger-prominent {
+        flex-direction: column;
+        padding: var(--space-4);
+    }
+
+    .alert-danger-prominent .alert-icon {
+        width: 40px;
+        height: 40px;
+    }
+}
+</style>
 {% endblock %}

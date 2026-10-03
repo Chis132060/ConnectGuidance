@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
-from .models import Profile, Appointment, CaseNote, StudentMoodAlert
+from .models import Profile, Appointment, StudentMoodAlert
 from apps.common.choices import ConcernTypeChoices, RoleChoices, AppointmentStatusChoices
 
 
@@ -71,23 +71,6 @@ class ReceptionistBookingForm(forms.Form):
             'placeholder': 'Front desk booking intake notes...',
             'id': 'rec-notes'
         })
-    )
-
-
-class CaseNoteForm(forms.Form):
-    content = forms.CharField(
-        required=True,
-        widget=forms.Textarea(attrs={
-            'class': 'form-textarea',
-            'rows': 8,
-            'placeholder': 'Enter clinical assessment, notes, and follow-up plan (encrypted at rest)...',
-            'id': 'note-content'
-        })
-    )
-    is_confidential = forms.BooleanField(
-        required=False,
-        initial=False,
-        widget=forms.CheckboxInput(attrs={'class': 'form-checkbox', 'id': 'note-confidential'})
     )
 
 

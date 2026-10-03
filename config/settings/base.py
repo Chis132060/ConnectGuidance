@@ -23,6 +23,7 @@ INSTALLED_APPS = [
     'apps.audit',
     'apps.analytics',
     'apps.users',
+    'apps.case_notes',
     'core',
 ]
 

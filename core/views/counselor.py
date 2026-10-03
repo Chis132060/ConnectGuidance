@@ -1,39 +1,40 @@
 """
 core/views/counselor.py — Counselor views for GuidanceConnect Django replica.
 
-Implements FLOWS §10-12:
-- Counselor workspace (/counselor/) with stats for today, upcoming, and past sessions
-- Status update action (/counselor/appointments/<int:pk>/status/) enforcing state machine transitions
-- Case note editor (/counselor/case-notes/<int:appointment_id>/) with AES-256 encryption and confidentiality controls
+Implements Standardized Counselor Features:
+1. Dashboard (Workspace & clinical overview)
+2. Appointments (Full clinical schedule and state transitions)
+3. Case Notes (Encrypted clinical case note repository)
+4. Student/Wellness information (Student roster & mood alerts)
+5. Profile (Provider credentials and security settings)
 """
 
 import datetime
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponseForbidden, Http404
 from django.contrib import messages
+from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.forms import PasswordChangeForm
 from django.views.decorators.http import require_http_methods
 from django.core.exceptions import ValidationError, PermissionDenied
 from django.utils import timezone
+from django.db.models import Q
 
 from apps.authentication.guards import require_counselor
-from core.models import Appointment, StudentMoodAlert, CaseNote
-from apps.common.choices import AppointmentStatusChoices
-from core.forms import CaseNoteForm
+from core.models import Appointment, StudentMoodAlert, CaseNote, Profile
+from apps.common.choices import AppointmentStatusChoices, ConcernTypeChoices
 from core.services.appointments import counselor_update_status
-from core.services.case_notes import save_case_note, get_decrypted_case_note
 
 
 @require_counselor
 def counselor_workspace_view(request):
     """
-    FLOWS §10: Counselor workspace.
-    Loads today's sessions, upcoming appointments, past completed records, and statistics.
+    COUNSELOR #1: Dashboard.
+    Loads today's sessions, upcoming appointments, pending requests, and summary statistics.
     """
     counselor = request.user.profile
-    now = timezone.now()
     today = timezone.localdate()
 
-    # Day bounds
     day_start = timezone.make_aware(
         datetime.datetime.combine(today, datetime.time.min),
         timezone.get_current_timezone()
@@ -43,7 +44,6 @@ def counselor_workspace_view(request):
         timezone.get_current_timezone()
     )
 
-    # Scoped appointments for this counselor
     my_appointments = Appointment.objects.filter(
         counselor=counselor
     ).select_related('student', 'student__user').order_by('scheduled_at')
@@ -65,10 +65,9 @@ def counselor_workspace_view(request):
         status=AppointmentStatusChoices.COMPLETED
     ).order_by('-scheduled_at')[:10]
 
-    # Mood alerts for this counselor
     mood_alerts = StudentMoodAlert.objects.filter(
         counselor=counselor
-    ).select_related('student', 'student__user').order_by('-created_at')[:10]
+    ).select_related('student', 'student__user').order_by('-created_at')[:8]
 
     context = {
         'profile': counselor,
@@ -88,10 +87,186 @@ def counselor_workspace_view(request):
 
 
 @require_counselor
+def counselor_appointments_view(request):
+    """
+    COUNSELOR #2: Appointments.
+    Dedicated clinical appointments list with status filters, student search, and state transitions.
+    """
+    counselor = request.user.profile
+    status_filter = request.GET.get('status', 'all').strip().lower()
+    search_query = request.GET.get('q', '').strip()
+
+    appointments = Appointment.objects.filter(
+        counselor=counselor
+    ).select_related('student', 'student__user').order_by('-scheduled_at')
+
+    if status_filter and status_filter != 'all':
+        appointments = appointments.filter(status=status_filter)
+
+    if search_query:
+        appointments = appointments.filter(
+            Q(student__full_name__icontains=search_query) |
+            Q(student__student_id__icontains=search_query) |
+            Q(student__user__email__icontains=search_query) |
+            Q(notes__icontains=search_query)
+        )
+
+    all_my_appointments = Appointment.objects.filter(counselor=counselor)
+
+    counts = {
+        'all': all_my_appointments.count(),
+        'pending': all_my_appointments.filter(status=AppointmentStatusChoices.PENDING).count(),
+        'confirmed': all_my_appointments.filter(status=AppointmentStatusChoices.CONFIRMED).count(),
+        'completed': all_my_appointments.filter(status=AppointmentStatusChoices.COMPLETED).count(),
+        'cancelled': all_my_appointments.filter(status=AppointmentStatusChoices.CANCELLED).count(),
+    }
+
+    context = {
+        'profile': counselor,
+        'appointments': appointments,
+        'counts': counts,
+        'active_filter': status_filter,
+        'search_query': search_query,
+    }
+    return render(request, 'counselor/appointments.html', context)
+
+
+@require_counselor
+def counselor_case_notes_list_view(request):
+    """
+    COUNSELOR #3: Case Notes Repository.
+    Lists all clinical sessions with encrypted note authoring status and confidentiality badges.
+    """
+    counselor = request.user.profile
+    search_query = request.GET.get('q', '').strip()
+
+    appointments = Appointment.objects.filter(
+        counselor=counselor
+    ).select_related('student', 'student__user').prefetch_related('case_notes').order_by('-scheduled_at')
+
+    if search_query:
+        appointments = appointments.filter(
+            Q(student__full_name__icontains=search_query) |
+            Q(student__student_id__icontains=search_query)
+        )
+
+    sessions_with_notes = []
+    total_notes_count = 0
+    confidential_count = 0
+
+    for appt in appointments:
+        note = next((n for n in appt.case_notes.all() if n.counselor_id == counselor.id), None)
+        if note:
+            total_notes_count += 1
+            if note.is_confidential:
+                confidential_count += 1
+        sessions_with_notes.append({
+            'appointment': appt,
+            'note': note,
+            'has_note': note is not None,
+        })
+
+    context = {
+        'profile': counselor,
+        'sessions_with_notes': sessions_with_notes,
+        'search_query': search_query,
+        'stats': {
+            'total_sessions': appointments.count(),
+            'notes_authored': total_notes_count,
+            'confidential_notes': confidential_count,
+        }
+    }
+    return render(request, 'counselor/case_notes_list.html', context)
+
+
+@require_counselor
+def counselor_wellness_view(request):
+    """
+    COUNSELOR #4: Student / Wellness Information.
+    Lists assigned students, recent mood check-ins, alerts, and wellness histories.
+    """
+    counselor = request.user.profile
+
+    alerts = StudentMoodAlert.objects.filter(
+        counselor=counselor
+    ).select_related('student', 'student__user').order_by('-created_at')
+
+    # Distinct students assigned to this counselor
+    student_ids = Appointment.objects.filter(
+        counselor=counselor
+    ).values_list('student_id', flat=True).distinct()
+
+    students = Profile.objects.filter(
+        id__in=student_ids
+    ).select_related('user').order_by('full_name')
+
+    students_with_history = []
+    for s in students:
+        recent_appt = Appointment.objects.filter(
+            counselor=counselor, student=s
+        ).order_by('-scheduled_at').first()
+        student_alerts = alerts.filter(student=s).count()
+        students_with_history.append({
+            'student': s,
+            'recent_appt': recent_appt,
+            'alerts_count': student_alerts,
+        })
+
+    context = {
+        'profile': counselor,
+        'alerts': alerts,
+        'students_with_history': students_with_history,
+        'stats': {
+            'active_students': len(students_with_history),
+            'total_alerts': alerts.count(),
+        }
+    }
+    return render(request, 'counselor/wellness.html', context)
+
+
+@require_counselor
+@require_http_methods(["GET", "POST"])
+def counselor_profile_view(request):
+    """
+    COUNSELOR #5: Profile.
+    Counselor clinical credentials and password security administration.
+    """
+    counselor = request.user.profile
+
+    if request.method == 'POST':
+        password_form = PasswordChangeForm(user=request.user, data=request.POST)
+        if password_form.is_valid():
+            password_form.save()
+            update_session_auth_hash(request, password_form.user)
+            messages.success(request, "Your counselor password has been successfully updated.")
+            return redirect('counselor_profile')
+        else:
+            messages.error(request, "Please correct the password errors below.")
+    else:
+        password_form = PasswordChangeForm(user=request.user)
+
+    total_sessions = Appointment.objects.filter(counselor=counselor).count()
+    completed_sessions = Appointment.objects.filter(
+        counselor=counselor, status=AppointmentStatusChoices.COMPLETED
+    ).count()
+
+    context = {
+        'profile': counselor,
+        'user': request.user,
+        'password_form': password_form,
+        'stats': {
+            'total_sessions': total_sessions,
+            'completed_sessions': completed_sessions,
+        }
+    }
+    return render(request, 'counselor/profile.html', context)
+
+
+@require_counselor
 @require_http_methods(["POST"])
 def counselor_status_update_view(request, pk: int):
     """
-    FLOWS §10: Counselor updates appointment status.
+    Counselor updates appointment status.
     Strictly enforces state machine:
     - pending → confirmed, cancelled
     - confirmed → completed, cancelled
@@ -115,73 +290,5 @@ def counselor_status_update_view(request, pk: int):
     except ValidationError as e:
         messages.error(request, str(e.message if hasattr(e, 'message') else e))
 
-    return redirect('counselor_workspace')
-
-
-@require_counselor
-@require_http_methods(["GET", "POST"])
-def counselor_case_note_view(request, appointment_id: int):
-    """
-    FLOWS §11 & §12: Case note editor and viewer for assigned counselor.
-    - Active counselor + appointment.counselor == me else 404/403
-    - Wires CaseNoteForm -> save_case_note() (encrypt + upsert UNIQUE)
-    - If ENCRYPTION_KEY missing or invalid -> surfaces "Encryption failed" without 500 error
-    """
-    counselor = request.user.profile
-
-    try:
-        appointment = Appointment.objects.select_related('student', 'student__user').get(id=appointment_id)
-    except Appointment.DoesNotExist:
-        raise Http404("Appointment not found.")
-
-    if appointment.counselor_id != counselor.id:
-        return HttpResponseForbidden("Not found or not yours: You are not assigned to this appointment.")
-
-    existing_note = CaseNote.objects.filter(appointment=appointment, counselor=counselor).first()
-    decrypted_content = ""
-
-    if existing_note:
-        try:
-            note_data = get_decrypted_case_note(existing_note, counselor)
-            if note_data:
-                decrypted_content = note_data['content']
-        except ValueError:
-            messages.error(request, "Encryption failed: Unable to decrypt note with current key.")
-        except Exception:
-            messages.error(request, "Error retrieving case note.")
-
-    if request.method == 'POST':
-        form = CaseNoteForm(request.POST)
-        if form.is_valid():
-            content = form.cleaned_data['content']
-            is_confidential = form.cleaned_data.get('is_confidential', False)
-            try:
-                save_case_note(
-                    appointment=appointment,
-                    counselor=counselor,
-                    raw_content=content,
-                    is_confidential=is_confidential
-                )
-                messages.success(request, "Case note saved securely.")
-                return redirect('case_note', appointment_id=appointment.id)
-            except ValueError:
-                messages.error(request, "Encryption failed")
-            except (ValidationError, PermissionDenied) as e:
-                messages.error(request, str(e.message if hasattr(e, 'message') else e))
-            except Exception:
-                messages.error(request, "Could not save case note.")
-        else:
-            messages.error(request, "Validation error. Note content cannot be empty.")
-    else:
-        initial = {}
-        if existing_note:
-            initial['content'] = decrypted_content
-            initial['is_confidential'] = existing_note.is_confidential
-        form = CaseNoteForm(initial=initial)
-
-    context = {
-        'appointment': appointment,
-        'existing_note': existing_note,
-        'form': form,
-    }
-    return render(request, 'counselor/case_note.html', context)
+    next_url = request.POST.get('next') or request.META.get('HTTP_REFERER') or 'counselor_workspace'
+    return redirect(next_url)

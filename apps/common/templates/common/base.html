@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}ConnectGuidance — University Guidance & Counseling{% endblock %}</title>
+    <title>{% block title %}ConnectGuidance — FSUU Guidance & Counseling{% endblock %}</title>
     <meta name="description" content="{% block meta_description %}Streamlined university guidance and psychological counseling.{% endblock %}">
 
     <!-- Fonts -->
@@ -16,7 +16,10 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✦</text></svg>">
 
     <!-- Design System -->
-    <link rel="stylesheet" href="{% static 'css/base/reset.css' %}">
+    <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
+    <link rel="stylesheet" href="{% static 'css/layout.css' %}">
+    <link rel="stylesheet" href="{% static 'css/components.css' %}">
+    <link rel="stylesheet" href="{% static 'css/minimal.css' %}">
     {% block extra_css %}{% endblock %}
 </head>
 <body>
@@ -118,7 +121,7 @@
         </main>
 
         <footer class="public-footer">
-            &copy; 2026 ConnectGuidance &bull; University Guidance &amp; Counseling System
+            &copy; 2026 ConnectGuidance &bull; Father Saturnino Urios University &mdash; Guidance &amp; Counseling Office
         </footer>
     </div>
     {% endif %}

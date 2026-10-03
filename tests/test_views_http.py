@@ -146,11 +146,11 @@ class ViewsHttpTemplateTestCase(TestCase):
         self.assertTemplateUsed(response, 'counselor/workspace.html')
 
     def test_screen_10_counselor_case_note(self):
-        """10. GET /counselor/case-notes/<id>/ -> counselor/case_note.html (HTTP 200)"""
+        """10. GET /counselor/case-notes/<id>/ -> case_notes/editor.html (HTTP 200)"""
         self.client.force_login(self.counselor_user)
         response = self.client.get(f'/counselor/case-notes/{self.appointment.id}/')
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'counselor/case_note.html')
+        self.assertTemplateUsed(response, 'case_notes/editor.html')
 
     # -------------------------------------------------------------------------
     # Administrator Screens (5 routes)

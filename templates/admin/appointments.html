@@ -1,0 +1,241 @@
+{% extends "common/base.html" %}
+{% load static %}
+
+{% block page_title %}Appointments Registry{% endblock %}
+{% block title %}All Appointments — Admin Panel — ConnectGuidance{% endblock %}
+{% block meta_description %}System-wide appointment oversight for administrators with search, filter, and status management.{% endblock %}
+
+{% block extra_css %}
+<style>
+.admin-appt-alert { display:flex; align-items:center; gap:.75rem; padding:.875rem 1.25rem; border-radius:10px; font-size:.875rem; font-weight:500; margin-bottom:.75rem; }
+.admin-appt-alert.is-error { background:#fef2f2; color:#991b1b; border:1px solid #fecaca; }
+.admin-appt-alert.is-success { background:#ecfdf5; color:#065f46; border:1px solid #a7f3d0; }
+.filter-tab { display:inline-flex; align-items:center; gap:.5rem; padding:.5rem 1rem; border-radius:8px; font-size:.8125rem; font-weight:600; text-decoration:none; transition:all .15s; border:1px solid #e2e8f0; background:#ffffff; color:#64748b; }
+.filter-tab.tab-all.is-active    { background:#7c3aed; color:#fff; border-color:#7c3aed; }
+.filter-tab.tab-pending.is-active   { background:#f59e0b; color:#fff; border-color:#f59e0b; }
+.filter-tab.tab-confirmed.is-active { background:#2563eb; color:#fff; border-color:#2563eb; }
+.filter-tab.tab-completed.is-active { background:#10b981; color:#fff; border-color:#10b981; }
+.filter-tab.tab-cancelled.is-active { background:#ef4444; color:#fff; border-color:#ef4444; }
+.tab-badge { padding:.125rem .5rem; border-radius:9999px; font-size:.75rem; font-weight:700; background:#f1f5f9; color:#374151; }
+.filter-tab.is-active .tab-badge { background:rgba(255,255,255,.22); color:#fff; }
+.tab-pending .tab-badge  { background:#fffbeb; color:#92400e; }
+.tab-confirmed .tab-badge { background:#eff6ff; color:#1e40af; }
+.tab-completed .tab-badge { background:#ecfdf5; color:#065f46; }
+.tab-cancelled .tab-badge { background:#fef2f2; color:#991b1b; }
+.tab-pending.is-active .tab-badge,
+.tab-confirmed.is-active .tab-badge,
+.tab-completed.is-active .tab-badge,
+.tab-cancelled.is-active .tab-badge { background:rgba(255,255,255,.22); color:#fff; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-appointments-page" style="max-width:1280px; margin:0 auto;">
+
+    {% if messages %}
+    <div style="margin-bottom:1.5rem;">
+        {% for message in messages %}
+        <div class="admin-appt-alert {% if message.tags == 'error' %}is-error{% else %}is-success{% endif %}">
+            <i data-lucide="{% if message.tags == 'error' %}alert-circle{% else %}check-circle-2{% endif %}" style="width:18px;height:18px;flex-shrink:0;"></i>
+            <span>{{ message }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Page Header -->
+    <div style="margin-bottom:1.5rem;">
+        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem;">
+            <div>
+                <div style="display:flex; align-items:center; gap:.375rem; font-size:.75rem; font-weight:600; text-transform:uppercase; letter-spacing:.05em; color:#7c3aed; margin-bottom:.25rem;">
+                    <i data-lucide="calendar-days" style="width:14px;height:14px;"></i>
+                    <span>SYSTEM APPOINTMENTS</span>
+                </div>
+                <h1 style="font-size:1.5rem; font-weight:800; color:#0f172a; margin:0; letter-spacing:-.02em;">Appointments Registry</h1>
+                <p style="font-size:.875rem; color:#64748b; margin-top:.25rem; margin-bottom:0;">
+                    Full oversight of all counseling sessions across the guidance system.
+                </p>
+            </div>
+            <div style="display:flex; gap:.75rem; flex-wrap:wrap;">
+                <a href="{% url 'admin_overview' %}" class="btn btn-secondary">
+                    <i data-lucide="layout-dashboard" style="width:16px;height:16px;"></i>
+                    Dashboard
+                </a>
+                <a href="{% url 'admin_reports' %}" class="btn btn-primary" style="background:#7c3aed;border-color:#7c3aed;">
+                    <i data-lucide="file-bar-chart-2" style="width:16px;height:16px;"></i>
+                    Export Reports
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Filter Tabs -->
+    <div style="display:flex; gap:.5rem; flex-wrap:wrap; margin-bottom:1.5rem;">
+        <a href="?status=all{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_counselor_id %}&counselor_id={{ selected_counselor_id }}{% endif %}"
+           class="filter-tab tab-all {% if active_filter == 'all' %}is-active{% endif %}" id="tab-all">
+            All <span class="tab-badge">{{ counts.all }}</span>
+        </a>
+        <a href="?status=pending{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_counselor_id %}&counselor_id={{ selected_counselor_id }}{% endif %}"
+           class="filter-tab tab-pending {% if active_filter == 'pending' %}is-active{% endif %}" id="tab-pending">
+            Pending <span class="tab-badge">{{ counts.pending }}</span>
+        </a>
+        <a href="?status=confirmed{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_counselor_id %}&counselor_id={{ selected_counselor_id }}{% endif %}"
+           class="filter-tab tab-confirmed {% if active_filter == 'confirmed' %}is-active{% endif %}" id="tab-confirmed">
+            Confirmed <span class="tab-badge">{{ counts.confirmed }}</span>
+        </a>
+        <a href="?status=completed{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_counselor_id %}&counselor_id={{ selected_counselor_id }}{% endif %}"
+           class="filter-tab tab-completed {% if active_filter == 'completed' %}is-active{% endif %}" id="tab-completed">
+            Completed <span class="tab-badge">{{ counts.completed }}</span>
+        </a>
+        <a href="?status=cancelled{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_counselor_id %}&counselor_id={{ selected_counselor_id }}{% endif %}"
+           class="filter-tab tab-cancelled {% if active_filter == 'cancelled' %}is-active{% endif %}" id="tab-cancelled">
+            Cancelled <span class="tab-badge">{{ counts.cancelled }}</span>
+        </a>
+    </div>
+
+    <!-- Search & Filter Bar -->
+    <div class="card" style="padding:1.25rem 1.5rem; margin-bottom:1.5rem;">
+        <form method="get" id="appointments-filter-form" style="display:grid; grid-template-columns:1fr auto auto auto; gap:.75rem; align-items:end;">
+            <input type="hidden" name="status" value="{{ active_filter }}">
+            <div>
+                <label style="display:block; font-size:.8125rem; font-weight:600; color:#374151; margin-bottom:.375rem;">Search</label>
+                <div style="position:relative;">
+                    <i data-lucide="search" style="position:absolute; left:.75rem; top:50%; transform:translateY(-50%); width:15px; height:15px; color:#94a3b8; pointer-events:none;"></i>
+                    <input type="text" id="appointments-search-input" name="q" value="{{ search_query }}" placeholder="Student name, ID, counselor…"
+                        style="width:100%; padding:.5625rem .875rem .5625rem 2.25rem; border:1px solid #e2e8f0; border-radius:8px; font-size:.875rem; color:#0f172a; outline:none;">
+                </div>
+            </div>
+            <div>
+                <label style="display:block; font-size:.8125rem; font-weight:600; color:#374151; margin-bottom:.375rem;">Counselor</label>
+                <select name="counselor_id" id="counselor-filter-select"
+                    style="padding:.5625rem .875rem; border:1px solid #e2e8f0; border-radius:8px; font-size:.875rem; color:#0f172a; outline:none; background:#fff; min-width:180px;">
+                    <option value="">All Counselors</option>
+                    {% for c in counselors %}
+                    <option value="{{ c.id }}" {% if selected_counselor_id == c.id|stringformat:"s" %}selected{% endif %}>{{ c.full_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label style="display:block; font-size:.8125rem; font-weight:600; color:#374151; margin-bottom:.375rem;">From Date</label>
+                <input type="date" name="date_from" id="date-from-input" value="{{ date_from }}"
+                    style="padding:.5625rem .875rem; border:1px solid #e2e8f0; border-radius:8px; font-size:.875rem; color:#0f172a; outline:none;">
+            </div>
+            <div>
+                <label style="display:block; font-size:.8125rem; font-weight:600; color:#374151; margin-bottom:.375rem;">To Date</label>
+                <div style="display:flex; gap:.5rem; align-items:center;">
+                    <input type="date" name="date_to" id="date-to-input" value="{{ date_to }}"
+                        style="padding:.5625rem .875rem; border:1px solid #e2e8f0; border-radius:8px; font-size:.875rem; color:#0f172a; outline:none;">
+                    <button type="submit" id="apply-filter-btn" class="btn btn-primary" style="white-space:nowrap; background:#7c3aed; border-color:#7c3aed;">
+                        <i data-lucide="filter" style="width:14px;height:14px;"></i>
+                        Apply
+                    </button>
+                    {% if search_query or selected_counselor_id or date_from or date_to %}
+                    <a href="?status={{ active_filter }}" class="btn btn-secondary" style="white-space:nowrap;">Clear</a>
+                    {% endif %}
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Appointments Table -->
+    <div class="card" style="padding:0; overflow:hidden;">
+        <div style="padding:1.25rem 1.5rem; border-bottom:1px solid #e2e8f0; display:flex; align-items:center; justify-content:space-between;">
+            <div>
+                <h2 style="font-size:1.0625rem; font-weight:700; color:#0f172a; margin:0;">
+                    Appointment Records
+                    {% if search_query %}<span style="font-weight:400; color:#64748b; font-size:.9rem;"> — searching "{{ search_query }}"</span>{% endif %}
+                </h2>
+                <p style="font-size:.8125rem; color:#64748b; margin:.125rem 0 0;">
+                    Showing {{ appointments|length }} result{{ appointments|length|pluralize }}
+                </p>
+            </div>
+            <a href="{% url 'admin_reports' %}?{% if search_query %}q={{ search_query }}&{% endif %}{% if active_filter != 'all' %}status={{ active_filter }}&{% endif %}export=csv"
+               class="btn btn-secondary btn-sm" id="export-csv-btn">
+                <i data-lucide="download" style="width:14px;height:14px;"></i>
+                Export CSV
+            </a>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table" style="margin:0;">
+                <thead>
+                    <tr>
+                        <th style="padding:.875rem 1.25rem; font-size:.75rem; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:.05em; background:#f8fafc; white-space:nowrap;">Date &amp; Time</th>
+                        <th style="padding:.875rem 1.25rem; font-size:.75rem; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:.05em; background:#f8fafc;">Student</th>
+                        <th style="padding:.875rem 1.25rem; font-size:.75rem; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:.05em; background:#f8fafc;">Counselor</th>
+                        <th style="padding:.875rem 1.25rem; font-size:.75rem; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:.05em; background:#f8fafc;">Concern</th>
+                        <th style="padding:.875rem 1.25rem; font-size:.75rem; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:.05em; background:#f8fafc; text-align:center;">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for appt in appointments %}
+                    <tr style="border-bottom:1px solid #f1f5f9;">
+                        <td style="padding:1rem 1.25rem;">
+                            <div style="font-weight:700; color:#0f172a; font-size:.9375rem; white-space:nowrap;">
+                                {{ appt.scheduled_at|date:"M d, Y" }}
+                            </div>
+                            <div style="font-size:.8125rem; color:#64748b; margin-top:.125rem;">
+                                {{ appt.scheduled_at|date:"h:i A" }}
+                            </div>
+                        </td>
+                        <td style="padding:1rem 1.25rem;">
+                            <div style="font-weight:600; color:#0f172a;">{{ appt.student.full_name }}</div>
+                            <div style="font-size:.75rem; color:#94a3b8; margin-top:.125rem; font-family:monospace;">
+                                {{ appt.student.student_id|default:"No ID" }}
+                            </div>
+                        </td>
+                        <td style="padding:1rem 1.25rem;">
+                            <div style="display:flex; align-items:center; gap:.625rem;">
+                                <div style="width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,#0d9488,#0f766e); color:#fff; display:flex; align-items:center; justify-content:center; font-size:.875rem; font-weight:700; flex-shrink:0;">
+                                    {{ appt.counselor.full_name|slice:":1"|upper }}
+                                </div>
+                                <div>
+                                    <div style="font-weight:600; color:#0f172a; font-size:.875rem;">{{ appt.counselor.full_name }}</div>
+                                    <div style="font-size:.75rem; color:#94a3b8;">{{ appt.counselor.department|default:"Guidance" }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td style="padding:1rem 1.25rem;">
+                            <span style="display:inline-block; padding:.25rem .625rem; border-radius:6px; font-size:.75rem; font-weight:600; background:#f1f5f9; color:#334155; border:1px solid #e2e8f0; white-space:nowrap;">
+                                {{ appt.concern_type|title }}
+                            </span>
+                        </td>
+                        <td style="padding:1rem 1.25rem; text-align:center;">
+                            {% if appt.status == 'confirmed' %}
+                            <span class="badge badge-confirmed">Confirmed</span>
+                            {% elif appt.status == 'pending' %}
+                            <span class="badge badge-pending">Pending</span>
+                            {% elif appt.status == 'completed' %}
+                            <span class="badge badge-completed">Completed</span>
+                            {% elif appt.status == 'cancelled' %}
+                            <span class="badge badge-cancelled">Cancelled</span>
+                            {% else %}
+                            <span class="badge">{{ appt.status|title }}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" style="text-align:center; padding:4rem 1.5rem; color:#64748b;">
+                            <div style="width:56px; height:56px; border-radius:50%; background:#faf5ff; color:#7c3aed; display:flex; align-items:center; justify-content:center; margin:0 auto 1rem auto;">
+                                <i data-lucide="calendar-x" style="width:28px;height:28px;"></i>
+                            </div>
+                            <div style="font-weight:700; color:#1e293b; font-size:1rem; margin-bottom:.375rem;">No appointments found</div>
+                            <div style="font-size:.875rem;">
+                                {% if search_query or active_filter != 'all' %}
+                                Try adjusting your search or filter criteria.
+                                <a href="?status=all" style="color:#7c3aed; text-decoration:none; font-weight:600;">Clear filters</a>
+                                {% else %}
+                                No appointments have been booked in the system yet.
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

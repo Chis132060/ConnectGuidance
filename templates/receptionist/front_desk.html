@@ -1,0 +1,156 @@
+{% extends "common/base.html" %}
+{% load static %}
+
+{% block page_title %}Front Desk Live Queue{% endblock %}
+{% block title %}Front Desk Queue &amp; Intake — ConnectGuidance Receptionist{% endblock %}
+{% block meta_description %}Live front desk intake queue, counselor duty status, and check-in timeline.{% endblock %}
+
+{% block content %}
+<div class="receptionist-frontdesk-page" style="max-width: 1200px; margin: 0 auto;">
+
+    <!-- Messages / Alerts -->
+    {% if messages %}
+    <div style="margin-bottom: 1.5rem;">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'success' }}" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.875rem 1.25rem; border-radius: 10px; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.75rem;">
+            <span>{{ message }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Page Header -->
+    <div class="page-header" style="margin-bottom: 1.5rem;">
+        <div class="page-header-content" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <div class="breadcrumb" style="display: flex; align-items: center; gap: 0.375rem; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #d97706; margin-bottom: 0.25rem;">
+                    <i data-lucide="concierge-bell" style="width: 14px; height: 14px;"></i>
+                    <span>LIVE INTAKE QUEUE</span>
+                </div>
+                <h1 style="font-size: 1.5rem; font-weight: 800; color: #0f172a; margin: 0; letter-spacing: -0.02em;">
+                    Front Desk Reception
+                </h1>
+                <p style="font-size: 0.875rem; color: #64748b; margin-top: 0.25rem; margin-bottom: 0;">
+                    Live intake queue, student triage, and on-duty guidance counselor roster.
+                </p>
+            </div>
+            <div style="display: flex; gap: 0.75rem;">
+                <a href="{% url 'receptionist_walk_ins' %}" class="btn btn-primary">
+                    <i data-lucide="user-plus" style="width: 16px; height: 16px;"></i>
+                    Walk-in Intake
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2 Column Layout: Today's Arrival Schedule & On-Duty Counselors -->
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; align-items: start;">
+        
+        <!-- Left: Today's Queue Timeline -->
+        <div class="card" style="padding: 0; overflow: hidden;">
+            <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                    <h2 style="font-size: 1.0625rem; font-weight: 700; color: #0f172a; margin: 0;">
+                        Today's Arrival Queue
+                    </h2>
+                    <p style="font-size: 0.8125rem; color: #64748b; margin-top: 0.15rem; margin-bottom: 0;">
+                        Hourly consultations organized by arrival time
+                    </p>
+                </div>
+                <span style="display: inline-flex; align-items: center; gap: 0.375rem; padding: 0.25rem 0.5rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; background: #ecfdf5; color: #065f46;">
+                    <span style="width: 6px; height: 6px; border-radius: 50%; background: #10b981;"></span>
+                    Live Intake Active
+                </span>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table" style="margin: 0;">
+                    <thead>
+                        <tr>
+                            <th>Time Slot</th>
+                            <th>Student</th>
+                            <th>Assigned Provider</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for appt in today_appointments %}
+                        <tr>
+                            <td>
+                                <div style="font-weight: 700; color: #0f172a;">
+                                    {{ appt.scheduled_at|date:"h:i A" }}
+                                </div>
+                            </td>
+                            <td>
+                                <div style="font-weight: 600; color: #0f172a;">{{ appt.student.full_name }}</div>
+                                <div style="font-size: 0.75rem; color: #64748b;">ID: {{ appt.student.student_id|default:"Not Assigned" }}</div>
+                            </td>
+                            <td>
+                                <div style="font-weight: 500; color: #334155;">{{ appt.counselor.full_name }}</div>
+                                <div style="font-size: 0.75rem; color: #64748b;">{{ appt.counselor.department|default:"Guidance" }}</div>
+                            </td>
+                            <td>
+                                {% if appt.status == 'confirmed' %}
+                                <span class="badge badge-confirmed">Confirmed</span>
+                                {% elif appt.status == 'pending' %}
+                                <span class="badge badge-pending">Pending</span>
+                                {% elif appt.status == 'completed' %}
+                                <span class="badge badge-completed">Completed</span>
+                                {% else %}
+                                <span class="badge badge-cancelled">{{ appt.status|title }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" style="text-align: center; padding: 3rem 1.5rem; color: #64748b;">
+                                No appointments registered for today yet.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Right: On-Duty Counselors Directory -->
+        <div class="card">
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.25rem; padding-bottom: 0.75rem; border-bottom: 1px solid #f1f5f9;">
+                <div style="width: 32px; height: 32px; border-radius: 8px; background: #fefce8; color: #d97706; display: flex; align-items: center; justify-content: center;">
+                    <i data-lucide="stethoscope" style="width: 16px; height: 16px;"></i>
+                </div>
+                <div>
+                    <h3 style="font-size: 0.9375rem; font-weight: 700; color: #0f172a; margin: 0;">On-Duty Counselors</h3>
+                    <div style="font-size: 0.75rem; color: #64748b;">Available for walk-in assignment</div>
+                </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                {% for c in counselors %}
+                <div style="padding: 0.75rem 1rem; border-radius: 8px; background: #f8fafc; border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between;">
+                    <div>
+                        <div style="font-weight: 600; font-size: 0.875rem; color: #0f172a;">{{ c.full_name }}</div>
+                        <div style="font-size: 0.75rem; color: #64748b;">{{ c.department|default:"Guidance Center" }}</div>
+                    </div>
+                    <span style="font-size: 0.71875rem; font-weight: 600; padding: 0.1875rem 0.5rem; border-radius: 9999px; background: #ecfdf5; color: #047857;">
+                        Available
+                    </span>
+                </div>
+                {% empty %}
+                <div style="font-size: 0.8125rem; color: #64748b; text-align: center; padding: 1.5rem 0;">
+                    No counselor providers found.
+                </div>
+                {% endfor %}
+            </div>
+
+            <div style="margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid #f1f5f9;">
+                <a href="{% url 'receptionist_walk_ins' %}" class="btn btn-primary" style="width: 100%; justify-content: center;">
+                    <i data-lucide="user-plus" style="width: 16px; height: 16px;"></i>
+                    Book Walk-in Now
+                </a>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

@@ -1,5 +1,5 @@
 """
-tests/test_case_notes.py — Tests for Case Notes: AES-256 encryption at rest, upsert uniqueness,
+apps/case_notes/tests.py — Tests for Case Notes: AES-256 encryption at rest, upsert uniqueness,
 counselor assignment integrity, RLS confidentiality matrix, and legacy format decrypt.
 """
 
@@ -14,8 +14,8 @@ from django.core.exceptions import PermissionDenied, ValidationError
 
 from core.models import Profile, Appointment, CaseNote, AuditLog
 from apps.common.choices import RoleChoices, AppointmentStatusChoices, ConcernTypeChoices
-from core.services.case_notes import save_case_note, get_decrypted_case_note
-from core.services.encryption import encrypt_text, decrypt_text
+from apps.case_notes.services.case_notes import save_case_note, get_decrypted_case_note
+from apps.case_notes.services.encryption import encrypt_text, decrypt_text
 
 TEST_HEX_KEY = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
 

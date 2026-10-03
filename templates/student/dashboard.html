@@ -1,421 +1,434 @@
 {% extends "common/base.html" %}
 {% load static %}
+
 {% block page_title %}Dashboard{% endblock %}
 {% block title %}Student Dashboard — ConnectGuidance{% endblock %}
 {% block meta_description %}ConnectGuidance student wellness hub, session schedule, and counselor updates.{% endblock %}
 
 {% block content %}
-<div class="container-minimal">
+<div class="content-container">
     
-    <!-- Welcome Header -->
-    <header class="card-minimal" style="margin-bottom: 2rem;">
-        <div style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
-            <div style="width: 64px; height: 64px; border-radius: 50%; background: var(--c-primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 600; flex-shrink: 0;">
+    <!-- Welcome Section -->
+    <div class="card mb-6">
+        <div style="display: flex; align-items: center; gap: var(--space-4); flex-wrap: wrap;">
+            <div class="user-avatar" style="width: 56px; height: 56px; font-size: var(--text-xl);">
                 {{ profile.full_name|slice:":1"|upper|default:"S" }}
             </div>
             <div style="flex: 1; min-width: 0;">
-                <p style="font-size: 0.875rem; color: var(--c-muted); margin-bottom: 0.25rem;">Student Wellness Hub</p>
-                <h1 style="font-size: 1.75rem; font-weight: 600; margin-bottom: 0.5rem;">Welcome back, {{ profile.full_name }}</h1>
-                <div style="display: flex; gap: 1rem; flex-wrap: wrap; font-size: 0.875rem; color: var(--c-muted);">
-                    <span><strong>ID:</strong> {{ profile.student_id|default:"Not Assigned" }}</span>
-                    <span><strong>Dept:</strong> {{ profile.department|default:"General Academics" }}</span>
+                <p class="text-muted" style="font-size: var(--text-xs); margin-bottom: var(--space-1);">Student Dashboard</p>
+                <h1 style="font-size: var(--text-2xl); font-weight: var(--font-semibold); color: var(--brand-ink); margin-bottom: var(--space-2);">
+                    Welcome back, {{ profile.full_name }}
+                </h1>
+                <div style="display: flex; gap: var(--space-4); flex-wrap: wrap; font-size: var(--text-sm); color: var(--neutral-600);">
+                    <span><strong>Student ID:</strong> {{ profile.student_id|default:"Not Assigned" }}</span>
+                    <span><strong>Department:</strong> {{ profile.department|default:"General" }}</span>
                 </div>
             </div>
-            <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
-                <a href="{% url 'student_book_appointment' %}" class="btn btn-primary" id="dash-book-btn">
-                    <i data-lucide="calendar-plus" style="width:16px;height:16px;"></i>
+            <div style="display: flex; gap: var(--space-3); flex-wrap: wrap;">
+                <a href="{% url 'student_book_appointment' %}" class="btn btn-primary">
+                    <i data-lucide="calendar-plus" class="nav-icon"></i>
                     Book Session
                 </a>
-                <a href="{% url 'student_appointments' %}" class="btn btn-secondary" id="dash-appointments-btn">
-                    <i data-lucide="calendar" style="width:16px;height:16px;"></i>
+                <a href="{% url 'student_appointments' %}" class="btn btn-secondary">
+                    <i data-lucide="calendar" class="nav-icon"></i>
                     My Schedule
                 </a>
             </div>
         </div>
-    </header>
+    </div>
 
     <!-- Stats Grid -->
-    <div class="grid-minimal-4" style="margin-bottom: 2rem;">
-        <div class="card-minimal">
-            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.75rem;">
-                <span style="font-size: 0.875rem; color: var(--c-muted);">Upcoming Sessions</span>
-                <i data-lucide="calendar-check" style="width:20px;height:20px;color:var(--c-primary);"></i>
+    <div class="grid-4 mb-6">
+        <div class="stat-card">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: var(--space-3);">
+                <span class="stat-label">Upcoming Sessions</span>
+                <i data-lucide="calendar-check" style="width:20px;height:20px;color:var(--brand-primary);"></i>
             </div>
-            <div style="font-size: 2rem; font-weight: 600; color: var(--c-primary); margin-bottom: 0.5rem;">{{ upcoming_count }}</div>
-            <div style="font-size: 0.8125rem; color: var(--c-muted);">
-                {% if upcoming_count > 0 %}Active appointments scheduled{% else %}No sessions currently booked{% endif %}
-            </div>
+            <div class="stat-value" style="color: var(--brand-primary);">{{ upcoming_count }}</div>
+            <p class="stat-description">
+                {% if upcoming_count > 0 %}Active appointments scheduled{% else %}No sessions booked{% endif %}
+            </p>
         </div>
 
-        <div class="card-minimal">
-            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.75rem;">
-                <span style="font-size: 0.875rem; color: var(--c-muted);">Completed</span>
-                <i data-lucide="check-circle-2" style="width:20px;height:20px;color:#15803d;"></i>
+        <div class="stat-card">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: var(--space-3);">
+                <span class="stat-label">Completed</span>
+                <i data-lucide="check-circle-2" style="width:20px;height:20px;color:var(--semantic-success);"></i>
             </div>
-            <div style="font-size: 2rem; font-weight: 600; color: #15803d; margin-bottom: 0.5rem;">{{ past_count }}</div>
-            <div style="font-size: 0.8125rem; color: var(--c-muted);">Total consultations attended</div>
+            <div class="stat-value" style="color: var(--semantic-success);">{{ past_count }}</div>
+            <p class="stat-description">Total sessions attended</p>
         </div>
 
-        <div class="card-minimal">
-            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.75rem;">
-                <span style="font-size: 0.875rem; color: var(--c-muted);">Office Hours</span>
-                <i data-lucide="clock" style="width:20px;height:20px;color:var(--c-primary);"></i>
+        <div class="stat-card">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: var(--space-3);">
+                <span class="stat-label">Office Hours</span>
+                <i data-lucide="clock" style="width:20px;height:20px;color:var(--brand-primary);"></i>
             </div>
-            <div style="font-size: 1.5rem; font-weight: 600; color: var(--c-text); margin-bottom: 0.5rem;">Mon–Fri</div>
-            <div style="font-size: 0.8125rem; color: var(--c-muted);">09:00 AM – 04:00 PM</div>
+            <div style="font-size: var(--text-xl); font-weight: var(--font-semibold); color: var(--brand-ink); margin-bottom: var(--space-1);">
+                Mon–Fri
+            </div>
+            <p class="stat-description">09:00 AM – 04:00 PM</p>
         </div>
 
-        <div class="card-minimal">
-            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.75rem;">
-                <span style="font-size: 0.875rem; color: var(--c-muted);">AI Assistant</span>
-                <i data-lucide="bot" style="width:20px;height:20px;color:#f59e0b;"></i>
+        <div class="stat-card">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: var(--space-3);">
+                <span class="stat-label">AI Assistant</span>
+                <i data-lucide="bot" style="width:20px;height:20px;color:var(--semantic-warning);"></i>
             </div>
-            <div style="font-size: 1.5rem; font-weight: 600; color: var(--c-text); margin-bottom: 0.5rem;">24/7</div>
-            <a href="{% url 'student_chatbot' %}" style="font-size: 0.8125rem; color: var(--c-primary); text-decoration: none;">
+            <div style="font-size: var(--text-xl); font-weight: var(--font-semibold); color: var(--brand-ink); margin-bottom: var(--space-1);">
+                24/7 Available
+            </div>
+            <a href="{% url 'student_chatbot' %}" class="text-primary" style="font-size: var(--text-sm); text-decoration: none; font-weight: var(--font-medium);">
                 Launch Chatbot →
             </a>
         </div>
     </div>
 
-    <!-- Main Content Grid -->
-    <div style="display: grid; grid-template-columns: 1fr 380px; gap: 2rem; align-items: start;">
-        @media (max-width: 1024px) { grid-template-columns: 1fr; }
+    <!-- Main Content Area -->
+    <div style="display: grid; grid-template-columns: 1fr 360px; gap: var(--space-6); align-items: start;">
         
         <!-- Primary Column -->
         <div>
             
-            <!-- Next Session Card -->
-            <section class="card-minimal">
-                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1.5rem;">
+            <!-- Next Appointment -->
+            <div class="card mb-6">
+                <div class="card-header">
                     <div>
-                        <p style="font-size: 0.75rem; font-weight: 600; color: var(--c-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem;">Upcoming Consultation</p>
-                        <h2 style="font-size: 1.25rem; font-weight: 600;">Next Scheduled Session</h2>
+                        <p class="text-muted" style="font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: var(--space-1);">
+                            Upcoming Consultation
+                        </p>
+                        <h2 class="card-title">Next Scheduled Session</h2>
                     </div>
                     {% if next_appointment %}
                         {% if next_appointment.status == 'confirmed' %}
-                            <span class="badge-confirmed">CONFIRMED</span>
+                            <span class="badge badge-confirmed">Confirmed</span>
                         {% else %}
-                            <span class="badge-pending">PENDING</span>
+                            <span class="badge badge-pending">Pending</span>
                         {% endif %}
                     {% endif %}
                 </div>
 
                 {% if next_appointment %}
-                    <div style="display: flex; gap: 1.5rem; padding: 1.5rem; background: var(--c-bg); border: 1px solid var(--c-border); border-radius: 8px; margin-bottom: 1rem;">
-                        <div style="text-align: center; padding: 1rem; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: 8px; flex-shrink: 0;">
-                            <div style="font-size: 0.75rem; color: var(--c-muted); font-weight: 600; text-transform: uppercase;">{{ next_appointment.scheduled_at|date:"M" }}</div>
-                            <div style="font-size: 2rem; font-weight: 700; color: var(--c-primary); line-height: 1;">{{ next_appointment.scheduled_at|date:"d" }}</div>
-                            <div style="font-size: 0.875rem; color: var(--c-muted); margin-top: 0.25rem;">{{ next_appointment.scheduled_at|date:"g:i A" }}</div>
+                    <div style="display: flex; gap: var(--space-4); padding: var(--space-5); background: var(--neutral-50); border: 1px solid var(--neutral-200); border-radius: var(--radius-lg); margin-bottom: var(--space-4);">
+                        <div style="text-align: center; padding: var(--space-4); background: var(--neutral-white); border: 1px solid var(--neutral-200); border-radius: var(--radius-md); flex-shrink: 0;">
+                            <div style="font-size: var(--text-xs); color: var(--neutral-500); font-weight: var(--font-semibold); text-transform: uppercase;">
+                                {{ next_appointment.scheduled_at|date:"M" }}
+                            </div>
+                            <div style="font-size: var(--text-4xl); font-weight: var(--font-bold); color: var(--brand-primary); line-height: 1;">
+                                {{ next_appointment.scheduled_at|date:"d" }}
+                            </div>
+                            <div style="font-size: var(--text-sm); color: var(--neutral-500); margin-top: var(--space-1);">
+                                {{ next_appointment.scheduled_at|date:"g:i A" }}
+                            </div>
                         </div>
 
                         <div style="flex: 1;">
-                            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;">
-                                <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--c-primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">
+                            <div style="display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-3);">
+                                <div class="user-avatar" style="width: 40px; height: 40px;">
                                     {{ next_appointment.counselor.full_name|slice:":1"|upper }}
                                 </div>
                                 <div>
-                                    <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 0.125rem;">{{ next_appointment.counselor.full_name }}</h3>
-                                    <p style="font-size: 0.8125rem; color: var(--c-muted); margin: 0;">{{ next_appointment.counselor.department|default:"University Guidance & Psychological Services" }}</p>
+                                    <h3 style="font-size: var(--text-base); font-weight: var(--font-semibold); color: var(--brand-ink); margin-bottom: 2px;">
+                                        {{ next_appointment.counselor.full_name }}
+                                    </h3>
+                                    <p class="text-muted" style="font-size: var(--text-sm); margin: 0;">
+                                        {{ next_appointment.counselor.department|default:"Guidance Services" }}
+                                    </p>
                                 </div>
                             </div>
 
-                            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem;">
-                                <span style="font-size: 0.8125rem; padding: 0.25rem 0.625rem; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: 4px;">
-                                    <i data-lucide="tag" style="width:12px;height:12px;display:inline;vertical-align:middle;margin-right:0.25rem;"></i>
+                            <div style="display: flex; gap: var(--space-2); flex-wrap: wrap; margin-bottom: var(--space-3);">
+                                <span class="badge badge-primary">
+                                    <i data-lucide="tag" style="width:12px;height:12px;"></i>
                                     {{ next_appointment.concern_type|title }}
                                 </span>
-                                <span style="font-size: 0.8125rem; padding: 0.25rem 0.625rem; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: 4px;">
-                                    <i data-lucide="map-pin" style="width:12px;height:12px;display:inline;vertical-align:middle;margin-right:0.25rem;"></i>
+                                <span class="badge badge-primary">
+                                    <i data-lucide="map-pin" style="width:12px;height:12px;"></i>
                                     Room 204
                                 </span>
                             </div>
 
                             {% if next_appointment.notes %}
-                                <div style="padding: 0.75rem; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: 6px; font-size: 0.875rem;">
+                                <div style="padding: var(--space-3); background: var(--neutral-white); border: 1px solid var(--neutral-200); border-radius: var(--radius-md); font-size: var(--text-sm);">
                                     <strong>Your Note:</strong> {{ next_appointment.notes }}
                                 </div>
                             {% endif %}
                         </div>
                     </div>
 
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <a href="{% url 'student_appointments' %}" style="color: var(--c-primary); text-decoration: none; font-size: 0.9375rem; font-weight: 500;">
+                    <div class="flex-between">
+                        <a href="{% url 'student_appointments' %}" class="text-primary" style="font-size: var(--text-sm); font-weight: var(--font-medium); text-decoration: none;">
                             View All Appointments →
                         </a>
                         {% if next_appointment.status == 'pending' or next_appointment.status == 'confirmed' %}
-                            <form action="{% url 'student_cancel_appointment' next_appointment.pk %}" method="post" style="display:inline;" onsubmit="return confirm('Are you sure you want to cancel this appointment?');">
+                            <form action="{% url 'student_cancel_appointment' next_appointment.pk %}" method="post" onsubmit="return confirm('Cancel this appointment?');">
                                 {% csrf_token %}
                                 <button type="submit" class="btn btn-secondary btn-sm">
-                                    <i data-lucide="x-circle" style="width:14px;height:14px;"></i>
-                                    Cancel Booking
+                                    <i data-lucide="x-circle" class="nav-icon" style="width:14px;height:14px;"></i>
+                                    Cancel
                                 </button>
                             </form>
                         {% endif %}
                     </div>
                 {% else %}
-                    <div style="text-align: center; padding: 3rem 1rem;">
-                        <div style="width: 64px; height: 64px; border-radius: 50%; background: var(--c-bg); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
-                            <i data-lucide="calendar-plus" style="width:32px;height:32px;color:var(--c-primary);"></i>
+                    <div class="empty-state">
+                        <div class="empty-state-icon">
+                            <i data-lucide="calendar-plus" style="width:100%;height:100%;"></i>
                         </div>
-                        <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem;">No upcoming consultations scheduled</h3>
-                        <p style="color: var(--c-muted); margin-bottom: 1.5rem; max-width: 480px; margin-left: auto; margin-right: auto;">University guidance counseling is private, confidential, and free of charge. Schedule a consultation to discuss academic planning, emotional wellness, or career questions.</p>
+                        <h3 class="empty-state-title">No upcoming appointments</h3>
+                        <p class="empty-state-description">
+                            Schedule a consultation with a guidance counselor to discuss academic planning, wellness, or career questions.
+                        </p>
                         <a href="{% url 'student_book_appointment' %}" class="btn btn-primary">
-                            <i data-lucide="plus" style="width:16px;height:16px;"></i>
-                            Schedule a Session with a Counselor
+                            <i data-lucide="calendar-plus" class="nav-icon"></i>
+                            Schedule Session
                         </a>
                     </div>
                 {% endif %}
-            </section>
+            </div>
 
-            <!-- Daily Wellness Check-in -->
-            <section class="card-minimal">
-                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1.5rem;">
+            <!-- Wellness Check-in -->
+            <div class="card mb-6">
+                <div class="card-header">
                     <div>
-                        <p style="font-size: 0.75rem; font-weight: 600; color: var(--c-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem;">Self-Reflection & Care</p>
-                        <h2 style="font-size: 1.25rem; font-weight: 600;">Daily Wellness Check-in</h2>
+                        <p class="text-muted" style="font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: var(--space-1);">
+                            Self-Care
+                        </p>
+                        <h2 class="card-title">Daily Wellness Check-in</h2>
                     </div>
-                    <span style="font-size: 0.8125rem; padding: 0.25rem 0.625rem; background: #dcfce7; border: 1px solid #86efac; border-radius: 4px; color: #15803d; font-weight: 500;">
-                        <i data-lucide="shield-check" style="width:13px;height:13px;display:inline;vertical-align:middle;margin-right:0.25rem;"></i>
-                        Confidential
-                    </span>
+                    <span class="badge badge-success">Confidential</span>
                 </div>
 
-                <p style="color: var(--c-muted); margin-bottom: 1.5rem;">
-                    How are you feeling today? Checking in regularly helps you reflect on your mental wellness and allows your counselor to step in if you ever need extra support.
+                <p class="text-muted mb-4" style="font-size: var(--text-sm);">
+                    How are you feeling today? Regular check-ins help you reflect on your mental wellness.
                 </p>
 
-                <form method="post" action="{% url 'student_mood_checkin' %}" id="student-mood-form">
+                <form method="post" action="{% url 'student_mood_checkin' %}">
                     {% csrf_token %}
-                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4); margin-bottom: var(--space-4);">
                         
                         <label style="cursor: pointer;">
                             <input type="radio" name="mood" value="good" required style="position: absolute; opacity: 0;">
-                            <div style="padding: 1.25rem 1rem; border: 2px solid var(--c-border); border-radius: 8px; text-align: center; transition: all 0.2s;">
-                                <div style="width: 48px; height: 48px; border-radius: 50%; background: #dcfce7; display: flex; align-items: center; justify-content: center; margin: 0 auto 0.75rem;">
-                                    <i data-lucide="smile" style="width:24px;height:24px;color:#15803d;"></i>
+                            <div style="padding: var(--space-4); border: 2px solid var(--neutral-200); border-radius: var(--radius-lg); text-align: center; transition: all var(--transition-fast);">
+                                <div style="width: 48px; height: 48px; border-radius: var(--radius-full); background: var(--semantic-success-bg); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-3);">
+                                    <i data-lucide="smile" style="width:24px;height:24px;color:var(--semantic-success);"></i>
                                 </div>
-                                <strong style="display: block; margin-bottom: 0.25rem;">Good</strong>
-                                <span style="font-size: 0.8125rem; color: var(--c-muted);">Energetic & balanced</span>
+                                <strong style="display: block; margin-bottom: var(--space-1); font-size: var(--text-sm);">Good</strong>
+                                <span class="text-muted" style="font-size: var(--text-xs);">Energetic & balanced</span>
                             </div>
                         </label>
 
                         <label style="cursor: pointer;">
                             <input type="radio" name="mood" value="okay" style="position: absolute; opacity: 0;">
-                            <div style="padding: 1.25rem 1rem; border: 2px solid var(--c-border); border-radius: 8px; text-align: center; transition: all 0.2s;">
-                                <div style="width: 48px; height: 48px; border-radius: 50%; background: #f0f9ff; display: flex; align-items: center; justify-content: center; margin: 0 auto 0.75rem;">
-                                    <i data-lucide="meh" style="width:24px;height:24px;color:#0284c7;"></i>
+                            <div style="padding: var(--space-4); border: 2px solid var(--neutral-200); border-radius: var(--radius-lg); text-align: center; transition: all var(--transition-fast);">
+                                <div style="width: 48px; height: 48px; border-radius: var(--radius-full); background: var(--semantic-info-bg); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-3);">
+                                    <i data-lucide="meh" style="width:24px;height:24px;color:var(--semantic-info);"></i>
                                 </div>
-                                <strong style="display: block; margin-bottom: 0.25rem;">Okay</strong>
-                                <span style="font-size: 0.8125rem; color: var(--c-muted);">Steady, getting through</span>
+                                <strong style="display: block; margin-bottom: var(--space-1); font-size: var(--text-sm);">Okay</strong>
+                                <span class="text-muted" style="font-size: var(--text-xs);">Getting through</span>
                             </div>
                         </label>
 
                         <label style="cursor: pointer;">
                             <input type="radio" name="mood" value="low" style="position: absolute; opacity: 0;">
-                            <div style="padding: 1.25rem 1rem; border: 2px solid var(--c-border); border-radius: 8px; text-align: center; transition: all 0.2s;">
-                                <div style="width: 48px; height: 48px; border-radius: 50%; background: #ffedd5; display: flex; align-items: center; justify-content: center; margin: 0 auto 0.75rem;">
-                                    <i data-lucide="frown" style="width:24px;height:24px;color:#ea580c;"></i>
+                            <div style="padding: var(--space-4); border: 2px solid var(--neutral-200); border-radius: var(--radius-lg); text-align: center; transition: all var(--transition-fast);">
+                                <div style="width: 48px; height: 48px; border-radius: var(--radius-full); background: var(--semantic-warning-bg); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-3);">
+                                    <i data-lucide="frown" style="width:24px;height:24px;color:var(--semantic-warning);"></i>
                                 </div>
-                                <strong style="display: block; margin-bottom: 0.25rem;">Low</strong>
-                                <span style="font-size: 0.8125rem; color: var(--c-muted);">Stressed, needing support</span>
+                                <strong style="display: block; margin-bottom: var(--space-1); font-size: var(--text-sm);">Low</strong>
+                                <span class="text-muted" style="font-size: var(--text-xs);">Needing support</span>
                             </div>
                         </label>
 
                     </div>
 
                     <div class="form-group">
-                        <label for="id_mood_note">
-                            Add an optional reflection note for your counselor <span style="color: var(--c-muted); font-weight: 400;">(Optional)</span>
-                        </label>
-                        <textarea name="note" id="id_mood_note" rows="3" placeholder="Share what's on your mind today (max 500 characters)..." maxlength="500"></textarea>
+                        <label for="id_mood_note" class="form-label">Optional reflection note</label>
+                        <textarea name="note" id="id_mood_note" class="form-textarea" rows="3" placeholder="Share what's on your mind today (max 500 characters)..." maxlength="500"></textarea>
                     </div>
 
-                    <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 1rem; background: var(--c-bg); border: 1px solid var(--c-border); border-radius: 8px;">
-                        <div style="display: flex; align-items: start; gap: 0.5rem; font-size: 0.8125rem; color: var(--c-muted);">
-                            <i data-lucide="info" style="width:16px;height:16px;color:var(--c-primary);flex-shrink:0;margin-top:0.125rem;"></i>
-                            <span>Selecting <strong>Low</strong> alerts your counselor so they can check in with you discreetly.</span>
+                    <div class="flex-between" style="padding: var(--space-4); background: var(--neutral-50); border: 1px solid var(--neutral-200); border-radius: var(--radius-md);">
+                        <div style="display: flex; align-items: start; gap: var(--space-2); flex: 1;">
+                            <i data-lucide="info" style="width:16px;height:16px;color:var(--brand-primary);flex-shrink:0;margin-top:2px;"></i>
+                            <span class="text-muted" style="font-size: var(--text-xs);">
+                                Selecting <strong>Low</strong> alerts your counselor for discreet follow-up
+                            </span>
                         </div>
-                        <button type="submit" class="btn btn-primary" id="submit-mood-btn" style="flex-shrink: 0;">
+                        <button type="submit" class="btn btn-primary">
                             <i data-lucide="send" style="width:15px;height:15px;"></i>
                             Submit
                         </button>
                     </div>
                 </form>
-            </section>
+            </div>
 
-            <!-- Counselor Case Notes -->
-            <section class="card-minimal">
-                <div style="margin-bottom: 1.5rem;">
-                    <p style="font-size: 0.75rem; font-weight: 600; color: var(--c-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem;">Clinical Follow-Ups</p>
-                    <h2 style="font-size: 1.25rem; font-weight: 600;">Counselor Shared Notes</h2>
+            <!-- Case Notes History -->
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <p class="text-muted" style="font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: var(--space-1);">
+                            Follow-Ups
+                        </p>
+                        <h2 class="card-title">Counselor Shared Notes</h2>
+                    </div>
                 </div>
 
                 {% if case_notes_history %}
-                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    <div style="display: flex; flex-direction: column; gap: var(--space-4);">
                         {% for note in case_notes_history %}
-                            <div style="padding: 1.25rem; background: var(--c-bg); border: 1px solid var(--c-border); border-radius: 8px;">
-                                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
-                                    <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                        <div style="width: 32px; height: 32px; border-radius: 6px; background: var(--c-primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 0.875rem; font-weight: 600;">
-                                            <i data-lucide="file-badge" style="width:16px;height:16px;"></i>
+                            <div style="padding: var(--space-4); background: var(--neutral-50); border: 1px solid var(--neutral-200); border-radius: var(--radius-lg);">
+                                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: var(--space-3);">
+                                    <div style="display: flex; align-items: center; gap: var(--space-3);">
+                                        <div class="user-avatar" style="width: 32px; height: 32px; font-size: var(--text-xs);">
+                                            {{ note.author_name|slice:":1"|upper }}
                                         </div>
                                         <div>
-                                            <strong style="display: block; margin-bottom: 0.125rem;">{{ note.author_name }}</strong>
-                                            <span style="font-size: 0.8125rem; color: var(--c-muted);">{{ note.scheduled_at|date:"M j, Y @ g:i A" }}</span>
+                                            <strong style="display: block; font-size: var(--text-sm); font-weight: var(--font-semibold); margin-bottom: 2px;">
+                                                {{ note.author_name }}
+                                            </strong>
+                                            <span class="text-muted" style="font-size: var(--text-xs);">
+                                                {{ note.scheduled_at|date:"M j, Y @ g:i A" }}
+                                            </span>
                                         </div>
                                     </div>
-                                    <span style="font-size: 0.8125rem; padding: 0.25rem 0.625rem; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: 4px;">{{ note.concern_type|title }}</span>
+                                    <span class="badge badge-primary">{{ note.concern_type|title }}</span>
                                 </div>
-                                <div style="color: var(--c-text); line-height: 1.6;">{{ note.decrypted_content|linebreaks }}</div>
+                                <div style="color: var(--neutral-800); line-height: 1.6; font-size: var(--text-sm);">
+                                    {{ note.decrypted_content|linebreaks }}
+                                </div>
                             </div>
                         {% endfor %}
                     </div>
                 {% else %}
-                    <div style="text-align: center; padding: 2rem 1rem;">
-                        <div style="width: 56px; height: 56px; border-radius: 8px; background: var(--c-bg); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
-                            <i data-lucide="file-text" style="width:28px;height:28px;color:var(--c-muted);"></i>
+                    <div class="empty-state" style="padding: var(--space-8) var(--space-4);">
+                        <div class="empty-state-icon" style="width: 48px; height: 48px; margin-bottom: var(--space-3);">
+                            <i data-lucide="file-text" style="width:100%;height:100%;"></i>
                         </div>
-                        <h4 style="font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem;">No shared case notes yet</h4>
-                        <p style="font-size: 0.875rem; color: var(--c-muted); max-width: 420px; margin: 0 auto;">After your guidance consultations, non-confidential follow-up recommendations and action plans prepared by your counselor will appear here.</p>
+                        <h4 class="empty-state-title" style="font-size: var(--text-base);">No shared notes yet</h4>
+                        <p class="empty-state-description">
+                            After consultations, non-confidential recommendations from your counselor will appear here.
+                        </p>
                     </div>
                 {% endif %}
-            </section>
+            </div>
 
         </div>
 
         <!-- Sidebar Column -->
         <aside>
             
-            <!-- Quick Navigation -->
-            <div class="card-minimal">
-                <p style="font-size: 0.75rem; font-weight: 600; color: var(--c-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem;">Navigation</p>
-                <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 1rem;">Quick Actions</h3>
+            <!-- Quick Actions -->
+            <div class="card mb-6">
+                <h3 style="font-size: var(--text-base); font-weight: var(--font-semibold); color: var(--brand-ink); margin-bottom: var(--space-4);">
+                    Quick Actions
+                </h3>
 
-                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-                    <a href="{% url 'student_book_appointment' %}" id="nav-book" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.875rem; background: var(--c-primary); color: white; border-radius: 8px; text-decoration: none; transition: opacity 0.2s;">
-                        <div style="width: 36px; height: 36px; border-radius: 6px; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <div style="display: flex; flex-direction: column; gap: var(--space-3);">
+                    <a href="{% url 'student_book_appointment' %}" style="display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3); background: var(--brand-primary); color: var(--neutral-white); border-radius: var(--radius-md); text-decoration: none; transition: all var(--transition-fast);">
+                        <div style="width: 36px; height: 36px; border-radius: var(--radius-md); background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                             <i data-lucide="calendar-plus" style="width:18px;height:18px;"></i>
                         </div>
                         <div style="flex: 1;">
-                            <strong style="display: block; margin-bottom: 0.125rem;">Book a Session</strong>
-                            <span style="font-size: 0.8125rem; opacity: 0.9;">Choose counselor & timeslot</span>
+                            <strong style="display: block; margin-bottom: 2px; font-size: var(--text-sm);">Book Session</strong>
+                            <span style="font-size: var(--text-xs); opacity: 0.9;">Choose counselor & time</span>
                         </div>
                         <i data-lucide="chevron-right" style="width:16px;height:16px;opacity:0.7;"></i>
                     </a>
 
-                    <a href="{% url 'student_chatbot' %}" id="nav-chatbot" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.875rem; background: var(--c-bg); border: 1px solid var(--c-border); border-radius: 8px; text-decoration: none; color: var(--c-text); transition: opacity 0.2s;">
-                        <div style="width: 36px; height: 36px; border-radius: 6px; background: #fef3c7; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                            <i data-lucide="bot" style="width:18px;height:18px;color:#f59e0b;"></i>
+                    <a href="{% url 'student_chatbot' %}" style="display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3); background: var(--neutral-50); border: 1px solid var(--neutral-200); border-radius: var(--radius-md); text-decoration: none; color: var(--neutral-800); transition: all var(--transition-fast);">
+                        <div style="width: 36px; height: 36px; border-radius: var(--radius-md); background: var(--semantic-warning-bg); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <i data-lucide="bot" style="width:18px;height:18px;color:var(--semantic-warning);"></i>
                         </div>
                         <div style="flex: 1;">
-                            <strong style="display: block; margin-bottom: 0.125rem;">AI Wellness Assistant</strong>
-                            <span style="font-size: 0.8125rem; color: var(--c-muted);">Private, confidential 24/7 chat</span>
+                            <strong style="display: block; margin-bottom: 2px; font-size: var(--text-sm);">AI Wellness Chat</strong>
+                            <span class="text-muted" style="font-size: var(--text-xs);">Private 24/7 support</span>
                         </div>
-                        <i data-lucide="chevron-right" style="width:16px;height:16px;color:var(--c-muted);"></i>
+                        <i data-lucide="chevron-right" style="width:16px;height:16px;" class="text-muted"></i>
                     </a>
 
-                    <a href="{% url 'student_front_desk' %}" id="nav-frontdesk" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.875rem; background: var(--c-bg); border: 1px solid var(--c-border); border-radius: 8px; text-decoration: none; color: var(--c-text); transition: opacity 0.2s;">
-                        <div style="width: 36px; height: 36px; border-radius: 6px; background: #f0f9ff; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                            <i data-lucide="building" style="width:18px;height:18px;color:#0284c7;"></i>
+                    <a href="{% url 'student_front_desk' %}" style="display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3); background: var(--neutral-50); border: 1px solid var(--neutral-200); border-radius: var(--radius-md); text-decoration: none; color: var(--neutral-800); transition: all var(--transition-fast);">
+                        <div style="width: 36px; height: 36px; border-radius: var(--radius-md); background: var(--neutral-100); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <i data-lucide="building" style="width:18px;height:18px;color:var(--neutral-600);"></i>
                         </div>
                         <div style="flex: 1;">
-                            <strong style="display: block; margin-bottom: 0.125rem;">Front Desk & Walk-ins</strong>
-                            <span style="font-size: 0.8125rem; color: var(--c-muted);">Hours, locations & triage</span>
+                            <strong style="display: block; margin-bottom: 2px; font-size: var(--text-sm);">Front Desk</strong>
+                            <span class="text-muted" style="font-size: var(--text-xs);">Hours & walk-ins</span>
                         </div>
-                        <i data-lucide="chevron-right" style="width:16px;height:16px;color:var(--c-muted);"></i>
+                        <i data-lucide="chevron-right" style="width:16px;height:16px;" class="text-muted"></i>
                     </a>
 
-                    <a href="{% url 'student_profile' %}" id="nav-profile" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.875rem; background: var(--c-bg); border: 1px solid var(--c-border); border-radius: 8px; text-decoration: none; color: var(--c-text); transition: opacity 0.2s;">
-                        <div style="width: 36px; height: 36px; border-radius: 6px; background: #f5f3ff; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                            <i data-lucide="user-cog" style="width:18px;height:18px;color:#7c3aed;"></i>
+                    <a href="{% url 'student_profile' %}" style="display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3); background: var(--neutral-50); border: 1px solid var(--neutral-200); border-radius: var(--radius-md); text-decoration: none; color: var(--neutral-800); transition: all var(--transition-fast);">
+                        <div style="width: 36px; height: 36px; border-radius: var(--radius-md); background: var(--neutral-100); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <i data-lucide="user-cog" style="width:18px;height:18px;color:var(--neutral-600);"></i>
                         </div>
                         <div style="flex: 1;">
-                            <strong style="display: block; margin-bottom: 0.125rem;">Profile & Credentials</strong>
-                            <span style="font-size: 0.8125rem; color: var(--c-muted);">Update password & view info</span>
+                            <strong style="display: block; margin-bottom: 2px; font-size: var(--text-sm);">Profile</strong>
+                            <span class="text-muted" style="font-size: var(--text-xs);">Account settings</span>
                         </div>
-                        <i data-lucide="chevron-right" style="width:16px;height:16px;color:var(--c-muted);"></i>
+                        <i data-lucide="chevron-right" style="width:16px;height:16px;" class="text-muted"></i>
                     </a>
                 </div>
             </div>
 
             <!-- Office Status -->
-            <div class="card-minimal" style="background: var(--c-bg);">
-                <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem; background: #dcfce7; border: 1px solid #86efac; border-radius: 6px; margin-bottom: 1rem;">
-                    <span style="width: 8px; height: 8px; border-radius: 50%; background: #15803d;"></span>
-                    <span style="font-size: 0.8125rem; font-weight: 600; color: #15803d;">Live Office Status • Open Now</span>
+            <div class="card" style="background: var(--neutral-50);">
+                <div style="display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-3); background: var(--semantic-success-bg); border: 1px solid #86efac; border-radius: var(--radius-md); margin-bottom: var(--space-4);">
+                    <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--semantic-success); flex-shrink: 0;"></span>
+                    <span style="font-size: var(--text-xs); font-weight: var(--font-semibold); color: var(--semantic-success-text);">
+                        Office Open Now
+                    </span>
                 </div>
 
-                <h4 style="font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem;">Guidance Walk-In Desk</h4>
-                <p style="font-size: 0.875rem; color: var(--c-muted); margin-bottom: 1rem;">Immediate in-person intake triage is available today on the second floor.</p>
+                <h4 style="font-size: var(--text-base); font-weight: var(--font-semibold); margin-bottom: var(--space-2);">
+                    Walk-In Desk
+                </h4>
+                <p class="text-muted" style="font-size: var(--text-sm); margin-bottom: var(--space-4);">
+                    Immediate in-person triage available on the second floor.
+                </p>
 
-                <div style="display: flex; gap: 0.75rem; padding: 1rem; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: 8px; margin-bottom: 1rem;">
-                    <div style="width: 42px; height: 42px; border-radius: 8px; background: var(--c-primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0;">
+                <div style="display: flex; gap: var(--space-3); padding: var(--space-4); background: var(--neutral-white); border: 1px solid var(--neutral-200); border-radius: var(--radius-md); margin-bottom: var(--space-4);">
+                    <div class="user-avatar" style="width: 42px; height: 42px;">
                         SJ
                     </div>
                     <div>
-                        <strong style="display: block; font-size: 0.9375rem; margin-bottom: 0.125rem;">Dr. Sarah Jenkins, RGC</strong>
-                        <span style="display: block; font-size: 0.8125rem; color: var(--c-primary); margin-bottom: 0.375rem;">On-Duty Guidance Counselor</span>
-                        <div style="display: flex; gap: 0.75rem; font-size: 0.75rem; color: var(--c-muted);">
-                            <span><i data-lucide="map-pin" style="width:11px;height:11px;display:inline;vertical-align:middle;margin-right:0.25rem;"></i>Room 204</span>
-                            <span><i data-lucide="clock" style="width:11px;height:11px;display:inline;vertical-align:middle;margin-right:0.25rem;"></i>9:00 AM – 4:30 PM</span>
+                        <strong style="display: block; font-size: var(--text-sm); margin-bottom: 2px;">
+                            Dr. Sarah Jenkins
+                        </strong>
+                        <span style="display: block; font-size: var(--text-xs); color: var(--brand-primary); margin-bottom: var(--space-1);">
+                            On-Duty Counselor
+                        </span>
+                        <div style="display: flex; gap: var(--space-3); font-size: var(--text-xs);" class="text-muted">
+                            <span>
+                                <i data-lucide="map-pin" style="width:11px;height:11px;display:inline;vertical-align:middle;margin-right:2px;"></i>
+                                Room 204
+                            </span>
+                            <span>
+                                <i data-lucide="clock" style="width:11px;height:11px;display:inline;vertical-align:middle;margin-right:2px;"></i>
+                                9:00 AM – 4:30 PM
+                            </span>
                         </div>
                     </div>
                 </div>
 
-                <div style="display: flex; align-items: center; justify-content: space-around; padding: 0.875rem; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: 8px; margin-bottom: 1rem;">
+                <div style="display: flex; align-items: center; justify-content: space-around; padding: var(--space-4); background: var(--neutral-white); border: 1px solid var(--neutral-200); border-radius: var(--radius-md); margin-bottom: var(--space-4);">
                     <div style="text-align: center;">
-                        <span style="display: block; font-size: 1.25rem; font-weight: 700; color: var(--c-primary);">1</span>
-                        <span style="font-size: 0.75rem; color: var(--c-muted);">Waiting Queue</span>
+                        <span style="display: block; font-size: var(--text-xl); font-weight: var(--font-bold); color: var(--brand-primary);">1</span>
+                        <span class="text-muted" style="font-size: var(--text-xs);">Waiting</span>
                     </div>
-                    <div style="width: 1px; height: 32px; background: var(--c-border);"></div>
+                    <div style="width: 1px; height: 32px; background: var(--neutral-200);"></div>
                     <div style="text-align: center;">
-                        <span style="display: block; font-size: 1.25rem; font-weight: 700; color: #15803d;">~10 min</span>
-                        <span style="font-size: 0.75rem; color: var(--c-muted);">Est. Wait Time</span>
+                        <span style="display: block; font-size: var(--text-xl); font-weight: var(--font-bold); color: var(--semantic-success);">~10 min</span>
+                        <span class="text-muted" style="font-size: var(--text-xs);">Est. Wait</span>
                     </div>
                 </div>
 
-                <div style="display: flex; gap: 0.75rem;">
+                <div style="display: flex; gap: var(--space-2);">
                     <a href="{% url 'student_book_appointment' %}" class="btn btn-primary btn-sm" style="flex: 1;">
-                        <i data-lucide="calendar-plus" style="width:14px;height:14px;"></i>
                         Book Ahead
                     </a>
                     <a href="{% url 'student_front_desk' %}" class="btn btn-secondary btn-sm" style="flex: 1;">
-                        <i data-lucide="info" style="width:14px;height:14px;"></i>
                         Office Info
                     </a>
-                </div>
-            </div>
-
-            <!-- Crisis Support -->
-            <div class="card-minimal" style="border-color: #fca5a5; background: #fef2f2;">
-                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
-                    <span style="width: 8px; height: 8px; border-radius: 50%; background: #dc2626;"></span>
-                    <h4 style="font-size: 1rem; font-weight: 600; color: #dc2626; margin: 0;">Need Immediate Help?</h4>
-                </div>
-                <p style="font-size: 0.875rem; color: #991b1b; margin-bottom: 1rem;">
-                    If you are facing an urgent emotional crisis or safety concern, free confidential help is accessible 24/7:
-                </p>
-
-                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-                    <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; background: white; border: 1px solid #fca5a5; border-radius: 8px;">
-                        <div style="width: 32px; height: 32px; border-radius: 6px; background: #fee2e2; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                            <i data-lucide="phone-call" style="width:16px;height:16px;color:#dc2626;"></i>
-                        </div>
-                        <div>
-                            <strong style="display: block; font-size: 0.9375rem; color: #dc2626; margin-bottom: 0.125rem;">Call or Text 988</strong>
-                            <span style="font-size: 0.8125rem; color: #991b1b;">National Suicide & Crisis Lifeline</span>
-                        </div>
-                    </div>
-
-                    <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; background: white; border: 1px solid #fca5a5; border-radius: 8px;">
-                        <div style="width: 32px; height: 32px; border-radius: 6px; background: #fee2e2; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                            <i data-lucide="siren" style="width:16px;height:16px;color:#dc2626;"></i>
-                        </div>
-                        <div>
-                            <strong style="display: block; font-size: 0.9375rem; color: #dc2626; margin-bottom: 0.125rem;">Campus Emergency: Ext. 4400</strong>
-                            <span style="font-size: 0.8125rem; color: #991b1b;">University Security & Medical Triage</span>
-                        </div>
-                    </div>
                 </div>
             </div>
 
@@ -426,19 +439,34 @@
 </div>
 
 <style>
-/* Mood card radio selection styles */
-input[type="radio"]:checked + div {
-    border-color: var(--c-primary) !important;
-    background: var(--c-bg) !important;
-}
-input[type="radio"]:hover + div {
-    border-color: var(--c-muted);
+/* Dashboard-specific responsive grid */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: var(--space-6);
+    align-items: start;
 }
 
-/* Responsive layout for sidebar */
+/* Mood selector hover states */
+input[type="radio"] + div:hover {
+    border-color: var(--brand-primary);
+}
+input[type="radio"]:checked + div {
+    border-color: var(--brand-primary);
+    background: var(--neutral-50);
+}
+
+/* Quick action link hover states */
+a[style*="background: var(--neutral-50)"]:hover {
+    background: var(--neutral-100) !important;
+}
+a[style*="background: var(--brand-primary)"]:hover {
+    background: #1e40af !important;
+}
+
 @media (max-width: 1024px) {
-    div[style*="grid-template-columns: 1fr 380px"] {
-        grid-template-columns: 1fr !important;
+    .dashboard-grid {
+        grid-template-columns: 1fr;
     }
 }
 </style>
