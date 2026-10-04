@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Student Registration — ConnectGuidance{% endblock %}
+{% block page_title %}Student Registration{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper" style="min-height: 75vh; display: flex; align-items: center; justify-content: center; padding: 2rem 1rem;">
+    <div class="card auth-card" style="max-width: 520px; width: 100%; padding: 2.25rem; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);">
+        
+        <div style="text-align: center; margin-bottom: 1.75rem;">
+            <div style="width: 48px; height: 48px; background: #DBEAFE; color: #2563EB; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 0.75rem; font-weight: bold;">
+                ✦
+            </div>
+            <h2 style="font-size: 1.5rem; font-weight: 700; color: #0F172A; margin-bottom: 0.25rem;">Create Student Account</h2>
+            <p style="color: #64748B; font-size: 0.9rem;">Register to access counseling services and wellness support</p>
+        </div>
+
+        {% if errors %}
+        <div class="alert alert-error" style="background-color: #FEE2E2; border: 1px solid #FCA5A5; color: #991B1B; padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1.25rem; font-size: 0.875rem;">
+            <p style="font-weight: 600; margin-bottom: 0.25rem;">Please correct the errors below:</p>
+            <ul style="margin: 0; padding-left: 1.25rem;">
+                {% for field, error in errors.items %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <form method="POST" action="{% url 'register' %}">
+            {% csrf_token %}
+
+            <div class="form-group" style="margin-bottom: 1.15rem;">
+                <label for="full_name" style="display: block; font-weight: 500; font-size: 0.875rem; color: #334155; margin-bottom: 0.35rem;">
+                    Full Name <span style="color: #EF4444;">*</span>
+                </label>
+                <input 
+                    type="text" 
+                    id="full_name" 
+                    name="full_name" 
+                    value="{{ form_data.full_name|default:'' }}" 
+                    class="form-input" 
+                    required 
+                    placeholder="e.g. Juan Dela Cruz"
+                    style="width: 100%; padding: 0.65rem 0.85rem; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 0.95rem; box-sizing: border-box;"
+                >
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.15rem;">
+                <div class="form-group">
+                    <label for="student_id" style="display: block; font-weight: 500; font-size: 0.875rem; color: #334155; margin-bottom: 0.35rem;">
+                        Student ID <span style="color: #EF4444;">*</span>
+                    </label>
+                    <input 
+                        type="text" 
+                        id="student_id" 
+                        name="student_id" 
+                        value="{{ form_data.student_id|default:'' }}" 
+                        class="form-input" 
+                        required 
+                        placeholder="e.g. 2024-00123"
+                        style="width: 100%; padding: 0.65rem 0.85rem; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 0.95rem; box-sizing: border-box;"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="department" style="display: block; font-weight: 500; font-size: 0.875rem; color: #334155; margin-bottom: 0.35rem;">
+                        College / Dept
+                    </label>
+                    <input 
+                        type="text" 
+                        id="department" 
+                        name="department" 
+                        value="{{ form_data.department|default:'' }}" 
+                        class="form-input" 
+                        placeholder="e.g. CS / IT / Nursing"
+                        style="width: 100%; padding: 0.65rem 0.85rem; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 0.95rem; box-sizing: border-box;"
+                    >
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1.15rem;">
+                <label for="email" style="display: block; font-weight: 500; font-size: 0.875rem; color: #334155; margin-bottom: 0.35rem;">
+                    School Email Address <span style="color: #EF4444;">*</span>
+                </label>
+                <input 
+                    type="email" 
+                    id="email" 
+                    name="email" 
+                    value="{{ form_data.email|default:'' }}" 
+                    class="form-input" 
+                    required 
+                    placeholder="student@school.edu"
+                    style="width: 100%; padding: 0.65rem 0.85rem; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 0.95rem; box-sizing: border-box;"
+                >
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                <div class="form-group">
+                    <label for="password" style="display: block; font-weight: 500; font-size: 0.875rem; color: #334155; margin-bottom: 0.35rem;">
+                        Password <span style="color: #EF4444;">*</span>
+                    </label>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        name="password" 
+                        class="form-input" 
+                        required 
+                        placeholder="Min. 8 characters"
+                        style="width: 100%; padding: 0.65rem 0.85rem; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 0.95rem; box-sizing: border-box;"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="confirm_password" style="display: block; font-weight: 500; font-size: 0.875rem; color: #334155; margin-bottom: 0.35rem;">
+                        Confirm Password <span style="color: #EF4444;">*</span>
+                    </label>
+                    <input 
+                        type="password" 
+                        id="confirm_password" 
+                        name="confirm_password" 
+                        class="form-input" 
+                        required 
+                        placeholder="Re-enter password"
+                        style="width: 100%; padding: 0.65rem 0.85rem; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 0.95rem; box-sizing: border-box;"
+                    >
+                </div>
+            </div>
+
+            <button 
+                type="submit" 
+                class="btn btn-primary" 
+                style="width: 100%; padding: 0.75rem; font-size: 1rem; font-weight: 600; border-radius: 8px; background-color: #2563EB; color: #FFFFFF; border: none; cursor: pointer;"
+            >
+                Create Account
+            </button>
+        </form>
+
+        <div style="text-align: center; margin-top: 1.75rem; padding-top: 1.25rem; border-top: 1px solid #F1F5F9; font-size: 0.875rem; color: #64748B;">
+            Already have an account? 
+            <a href="{% url 'login' %}" style="color: #2563EB; font-weight: 600; text-decoration: none;">
+                Sign In
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

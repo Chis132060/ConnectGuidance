@@ -1,8 +1,87 @@
+"""
+GuidanceConnect Forms.
+Standard Django forms for student registration, profile updates, appointment booking,
+counselor case notes, and wellness mood check-ins.
+"""
 from django import forms
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from .models import Profile, Appointment, StudentMoodAlert
-from apps.common.choices import ConcernTypeChoices, RoleChoices, AppointmentStatusChoices
+from .choices import ConcernTypeChoices, RoleChoices, AppointmentStatusChoices
+
+
+class StudentRegistrationForm(forms.Form):
+    full_name = forms.CharField(
+        max_length=200,
+        required=True,
+        widget=forms.TextInput(attrs={
+            'class': 'form-input',
+            'placeholder': 'e.g. Jane Doe',
+            'autocomplete': 'name',
+        }),
+        label="Full Name",
+    )
+    email = forms.EmailField(
+        required=True,
+        widget=forms.EmailInput(attrs={
+            'class': 'form-input',
+            'placeholder': 'student@school.edu',
+            'autocomplete': 'email',
+        }),
+        label="School Email",
+    )
+    student_id = forms.CharField(
+        max_length=100,
+        required=True,
+        widget=forms.TextInput(attrs={
+            'class': 'form-input',
+            'placeholder': 'e.g. 2024-00123',
+        }),
+        label="Student ID",
+    )
+    department = forms.CharField(
+        max_length=200,
+        required=True,
+        widget=forms.TextInput(attrs={
+            'class': 'form-input',
+            'placeholder': 'e.g. College of Computer Studies',
+        }),
+        label="College / Department",
+    )
+    password = forms.CharField(
+        min_length=8,
+        required=True,
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-input',
+            'placeholder': 'Minimum 8 characters',
+            'autocomplete': 'new-password',
+        }),
+        label="Password",
+    )
+    confirm_password = forms.CharField(
+        min_length=8,
+        required=True,
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-input',
+            'placeholder': 'Re-enter your password',
+            'autocomplete': 'new-password',
+        }),
+        label="Confirm Password",
+    )
+
+    def clean_email(self):
+        email = self.cleaned_data['email'].strip().lower()
+        if User.objects.filter(email=email).exists():
+            raise ValidationError("An account with this email address already exists.")
+        return email
+
+    def clean(self):
+        cleaned_data = super().clean()
+        p1 = cleaned_data.get('password')
+        p2 = cleaned_data.get('confirm_password')
+        if p1 and p2 and p1 != p2:
+            self.add_error('confirm_password', "Passwords do not match.")
+        return cleaned_data
 
 
 class StudentProfileUpdateForm(forms.ModelForm):
@@ -71,6 +150,27 @@ class ReceptionistBookingForm(forms.Form):
             'placeholder': 'Front desk booking intake notes...',
             'id': 'rec-notes'
         })
+    )
+
+
+class CaseNoteForm(forms.Form):
+    content = forms.CharField(
+        required=True,
+        widget=forms.Textarea(attrs={
+            'class': 'form-textarea',
+            'rows': 10,
+            'placeholder': 'Enter confidential clinical notes and observations here...',
+            'id': 'case-note-content'
+        }),
+        label="Case Note Content",
+    )
+    is_confidential = forms.BooleanField(
+        required=False,
+        widget=forms.CheckboxInput(attrs={
+            'class': 'form-checkbox',
+            'id': 'is-confidential-toggle'
+        }),
+        label="Mark as strictly confidential (hidden from student)",
     )
 
 

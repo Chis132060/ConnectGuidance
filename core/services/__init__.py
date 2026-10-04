@@ -1,1 +1,1 @@
-# core.services package
+# Services package

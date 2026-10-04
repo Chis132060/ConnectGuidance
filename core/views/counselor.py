@@ -1,294 +1,220 @@
 """
-core/views/counselor.py — Counselor views for GuidanceConnect Django replica.
-
-Implements Standardized Counselor Features:
-1. Dashboard (Workspace & clinical overview)
-2. Appointments (Full clinical schedule and state transitions)
-3. Case Notes (Encrypted clinical case note repository)
-4. Student/Wellness information (Student roster & mood alerts)
-5. Profile (Provider credentials and security settings)
+Counselor views — workspace, appointments registry, case notes, wellness monitoring, and profile.
+Handles counselor appointment management, session status updates, and encrypted case notes.
 """
-
-import datetime
+from datetime import datetime, timedelta
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponseForbidden, Http404
 from django.contrib import messages
-from django.contrib.auth import update_session_auth_hash
-from django.contrib.auth.forms import PasswordChangeForm
-from django.views.decorators.http import require_http_methods
-from django.core.exceptions import ValidationError, PermissionDenied
 from django.utils import timezone
-from django.db.models import Q
-
-from apps.authentication.guards import require_counselor
+from core.guards import role_required
 from core.models import Appointment, StudentMoodAlert, CaseNote, Profile
-from apps.common.choices import AppointmentStatusChoices, ConcernTypeChoices
-from core.services.appointments import counselor_update_status
+from core.services.appointments import update_appointment_status
+from core.services.case_notes import save_case_note, get_case_note_decrypted
+from core.services.encryption import decrypt
 
 
-@require_counselor
-def counselor_workspace_view(request):
-    """
-    COUNSELOR #1: Dashboard.
-    Loads today's sessions, upcoming appointments, pending requests, and summary statistics.
-    """
-    counselor = request.user.profile
-    today = timezone.localdate()
+@role_required("counselor")
+def workspace_view(request):
+    """Counselor workspace — stats, alerts, today's sessions, tables."""
+    profile = request.profile
+    now = timezone.now()
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    today_end = today_start + timedelta(days=1)
 
-    day_start = timezone.make_aware(
-        datetime.datetime.combine(today, datetime.time.min),
-        timezone.get_current_timezone()
-    )
-    day_end = timezone.make_aware(
-        datetime.datetime.combine(today, datetime.time.max),
-        timezone.get_current_timezone()
-    )
+    if request.method == "POST":
+        action = request.POST.get("action")
+        appt_id = request.POST.get("appointment_id")
 
-    my_appointments = Appointment.objects.filter(
-        counselor=counselor
-    ).select_related('student', 'student__user').order_by('scheduled_at')
+        if action in ("confirmed", "cancelled", "completed"):
+            try:
+                update_appointment_status(appt_id, action, profile)
+                messages.success(request, f"Appointment {action}.")
+            except Exception as e:
+                msg = getattr(e, "message", str(e))
+                messages.error(request, msg)
+        return redirect("/counselor/")
 
-    today_sessions = my_appointments.filter(
-        scheduled_at__range=(day_start, day_end)
-    ).exclude(status=AppointmentStatusChoices.CANCELLED)
-
-    upcoming_sessions = my_appointments.filter(
-        scheduled_at__gt=day_end,
-        status__in=[AppointmentStatusChoices.PENDING, AppointmentStatusChoices.CONFIRMED]
-    )
-
-    pending_sessions = my_appointments.filter(
-        status=AppointmentStatusChoices.PENDING
-    )
-
-    past_sessions = my_appointments.filter(
-        status=AppointmentStatusChoices.COMPLETED
-    ).order_by('-scheduled_at')[:10]
-
-    mood_alerts = StudentMoodAlert.objects.filter(
-        counselor=counselor
-    ).select_related('student', 'student__user').order_by('-created_at')[:8]
-
-    context = {
-        'profile': counselor,
-        'today_sessions': today_sessions,
-        'upcoming_sessions': upcoming_sessions,
-        'pending_sessions': pending_sessions,
-        'past_sessions': past_sessions,
-        'mood_alerts': mood_alerts,
-        'stats': {
-            'today_count': today_sessions.count(),
-            'upcoming_count': upcoming_sessions.count(),
-            'pending_count': pending_sessions.count(),
-            'completed_count': my_appointments.filter(status=AppointmentStatusChoices.COMPLETED).count(),
-        }
-    }
-    return render(request, 'counselor/workspace.html', context)
-
-
-@require_counselor
-def counselor_appointments_view(request):
-    """
-    COUNSELOR #2: Appointments.
-    Dedicated clinical appointments list with status filters, student search, and state transitions.
-    """
-    counselor = request.user.profile
-    status_filter = request.GET.get('status', 'all').strip().lower()
-    search_query = request.GET.get('q', '').strip()
-
-    appointments = Appointment.objects.filter(
-        counselor=counselor
-    ).select_related('student', 'student__user').order_by('-scheduled_at')
-
-    if status_filter and status_filter != 'all':
-        appointments = appointments.filter(status=status_filter)
-
-    if search_query:
-        appointments = appointments.filter(
-            Q(student__full_name__icontains=search_query) |
-            Q(student__student_id__icontains=search_query) |
-            Q(student__user__email__icontains=search_query) |
-            Q(notes__icontains=search_query)
-        )
-
-    all_my_appointments = Appointment.objects.filter(counselor=counselor)
-
-    counts = {
-        'all': all_my_appointments.count(),
-        'pending': all_my_appointments.filter(status=AppointmentStatusChoices.PENDING).count(),
-        'confirmed': all_my_appointments.filter(status=AppointmentStatusChoices.CONFIRMED).count(),
-        'completed': all_my_appointments.filter(status=AppointmentStatusChoices.COMPLETED).count(),
-        'cancelled': all_my_appointments.filter(status=AppointmentStatusChoices.CANCELLED).count(),
-    }
-
-    context = {
-        'profile': counselor,
-        'appointments': appointments,
-        'counts': counts,
-        'active_filter': status_filter,
-        'search_query': search_query,
-    }
-    return render(request, 'counselor/appointments.html', context)
-
-
-@require_counselor
-def counselor_case_notes_list_view(request):
-    """
-    COUNSELOR #3: Case Notes Repository.
-    Lists all clinical sessions with encrypted note authoring status and confidentiality badges.
-    """
-    counselor = request.user.profile
-    search_query = request.GET.get('q', '').strip()
-
-    appointments = Appointment.objects.filter(
-        counselor=counselor
-    ).select_related('student', 'student__user').prefetch_related('case_notes').order_by('-scheduled_at')
-
-    if search_query:
-        appointments = appointments.filter(
-            Q(student__full_name__icontains=search_query) |
-            Q(student__student_id__icontains=search_query)
-        )
-
-    sessions_with_notes = []
-    total_notes_count = 0
-    confidential_count = 0
-
-    for appt in appointments:
-        note = next((n for n in appt.case_notes.all() if n.counselor_id == counselor.id), None)
-        if note:
-            total_notes_count += 1
-            if note.is_confidential:
-                confidential_count += 1
-        sessions_with_notes.append({
-            'appointment': appt,
-            'note': note,
-            'has_note': note is not None,
-        })
-
-    context = {
-        'profile': counselor,
-        'sessions_with_notes': sessions_with_notes,
-        'search_query': search_query,
-        'stats': {
-            'total_sessions': appointments.count(),
-            'notes_authored': total_notes_count,
-            'confidential_notes': confidential_count,
-        }
-    }
-    return render(request, 'counselor/case_notes_list.html', context)
-
-
-@require_counselor
-def counselor_wellness_view(request):
-    """
-    COUNSELOR #4: Student / Wellness Information.
-    Lists assigned students, recent mood check-ins, alerts, and wellness histories.
-    """
-    counselor = request.user.profile
-
-    alerts = StudentMoodAlert.objects.filter(
-        counselor=counselor
-    ).select_related('student', 'student__user').order_by('-created_at')
-
-    # Distinct students assigned to this counselor
-    student_ids = Appointment.objects.filter(
-        counselor=counselor
-    ).values_list('student_id', flat=True).distinct()
-
-    students = Profile.objects.filter(
-        id__in=student_ids
-    ).select_related('user').order_by('full_name')
-
-    students_with_history = []
-    for s in students:
-        recent_appt = Appointment.objects.filter(
-            counselor=counselor, student=s
-        ).order_by('-scheduled_at').first()
-        student_alerts = alerts.filter(student=s).count()
-        students_with_history.append({
-            'student': s,
-            'recent_appt': recent_appt,
-            'alerts_count': student_alerts,
-        })
-
-    context = {
-        'profile': counselor,
-        'alerts': alerts,
-        'students_with_history': students_with_history,
-        'stats': {
-            'active_students': len(students_with_history),
-            'total_alerts': alerts.count(),
-        }
-    }
-    return render(request, 'counselor/wellness.html', context)
-
-
-@require_counselor
-@require_http_methods(["GET", "POST"])
-def counselor_profile_view(request):
-    """
-    COUNSELOR #5: Profile.
-    Counselor clinical credentials and password security administration.
-    """
-    counselor = request.user.profile
-
-    if request.method == 'POST':
-        password_form = PasswordChangeForm(user=request.user, data=request.POST)
-        if password_form.is_valid():
-            password_form.save()
-            update_session_auth_hash(request, password_form.user)
-            messages.success(request, "Your counselor password has been successfully updated.")
-            return redirect('counselor_profile')
-        else:
-            messages.error(request, "Please correct the password errors below.")
-    else:
-        password_form = PasswordChangeForm(user=request.user)
-
-    total_sessions = Appointment.objects.filter(counselor=counselor).count()
-    completed_sessions = Appointment.objects.filter(
-        counselor=counselor, status=AppointmentStatusChoices.COMPLETED
+    # Stats
+    today_count = Appointment.objects.filter(
+        counselor=profile,
+        scheduled_at__gte=today_start,
+        scheduled_at__lt=today_end,
     ).count()
 
-    context = {
-        'profile': counselor,
-        'user': request.user,
-        'password_form': password_form,
-        'stats': {
-            'total_sessions': total_sessions,
-            'completed_sessions': completed_sessions,
-        }
+    upcoming_count = Appointment.objects.filter(
+        counselor=profile,
+        status__in=["pending", "confirmed"],
+        scheduled_at__gte=now,
+    ).count()
+
+    past_count = Appointment.objects.filter(
+        counselor=profile,
+        status__in=["completed", "cancelled"],
+    ).count()
+
+    # Mood alerts
+    mood_alerts = StudentMoodAlert.objects.filter(
+        counselor=profile,
+    ).select_related("student").order_by("-created_at")[:10]
+
+    # Today's sessions
+    today_sessions = Appointment.objects.filter(
+        counselor=profile,
+        scheduled_at__gte=today_start,
+        scheduled_at__lt=today_end,
+    ).select_related("student").order_by("scheduled_at")
+
+    # Upcoming appointments
+    upcoming = Appointment.objects.filter(
+        counselor=profile,
+        status__in=["pending", "confirmed"],
+        scheduled_at__gte=now,
+    ).exclude(
+        scheduled_at__gte=today_start,
+        scheduled_at__lt=today_end,
+    ).select_related("student").order_by("scheduled_at")[:20]
+
+    # Past appointments
+    past = Appointment.objects.filter(
+        counselor=profile,
+    ).filter(
+        status__in=["completed", "cancelled"],
+    ).select_related("student").order_by("-scheduled_at")[:20]
+
+    return render(request, "counselor/workspace.html", {
+        "profile": profile,
+        "today_count": today_count,
+        "upcoming_count": upcoming_count,
+        "past_count": past_count,
+        "mood_alerts": mood_alerts,
+        "today_sessions": today_sessions,
+        "upcoming": upcoming,
+        "past": past,
+    })
+
+
+@role_required("counselor")
+def case_note_view(request, appointment_id):
+    """Case note editor — write/view encrypted notes."""
+    profile = request.profile
+
+    appointment = get_object_or_404(
+        Appointment.objects.select_related("student", "counselor"),
+        pk=appointment_id,
+        counselor=profile,
+    )
+
+    if request.method == "POST":
+        content = request.POST.get("content", "").strip()
+        is_confidential = request.POST.get("is_confidential") == "on"
+
+        if not content:
+            messages.error(request, "Note content cannot be empty.")
+            return redirect(f"/counselor/case-notes/{appointment_id}/")
+
+        note, error = save_case_note(profile, appointment_id, content, is_confidential)
+        if error:
+            messages.error(request, error)
+        else:
+            messages.success(request, "Case note saved successfully.")
+        return redirect(f"/counselor/case-notes/{appointment_id}/")
+
+    # GET — try to load existing note
+    plaintext = ""
+    existing_note = None
+    plaintext_data, note_obj, error = get_case_note_decrypted(profile, appointment_id)
+    if note_obj:
+        existing_note = note_obj
+        plaintext = plaintext_data or ""
+
+    return render(request, "counselor/case_note.html", {
+        "profile": profile,
+        "appointment": appointment,
+        "plaintext": plaintext,
+        "existing_note": existing_note,
+    })
+
+
+@role_required("counselor")
+def appointments_view(request):
+    """Counselor full appointment registry with status filtering."""
+    profile = request.profile
+    status_filter = request.GET.get("status", "all")
+
+    qs = Appointment.objects.filter(counselor=profile).select_related("student").order_by("-scheduled_at")
+    
+    counts = {
+        "all": qs.count(),
+        "pending": qs.filter(status="pending").count(),
+        "confirmed": qs.filter(status="confirmed").count(),
+        "completed": qs.filter(status="completed").count(),
+        "cancelled": qs.filter(status="cancelled").count(),
     }
-    return render(request, 'counselor/profile.html', context)
+
+    if status_filter != "all" and status_filter in counts:
+        filtered_qs = qs.filter(status=status_filter)
+    else:
+        filtered_qs = qs
+
+    return render(request, "counselor/appointments.html", {
+        "profile": profile,
+        "appointments": filtered_qs,
+        "counts": counts,
+        "active_filter": status_filter,
+    })
 
 
-@require_counselor
-@require_http_methods(["POST"])
-def counselor_status_update_view(request, pk: int):
-    """
-    Counselor updates appointment status.
-    Strictly enforces state machine:
-    - pending → confirmed, cancelled
-    - confirmed → completed, cancelled
-    - completed / cancelled → terminal
-    """
-    counselor = request.user.profile
+@role_required("counselor")
+def case_notes_list_view(request):
+    """Counselor case notes repository."""
+    profile = request.profile
+    notes_qs = CaseNote.objects.filter(counselor=profile).select_related("appointment__student").order_by("-created_at")
 
-    try:
-        appointment = Appointment.objects.get(id=pk)
-    except Appointment.DoesNotExist:
-        raise Http404("Appointment not found.")
+    notes_data = []
+    for n in notes_qs:
+        try:
+            preview = decrypt(n.content)
+        except Exception:
+            preview = "[Encrypted Content]"
+        notes_data.append({
+            "note": n,
+            "preview": preview[:150] + "..." if len(preview) > 150 else preview,
+        })
 
-    if appointment.counselor_id != counselor.id:
-        return HttpResponseForbidden("Only counselors assigned to this appointment can update its status.")
+    stats = {
+        "total_notes": notes_qs.count(),
+        "confidential_count": notes_qs.filter(is_confidential=True).count(),
+        "standard_count": notes_qs.filter(is_confidential=False).count(),
+    }
 
-    new_status = request.POST.get('status', '').strip().lower()
+    return render(request, "counselor/case_notes_list.html", {
+        "profile": profile,
+        "notes": notes_data,
+        "stats": stats,
+    })
 
-    try:
-        counselor_update_status(appointment, new_status, counselor)
-        messages.success(request, f"Appointment status updated to '{new_status}'.")
-    except ValidationError as e:
-        messages.error(request, str(e.message if hasattr(e, 'message') else e))
 
-    next_url = request.POST.get('next') or request.META.get('HTTP_REFERER') or 'counselor_workspace'
-    return redirect(next_url)
+@role_required("counselor")
+def wellness_view(request):
+    """Counselor wellness alerts and student mood patterns."""
+    profile = request.profile
+    alerts = StudentMoodAlert.objects.filter(counselor=profile).select_related("student").order_by("-created_at")
+
+    stats = {
+        "total_alerts": alerts.count(),
+        "unique_students": alerts.values("student").distinct().count(),
+    }
+
+    return render(request, "counselor/wellness.html", {
+        "profile": profile,
+        "alerts": alerts,
+        "stats": stats,
+    })
+
+
+@role_required("counselor")
+def profile_view(request):
+    """Counselor profile page."""
+    return render(request, "counselor/profile.html", {
+        "profile": request.profile,
+    })

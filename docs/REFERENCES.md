@@ -1,126 +1,63 @@
-# REFERENCES — Original Next.js source map
+# ConnectGuidance — Component & Module Reference Guide
 
-**Original project:** `C:\School works\4yr_firstsem\connectguidance1`  
-Use when porting a phase — open the listed files for exact behavior.
-
----
-
-## Master documents (original repo)
-
-| Resource | Path |
-|---|---|
-| System analysis + SRS (1374 lines) | `../connectguidance1/SYSTEM_ANALYSIS_AND_SRS.md` |
-| AGENTS / Next.js notes | `../connectguidance1/AGENTS.md` |
-| Package manifest | `../connectguidance1/package.json` |
+This document describes the architectural layout, modular organization, and service dependencies for the **ConnectGuidance** Django application.
 
 ---
 
-## Database (source of ERD)
+## 🏛️ Application Architecture Overview
 
-| Resource | Path |
-|---|---|
-| All SQL migrations (18) | `../connectguidance1/supabase/migrations/*.sql` |
-| Concat run-once script | `../connectguidance1/supabase/apply_all_migrations.sql` |
-| Init (5 tables + RLS + triggers) | `.../20260401123000_init_guidanceconnect.sql` |
-| Case note integrity trigger | `.../20260402200000_case_notes_integrity.sql` |
-| Profile on signup trigger | `.../20260402220000_auth_user_profile_trigger.sql` |
-| Receptionist role enum | `.../20260403120000_app_role_receptionist.sql` |
-| user_no sequence | `.../20260403130000_profiles_user_no.sql` |
-| Mood alerts table + RLS | `.../20260403170000_student_mood_alerts.sql` |
-| Backfill utility | `../connectguidance1/supabase/backfill_profiles_from_auth.sql` |
+ConnectGuidance follows the **Django Model-View-Template (MVT)** design pattern, augmented by an explicit **Service Layer** under `core/services/`. This keeps view controllers thin and maintains business logic separation.
 
-**Django translation:** see `docs/ERD.md` + `docs/RLS_AND_SECURITY.md`.
+```text
+[HTTP Request]
+       │
+       ▼
+ [core/urls.py]
+       │
+       ▼
+ [core/guards.py]  ──── (Role authentication check)
+       │
+       ▼
+ [core/views/*.py] ──── [core/forms.py] (Form validation)
+       │
+       ▼
+[core/services/*.py] ── (Business operations & domain rules)
+       │
+       ▼
+ [core/models.py]  ──── [core/signals.py] (Audit logging & triggers)
+       │
+       ▼
+[Database / SQLite]
+```
 
 ---
 
-## Server actions (business logic — Phase 4–6, 8)
+## 📦 Service Layer Catalog
 
-| Feature | Path | Django target |
+All business operations, encryption, analytics, and rate limits are managed in `core/services/`:
+
+| Service Module | Purpose & Core Functions | Key Consumers |
 |---|---|---|
-| Book / cancel / status / slots | `../connectguidance1/actions/appointments.ts` | `core/services/appointments.py`, `slots.py` |
-| Case notes encrypt/upsert/read | `../connectguidance1/actions/caseNotes.ts` | `core/services/case_notes.py` |
-| Mood check-in | `../connectguidance1/actions/student-mood.ts` | `core/services/mood.py` |
-| Receptionist search/slots/book | `../connectguidance1/actions/receptionist.ts` | `core/services/receptionist.py` |
-| Reports generate + export audit | `../connectguidance1/actions/reports.ts` | `core/services/reports.py` |
-| Admin role + activate/deactivate + PDF rows | `../connectguidance1/app/admin/actions.ts` | admin views/services |
-| Counselor status wrapper | `../connectguidance1/app/counselor/actions.ts` | appointments service |
+| `core/services/slots.py` | Calculates hourly appointment slots (09:00–16:00), conflict window checks (+/- 50 mins), and next-available counselor lookup. | `views/student.py`, `views/receptionist.py` |
+| `core/services/appointments.py` | Enforces appointment booking rules, student cancellation permissions, and counselor state machine transitions (`pending` → `confirmed` → `completed`). | `views/student.py`, `views/counselor.py` |
+| `core/services/case_notes.py` | Encrypted clinical documentation. Handles secure note creation, updates, and decryption for authorized counselors. | `views/counselor.py` |
+| `core/services/encryption.py` | Cryptographic engine providing AES-256 encryption at rest with derived key security. | `services/case_notes.py` |
+| `core/services/mood.py` | Student wellness mood recording (`good`, `okay`, `low`) and counselor crisis alerting logic. | `views/student.py` |
+| `core/services/chat.py` | AI wellness assistant streaming generator, rate-limiting stores (24 POST / 60 GET), crisis keyword detection, and 36-message history cap. | `views/chat.py` |
+| `core/services/receptionist.py` | Front desk student lookup by name or ID, walk-in appointment scheduling, and automated counselor assignment. | `views/receptionist.py` |
+| `core/services/metrics.py` | Aggregates system KPIs, calculates 8-week trend distributions, and groups appointment concern types. | `views/admin_views.py` |
+| `core/services/reports.py` | Multi-filter query engine, RFC-4180 CSV export, and PDF appointment summary generation. | `views/admin_views.py` |
+| `core/services/admin_users.py` | Administrative account provisioning and role updates with self-demotion and last-admin safeguards. | `views/admin_views.py` |
+| `core/services/audit.py` | Non-blocking, append-only security event logger recording administrative and clinical actions. | All views and services |
 
 ---
 
-## Libraries (Phase 4–8)
+## 🔐 Security & Access Control Reference
 
-| Feature | Path | Django target |
-|---|---|---|
-| Hourly slots / day bounds / TZ | `../connectguidance1/lib/appointment-slots.ts` | `core/services/slots.py` |
-| AES encryption | `../connectguidance1/lib/encryption.ts` | `core/services/encryption.py` |
-| Audit logAction | `../connectguidance1/lib/audit.ts` | `core/services/audit.py` |
-| Admin metrics/charts | `../connectguidance1/lib/admin-metrics.ts` | `core/services/metrics.py` |
-| Concern presets | `../connectguidance1/lib/concerns.ts` | `core/choices.py` |
-| Role homes + route prefixes | `../connectguidance1/lib/auth/routes.ts` | `core/guards.py` |
-| Edge proxy role redirects | `../connectguidance1/lib/proxy-handler.ts` | guards/middleware |
-| requireAdmin | `../connectguidance1/lib/supabase/admin-guard.ts` | `role_required('admin')` |
-| requireReceptionist | `../connectguidance1/lib/supabase/receptionist-guard.ts` | `role_required('receptionist')` |
-| Chat rate limits | `../connectguidance1/lib/rate-limit/chat.ts` | chat rate limiter |
-| Chat CTA patterns | `../connectguidance1/lib/chat/cta.ts` | chat service |
-| Chat system prompt | `../connectguidance1/lib/chat/constants.ts` | chat service |
+Access control is enforced using decorators defined in `core/guards.py`:
+- `@role_required("student")`
+- `@role_required("counselor")`
+- `@role_required("receptionist")`
+- `@role_required("admin")`
 
----
-
-## API routes (Phases 3, 6)
-
-| Route | Path | Django target |
-|---|---|---|
-| Signup | `../connectguidance1/app/api/auth/signup/route.ts` | register view |
-| Signin | `../connectguidance1/app/api/auth/signin/route.ts` | login view |
-| Signout | `../connectguidance1/app/api/auth/signout/route.ts` | logout view |
-| OAuth callback | `../connectguidance1/app/auth/callback/route.ts` | optional / skip (no Supabase OAuth) |
-| Chat stream | `../connectguidance1/app/api/chat/route.ts` | streaming chat view |
-| Chat session restore | `../connectguidance1/app/api/chat/session/route.ts` | session GET |
-
----
-
-## Pages → templates (Phase 7)
-
-| Original page | Django template |
-|---|---|
-| `app/page.tsx` | `public/landing.html` |
-| `app/login/page.tsx` | `registration/login.html` |
-| `app/register/page.tsx` + `register-form.tsx` | `registration/register.html` |
-| `app/student/page.tsx` | `student/dashboard.html` |
-| `app/appointments/page.tsx` | `student/appointments.html` |
-| `app/chatbot/page.tsx` | `student/chatbot.html` |
-| `app/student/profile/page.tsx` | `student/profile.html` |
-| `app/student/front-desk/page.tsx` | `student/front_desk.html` |
-| `app/counselor/page.tsx` | `counselor/workspace.html` |
-| `app/counselor/case-notes/[id]/page.tsx` | `counselor/case_note.html` |
-| `app/admin/page.tsx` | `admin/overview.html` |
-| `app/admin/users/page.tsx` | `admin/users.html` |
-| `app/admin/audit-logs/page.tsx` | `admin/audit_logs.html` |
-| `app/admin/reports/page.tsx` | `admin/reports.html` |
-| `app/admin/profile/page.tsx` | `admin/profile.html` |
-| `app/receptionist/page.tsx` | `receptionist/booking.html` |
-| `components/ChatbotWidget.tsx` | `widgets/chatbot.html` + JS |
-
----
-
-## Components worth porting (UI behavior)
-
-| Component | Path |
-|---|---|
-| Chat widget | `../connectguidance1/components/ChatbotWidget.tsx` |
-| Password change form | `../connectguidance1/components/student/StudentChangePasswordForm.tsx` |
-| Mood check-in | `../connectguidance1/components/student/StudentMoodCheckIn.tsx` |
-| Receptionist booking form | `../connectguidance1/components/receptionist/ReceptionistBookingForm.tsx` |
-| Role subnavs | `../connectguidance1/components/**` (`StudentSubnav`, `AdminSubnav`, …) |
-
----
-
-## This Django repo docs
-
-| Doc | Purpose |
-|---|---|
-| [PLAN.md](./PLAN.md) | Phases 1–8 master step list |
-| [ERD.md](./ERD.md) | Models spec |
-| [FLOWS.md](./FLOWS.md) | 24 flowcharts |
-| [INTERFACES.md](./INTERFACES.md) | 16 screens + tokens |
-| [RLS_AND_SECURITY.md](./RLS_AND_SECURITY.md) | Access control port |
+When an unauthenticated user accesses a protected route, they are redirected to `/login/`. If an authenticated user accesses a portal outside their assigned role, they are redirected to their designated home portal.

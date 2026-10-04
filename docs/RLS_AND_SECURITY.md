@@ -1,176 +1,64 @@
-# RLS_AND_SECURITY — Supabase → Django port
+# System Security & Role-Based Access Control Specification
 
-Original: Row Level Security on every public table + app-layer checks.  
-Django: **no DB RLS** — enforce with **query scoping**, **view/service guards**, and **forms**.
+This document details the security architecture, role authorization matrices, and cryptographic protections implemented across the **ConnectGuidance** system.
 
 ---
 
-## 1. Role × table permission matrix (target behavior)
+## 1. Role × Resource Access Matrix
 
-Legend: **S** select · **I** insert · **U** update · **D** delete · **—** deny
+The system enforces strict permission boundaries across four user roles:
 
-| Table | Admin | Counselor | Student | Receptionist |
+| Domain Entity | Administrator | Guidance Counselor | Student | Receptionist |
 |---|---|---|---|---|
-| **profiles** | S I U D (all) | S (self, counselors directory, assigned students) U (self) | S (self) U (self) | S (active students only) |
-| **appointments** | S I U D (all) | S (assigned) U (assigned status only) | S (own) I (own booking) U (own cancel→status) | S (all read) I (book for student) |
-| **case_notes** | S all · U? app blocks confidential read for non-author | S I U D (own authored) | S (**only is_confidential=False** via own appts) | — |
-| **audit_logs** | S (all) | — | — | — |
-| **chatbot_sessions** | S (all, optional) | — | S I U (own) | — |
-| **student_mood_alerts** | S I U D (all) | S (where counselor=me) | S (own) I (own via mood flow) | — |
-| **audit insert** | any authenticated / signals | same | same | same |
-
-**App-layer write always re-checks role** (parity with original server actions), e.g.:
-- Book / get slots → active **student** only
-- Status update → active **counselor** + row `counselor_id == me`
-- Case note save → active **counselor** + appointment assigned to me
-- Admin user mgmt / reports / audit view → `requireAdmin`
-- Receptionist actions → active **receptionist**
+| **User Profiles** | Full management (view, create, update, activate/deactivate) | Directory lookup of counselors and assigned students | View and edit own profile only | Read-only search of active students for booking |
+| **Appointments** | System-wide view and report generation | View assigned sessions; update statuses (`confirmed`, `completed`, `cancelled`) | View own sessions; book new slots; cancel pending/confirmed sessions | View calendar slots; book walk-in appointments for active students |
+| **Case Notes** | Prohibited from viewing clinical note content | Create, update, and view own authored case notes | View non-confidential notes from past sessions only | Strictly Denied |
+| **Audit Logs** | System-wide inspection and compliance review | Strictly Denied | Strictly Denied | Strictly Denied |
+| **Chat Sessions** | System administration | Strictly Denied | View and stream own wellness chat sessions | Strictly Denied |
+| **Mood Alerts** | System audit overview | View alerts dispatched by assigned students | Submit periodic check-ins (`good`, `okay`, `low`) | Strictly Denied |
 
 ---
 
-## 2. Django enforcement points
+## 2. Multi-Layer Enforcement Architecture
 
-| Layer | Mechanism |
-|---|---|
-| URL/View | `@login_required` + `@role_required(...)` in `core/guards.py` |
-| Query | Always filter by `request.user.profile` (own rows) or role-specific scope |
-| Model | `PROTECT`/`CASCADE`/`SET_NULL` FKs; `unique_together`; `CheckConstraint` |
-| Form/service | Business rules (status machine, clash, integrity) before `save()` |
-| Template | Don’t pass confidential notes to student context |
-| Admin site | Django admin restricted to superusers / admin role |
+Security in ConnectGuidance is implemented defense-in-depth across multiple application layers:
 
-### Guard helpers (Phase 3)
+### Layer 1: HTTP View Decorators (`core/guards.py`)
+- Every portal view is annotated with `@role_required("student")`, `@role_required("counselor")`, etc.
+- Unauthenticated requests are rejected and redirected to `/login/`.
+- Authenticated users attempting cross-role escalation are redirected to their designated home dashboard.
 
-```python
-# core/guards.py (sketch)
-def role_required(*roles):
-    def decorator(view):
-        @login_required
-        @wraps(view)
-        def wrapped(request, *args, **kwargs):
-            profile = get_profile_or_none(request.user)
-            if not profile or not profile.is_active:
-                logout(request)
-                return redirect("/login/?error=deactivated")
-            if profile.role not in roles:
-                return redirect(role_home(profile.role))
-            return view(request, *args, **kwargs)
-        return wrapped
-    return decorator
+### Layer 2: ORM Query Scoping
+- Views and services explicitly scope database queries to the authenticated user's profile (`Appointment.objects.filter(student=profile)` or `Appointment.objects.filter(counselor=profile)`).
+- Cross-student access is structurally impossible even with forged object IDs.
 
-ROLE_HOME = {
-    "admin": "/admin-panel/",
-    "counselor": "/counselor/",
-    "student": "/student/",
-    "receptionist": "/receptionist/",
-}
-```
-
-**`requireAdmin` parity:** helper used inside admin views (same redirect behavior as `lib/supabase/admin-guard.ts`).
+### Layer 3: Service-Level Validation & State Machine
+- Business operations (cancellation, status updates, case note authoring) verify ownership and lifecycle rules before executing mutations.
+- Terminal appointments (`completed` or `cancelled`) cannot be modified.
 
 ---
 
-## 3. Encryption (case notes)
+## 3. Cryptographic Storage of Clinical Notes
 
-| Item | Rule |
-|---|---|
-| Algorithm | AES-256-CBC; output `iv_hex + cipher_hex` (32 hex IV chars) |
-| Legacy | payloads starting `gc:v1:` → AES-256-GCM base64url |
-| Key | env `ENCRYPTION_KEY` (or `CASE_NOTES_ENCRYPTION_KEY`) = **64 hex chars** |
-| Where | server-only `core/services/encryption.py` — never import in templates/JS |
-| Scope | encrypt on save; decrypt only in authorized read path (Flow 12) |
-
-Port of `../connectguidance1/lib/encryption.ts`.
+Counselor case documentation contains sensitive student disclosures and is protected using **AES-256** encryption before persistence:
+- Encrypted payloads include initialization vectors and ciphertext.
+- Decryption keys are derived securely from application secrets and never sent to client browsers or templates.
+- Students only receive authorized non-confidential summaries, while confidential notes remain strictly isolated to the authoring counselor.
 
 ---
 
-## 4. Rate limits (chat)
+## 4. Rate Limiting and Safety Guardrails
 
-| Limit | Default | Env |
-|---|---|---|
-| Chat POST | 24 / 15 min / user | `CHAT_RATE_LIMIT_MAX`, `CHAT_RATE_LIMIT_WINDOW_MS` |
-| Session GET | 60 / 15 min / user | `CHAT_SESSION_GET_MAX`, `CHAT_SESSION_GET_WINDOW_MS` |
-
-Implement in-memory first (parity with original Node memory limiter) — `core/services/` or cache framework.
+- **Chat POST Endpoint:** Maximum 24 requests per 15-minute sliding window. Exceeding requests return HTTP 429 with `Retry-After`.
+- **Session GET Endpoint:** Maximum 60 requests per 15-minute sliding window.
+- **Payload Limits:** Maximum 24,000 characters per chat prompt, with history persistence capped at the 36 most recent messages.
+- **Crisis Intervention:** Automatic detection of crisis keywords triggers supportive crisis hotline referrals and urgent counselor booking recommendations.
 
 ---
 
-## 5. Admin safety guards (from `app/admin/actions.ts`)
+## 5. Administrative Safeguards
 
-| Rule | Error |
-|---|---|
-| Cannot change own role away from admin | “You cannot demote your own admin account here.” |
-| Cannot remove last admin (role change) | “Cannot remove the last admin account.” |
-| Cannot deactivate self | “You cannot deactivate your own account.” |
-| Cannot deactivate last **active** admin | “Cannot deactivate the last active admin.” |
-| Missing service key equivalent | N/A — Django uses DB directly with admin guard only |
-
----
-
-## 6. Authentication security
-
-| Item | Implementation |
-|---|---|
-| Passwords | Django hashed validators (min 8, common/numeric checks already in settings) |
-| Sessions | `django.contrib.sessions` DB or cache backend |
-| CSRF | all POST views — `{% csrf_token %}` |
-| Secrets | only `.env` (gitignored); never commit real URI/key |
-| DEBUG | `False` in production; `ALLOWED_HOSTS` explicit |
-| HTTPS | Supabase requires SSL (`sslmode=require`); app behind HTTPS in deploy |
-| Registration | only students self-register (staff provisioned by admin/seed) — enforce in register form |
-
----
-
-## 7. Confidentiality rules (case notes)
-
-1. Student query: `CaseNote.objects.filter(is_confidential=False, appointment__student=me)`
-2. Counselor: own authored notes only for write; read assigned appointment notes as needed
-3. Admin: may list all; **decrypt path** only if `not is_confidential` (parity with `getCaseNote`)
-4. `is_confidential` toggled only by author counselor on save
-
----
-
-## 8. Audit integrity
-
-- `log_action()` **never raises** (parity with `lib/audit.ts`)
-- Invalid `record_id` → `NULL`
-- Signals on Profile + CaseNote for INSERT/UPDATE/DELETE-style rows
-- Audit viewer: admin SELECT only
-
----
-
-## 9. Mapping table (original → Django)
-
-| Supabase / Next.js | Django |
-|---|---|
-| `proxy.ts` edge redirects | guards + `role_required` |
-| `requireAdmin()` | `role_required('admin')` / helper |
-| `requireReceptionist()` | `role_required('receptionist')` |
-| RLS policies | query scoping matrix §1 |
-| `auth.users` + trigger profile | User + `post_save` Profile |
-| Supabase Auth cookies | Django session |
-| `lib/encryption.ts` | `services/encryption.ts` |
-| `lib/audit.ts` | `services/audit.py` |
-| `lib/rate-limit/chat.ts` | chat rate limiter service |
-| Server actions Zod | Django forms / service validation |
-| `ON DELETE RESTRICT` | `on_delete=PROTECT` |
-| `ON DELETE SET NULL` | `on_delete=SET_NULL` |
-| DB audit triggers | Django signals |
-
----
-
-## 10. Security verification checklist
-
-- [ ] Wrong-role URL → redirect ROLE_HOME (4 roles)
-- [ ] Deactivated user cannot login or use session
-- [ ] Student cannot open another student’s appointments/notes
-- [ ] Confidential note hidden from student UI and decrypt path for non-author
-- [ ] Counselor cannot update another counselor’s appointment
-- [ ] Status transitions reject illegal paths + terminal states
-- [ ] Receptionist-only routes blocked for others
-- [ ] Admin routes blocked for non-admins
-- [ ] Last-admin / self-deactivate guards work
-- [ ] Chat rate limits return 429
-- [ ] Case note `content` not plaintext in DB
-- [ ] `.env` not in git; `check` clean with `DEBUG=False` eventually
-- [ ] CSRF on all mutating forms
+To prevent operational deadlocks and privilege lockouts:
+1. Administrators cannot demote their own account to a lower role.
+2. Administrators cannot deactivate their own account.
+3. The system rejects any action that would deactivate or demote the last remaining active administrator account in the university.

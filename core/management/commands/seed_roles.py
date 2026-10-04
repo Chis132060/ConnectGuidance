@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 from core.models import Profile, Appointment, CaseNote, AuditLog, StudentMoodAlert
 from core.choices import RoleChoices, AppointmentStatusChoices, ConcernTypeChoices
-from apps.case_notes.services.encryption import encrypt_text
+from core.services.encryption import encrypt as encrypt_text
 
 
 class Command(BaseCommand):

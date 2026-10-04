@@ -1,8 +1,6 @@
 """
 tests/test_admin_safeguards.py — Comprehensive tests for Admin RBAC Safeguards,
 Metrics, Reports, PDF/CSV Exports, and Audit Signals.
-
-Covers PLAN steps 64–70 and FLOWS §17-21, §24.
 """
 
 import io
@@ -14,21 +12,21 @@ from django.utils import timezone
 from django.http import HttpResponse
 
 from core.models import Profile, Appointment, CaseNote, AuditLog
-from apps.common.choices import RoleChoices, AppointmentStatusChoices, ConcernTypeChoices
-from apps.users.services.management import (
+from core.choices import RoleChoices, AppointmentStatusChoices, ConcernTypeChoices
+from core.services.admin_users import (
     can_change_role,
     update_user_role,
     can_change_active_status,
     update_user_status,
     create_user_by_admin,
 )
-from apps.analytics.services.metrics import get_admin_metrics
-from apps.analytics.services.reports import (
+from core.services.metrics import get_admin_metrics
+from core.services.reports import (
     filter_appointments,
     export_appointments_csv,
     export_appointments_pdf,
 )
-from apps.audit.services.logging import log_action
+from core.services.audit import log_action
 
 
 class AdminSafeguardsTestCase(TestCase):

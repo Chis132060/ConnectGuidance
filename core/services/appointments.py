@@ -1,143 +1,146 @@
-from typing import Optional, Tuple
-from django.core.exceptions import ValidationError
-from django.db import transaction
+"""
+Appointment Service — Booking, cancellation, and workflow state transitions.
+Validates schedule slots, applies clash protection, and manages status progression.
+"""
 from django.utils import timezone
+from django.core.exceptions import ValidationError
 from core.models import Appointment, Profile
-from apps.common.choices import RoleChoices, AppointmentStatusChoices
-from .slots import is_counselor_slot_free
-from apps.audit.services.logging import log_action
-
-ALLOWED_TRANSITIONS = {
-    AppointmentStatusChoices.PENDING: [
-        AppointmentStatusChoices.CONFIRMED,
-        AppointmentStatusChoices.CANCELLED,
-    ],
-    AppointmentStatusChoices.CONFIRMED: [
-        AppointmentStatusChoices.COMPLETED,
-        AppointmentStatusChoices.CANCELLED,
-    ],
-    AppointmentStatusChoices.COMPLETED: [],
-    AppointmentStatusChoices.CANCELLED: [],
-}
+from core.choices import ALLOWED_TRANSITIONS, AppointmentStatusChoices
+from core.services.slots import has_clash
+from core.services.audit import log_action
 
 
-def can_transition(current_status: str, target_status: str) -> bool:
-    allowed = ALLOWED_TRANSITIONS.get(current_status, [])
-    return target_status in allowed
-
-
-@transaction.atomic
-def book_appointment(
-    student: Profile,
-    counselor: Profile,
-    scheduled_at,
-    concern_type: str,
-    notes: Optional[str] = None,
-    created_by_receptionist: bool = False,
-    actor: Optional[Profile] = None
-) -> Appointment:
+def book_appointment(student, counselor, scheduled_at, concern_type, notes=None, created_by_receptionist=False, actor=None):
     """
-    Validate slot availability and book appointment. Logs audit action.
+    Book an appointment for a student.
+    student: Profile or ID
+    counselor: Profile or ID
     """
-    if student.role != RoleChoices.STUDENT:
-        raise ValidationError("Only students may be booked for guidance sessions.")
-    if counselor.role != RoleChoices.COUNSELOR:
-        raise ValidationError("Selected provider must be a licensed counselor.")
-    if not counselor.is_active:
-        raise ValidationError("This counselor is currently inactive.")
+    if isinstance(student, Profile):
+        student_profile = student
+    else:
+        student_profile = Profile.objects.get(pk=student)
 
-    if not is_counselor_slot_free(counselor, scheduled_at):
-        raise ValidationError("The requested time slot is no longer available. Please select another time.")
+    if not student_profile.is_active:
+        raise ValidationError("Only active students can book appointments.")
 
-    appt = Appointment.objects.create(
-        student=student,
-        counselor=counselor,
+    if scheduled_at <= timezone.now():
+        raise ValidationError("Please choose a future date and time.")
+
+    if isinstance(counselor, Profile):
+        counselor_profile = counselor
+    else:
+        try:
+            counselor_profile = Profile.objects.get(pk=counselor, role="counselor", is_active=True)
+        except Profile.DoesNotExist:
+            raise ValidationError("That counselor is not available.")
+
+    if has_clash(counselor_profile.id, scheduled_at):
+        raise ValidationError("That time was just taken. Please choose another slot.")
+
+    appointment = Appointment.objects.create(
+        student=student_profile,
+        counselor=counselor_profile,
         scheduled_at=scheduled_at,
         status=AppointmentStatusChoices.PENDING,
         concern_type=concern_type,
-        notes=notes or ""
+        notes=notes[:2000] if notes else None,
     )
 
-    action = "APPOINTMENT_CREATED_RECEPTION" if created_by_receptionist else "APPOINTMENT_CREATED"
-    effective_actor = actor or (student if not created_by_receptionist else None)
+    action_type = "APPOINTMENT_CREATED_RECEPTION" if created_by_receptionist else "APPOINTMENT_CREATED"
+    acting_user = actor or (student_profile if not created_by_receptionist else None)
 
     log_action(
-        user=effective_actor,
-        action=action,
-        table_name="core_appointment",
-        record_id=appt.id,
-        metadata={
-            "student_id": student.id,
-            "counselor_id": counselor.id,
-            "scheduled_at": scheduled_at.isoformat(),
-            "concern_type": concern_type,
-            "created_by_receptionist": created_by_receptionist
-        }
+        user=acting_user,
+        action=action_type,
+        table_name="appointments",
+        record_id=appointment.pk,
+        metadata={"appointment_id": appointment.pk, "counselor_id": counselor_profile.pk},
+    )
+
+    return appointment
+
+
+def student_cancel_appointment(appointment_or_id, student_profile):
+    """
+    Student cancels their own appointment.
+    appointment_or_id: Appointment instance or ID
+    student_profile: Profile instance
+    """
+    if isinstance(appointment_or_id, Appointment):
+        appt = appointment_or_id
+    else:
+        try:
+            appt = Appointment.objects.get(pk=appointment_or_id)
+        except Appointment.DoesNotExist:
+            raise ValidationError("Appointment not found.")
+
+    if appt.student_id != student_profile.id:
+        raise ValidationError("Not authorized to cancel this appointment.")
+
+    if appt.status in (AppointmentStatusChoices.COMPLETED, AppointmentStatusChoices.CANCELLED):
+        raise ValidationError(f"This appointment is already {appt.status}.")
+
+    appt.status = AppointmentStatusChoices.CANCELLED
+    appt.save(update_fields=["status"])
+
+    log_action(
+        user=student_profile,
+        action="APPOINTMENT_CANCELLED_STUDENT",
+        table_name="appointments",
+        record_id=appt.pk,
+        metadata={"appointment_id": appt.pk},
     )
 
     return appt
 
 
-@transaction.atomic
-def student_cancel_appointment(appointment: Appointment, student: Profile) -> Appointment:
+cancel_appointment_student = student_cancel_appointment
+
+
+def counselor_update_status(appointment_or_id, new_status, counselor_profile):
     """
-    Student self-cancellation: allowed only on own appointment in pending/confirmed status.
+    Counselor updates appointment status (state machine enforced).
     """
-    if appointment.student_id != student.id:
-        raise ValidationError("You are not authorized to cancel this appointment.")
+    if isinstance(appointment_or_id, Appointment):
+        appt = appointment_or_id
+    else:
+        try:
+            appt = Appointment.objects.get(pk=appointment_or_id)
+        except Appointment.DoesNotExist:
+            raise ValidationError("Appointment not found.")
 
-    if appointment.status in [AppointmentStatusChoices.COMPLETED, AppointmentStatusChoices.CANCELLED]:
-        raise ValidationError(f"Cannot cancel an appointment that is already {appointment.status}.")
-
-    old_status = appointment.status
-    appointment.status = AppointmentStatusChoices.CANCELLED
-    appointment.save(update_fields=['status'])
-
-    log_action(
-        user=student,
-        action="APPOINTMENT_CANCELLED_STUDENT",
-        table_name="core_appointment",
-        record_id=appointment.id,
-        metadata={
-            "old_status": old_status,
-            "new_status": AppointmentStatusChoices.CANCELLED
-        }
-    )
-
-    return appointment
-
-
-@transaction.atomic
-def counselor_update_status(
-    appointment: Appointment,
-    new_status: str,
-    counselor: Profile
-) -> Appointment:
-    """
-    Counselor status update strictly enforcing state machine transitions.
-    """
-    if appointment.counselor_id != counselor.id:
+    if appt.counselor_id != counselor_profile.id:
         raise ValidationError("You can only update appointments assigned to your workspace.")
 
-    if not can_transition(appointment.status, new_status):
-        raise ValidationError(
-            f"Invalid transition from '{appointment.status}' to '{new_status}'. Allowed transitions: {ALLOWED_TRANSITIONS.get(appointment.status, 'None (terminal)')}."
-        )
+    if not counselor_profile.is_active:
+        raise ValidationError("Only active counselors can update appointments.")
 
-    old_status = appointment.status
-    appointment.status = new_status
-    appointment.save(update_fields=['status'])
+    current = appt.status
+    allowed = ALLOWED_TRANSITIONS.get(current, set())
+
+    if current in (AppointmentStatusChoices.COMPLETED, AppointmentStatusChoices.CANCELLED):
+        raise ValidationError("Cannot update an appointment in a terminal state.")
+
+    if new_status not in allowed:
+        raise ValidationError(f"Cannot transition from '{current}' to '{new_status}'.")
+
+    appt.status = new_status
+    appt.save(update_fields=["status"])
 
     log_action(
-        user=counselor,
+        user=counselor_profile,
         action="APPOINTMENT_STATUS_UPDATED",
-        table_name="core_appointment",
-        record_id=appointment.id,
+        table_name="appointments",
+        record_id=appt.pk,
         metadata={
-            "old_status": old_status,
-            "new_status": new_status,
-            "counselor_id": counselor.id
-        }
+            "appointment_id": appt.pk,
+            "from_status": current,
+            "to_status": new_status,
+        },
     )
 
-    return appointment
+    return appt
+
+
+update_appointment_status = counselor_update_status

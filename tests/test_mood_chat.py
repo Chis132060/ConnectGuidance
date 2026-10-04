@@ -1,5 +1,5 @@
 """
-tests/test_mood_chat.py — Tests for Phase 6: Student Mood Check-in and AI Chatbot (SSE streaming,
+tests/test_mood_chat.py — Tests for Student Mood Check-in and AI Chatbot (SSE streaming,
 rate limits, history caps, crisis protocols, and session hydration).
 """
 
@@ -11,7 +11,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from core.models import Profile, Appointment, StudentMoodAlert, ChatbotSession, AuditLog
-from apps.common.choices import RoleChoices, AppointmentStatusChoices, ConcernTypeChoices
+from core.choices import RoleChoices, AppointmentStatusChoices, ConcernTypeChoices
 from core.services.mood import process_mood_checkin
 from core.services.chat import (
     check_chat_rate_limit,
@@ -67,7 +67,7 @@ class MoodAndChatTestCase(TestCase):
         self.counselor.save()
 
     # -------------------------------------------------------------------------
-    # Mood Check-in Tests (FLOWS §13)
+    # Student Wellness Mood Check-in Tests
     # -------------------------------------------------------------------------
 
     def test_mood_checkin_good_and_okay_branches(self):
@@ -117,7 +117,7 @@ class MoodAndChatTestCase(TestCase):
         self.assertIsNotNone(audit)
 
     # -------------------------------------------------------------------------
-    # Chat Rate Limit Tests (FLOWS §14 & §15)
+    # Chat Rate Limit Tests
     # -------------------------------------------------------------------------
 
     def test_chat_post_rate_limit_24_per_window(self):

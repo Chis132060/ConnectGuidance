@@ -1,109 +1,120 @@
 """
-core/services/receptionist.py — Receptionist business logic for GuidanceConnect Django replica.
-
-Handles student search, counselor roster retrieval, slot availability checks,
-and 4-step walk-in appointment booking (FLOWS §16).
+Receptionist Booking and Student Search Service.
+Provides student lookup by ID or name, counselor listing, next-available slot finding,
+and walk-in appointment scheduling.
 """
-
-import datetime
-from typing import List, Optional, Dict, Any
 from django.db.models import Q
 from django.core.exceptions import ValidationError
 from django.utils import timezone
-
 from core.models import Profile, Appointment
-from apps.common.choices import RoleChoices
-from core.services.slots import (
-    is_counselor_slot_free,
-    get_available_slots_for_counselor,
-    get_first_available_counselor_slot,
-)
-from core.services.appointments import book_appointment
+from core.choices import RoleChoices, AppointmentStatusChoices
+from core.services.slots import is_counselor_slot_free, get_available_slots
+from core.services.audit import log_action
 
 
-def search_students(query: str, limit: int = 25) -> List[Profile]:
+def search_students(query, limit=25):
     """
-    Search active students by full_name or student_id (case-insensitive).
-    Limits result to at most `limit` records (default 25).
+    Search active student profiles by name or student_id (case-insensitive).
+    Returns queryset, max 25 results.
     """
-    q_clean = (query or "").strip()
-    if not q_clean:
-        return []
-
-    return list(
-        Profile.objects.filter(
-            role=RoleChoices.STUDENT,
-            is_active=True
-        ).filter(
-            Q(full_name__icontains=q_clean) |
-            Q(student_id__icontains=q_clean) |
-            Q(user__email__icontains=q_clean)
-        ).select_related('user').order_by('full_name')[:limit]
-    )
+    return Profile.objects.filter(
+        role=RoleChoices.STUDENT,
+        is_active=True,
+    ).filter(
+        Q(full_name__icontains=query) | Q(student_id__icontains=query)
+    )[:limit]
 
 
-def list_reception_counselors() -> List[Profile]:
+def list_counselors():
+    """Return active counselors ordered alphabetically."""
+    return Profile.objects.filter(
+        role=RoleChoices.COUNSELOR,
+        is_active=True,
+    ).order_by("full_name", "user__username")
+
+
+def find_next_available(date_obj, counselors=None):
     """
-    Return all active counselors alphabetically by full_name.
+    Find the first available slot among all counselors (alphabetically).
+    Returns (counselor, slot_datetime) or (None, None).
     """
-    return list(
-        Profile.objects.filter(
-            role=RoleChoices.COUNSELOR,
-            is_active=True
-        ).order_by('full_name')
-    )
+    from core.services.slots import get_first_available_counselor_slot
+    res = get_first_available_counselor_slot(date_obj)
+    if res:
+        return res["counselor"], res["slot"]
+    return None, None
 
 
-def book_receptionist_appointment(
-    receptionist: Profile,
-    student: Profile,
-    scheduled_at: datetime.datetime,
-    concern_type: str,
-    counselor: Optional[Profile] = None,
-    notes: Optional[str] = None
-) -> Appointment:
+def book_receptionist_appointment(receptionist, student, scheduled_at, concern_type, counselor=None, notes=None):
     """
-    FLOWS §16: Book an appointment from the receptionist desk.
-    - If counselor is None: automatically selects earliest free counselor alphabetically at scheduled_at.
-    - If specific counselor is provided: checks slot is free.
-    - Enforces future datetime, active student, and active counselors exist.
-    - Logs audit action: APPOINTMENT_CREATED_RECEPTION
+    Receptionist books an appointment on behalf of a student.
+    If counselor is None, automatically picks the earliest free counselor alphabetically.
     """
-    now = timezone.now()
-    if scheduled_at <= now:
-        raise ValidationError("Appointment must be scheduled for a future date and time.")
+    if isinstance(student, Profile):
+        student_profile = student
+    else:
+        try:
+            student_profile = Profile.objects.get(pk=student, role=RoleChoices.STUDENT, is_active=True)
+        except Profile.DoesNotExist:
+            raise ValidationError("Student not found or inactive.")
 
-    if not student.is_active or student.role != RoleChoices.STUDENT:
-        raise ValidationError("Selected student is not active or not a student.")
+    if not student_profile.is_active:
+        raise ValidationError("Student not found or inactive.")
 
-    active_counselors = list_reception_counselors()
-    if not active_counselors:
-        raise ValidationError("No active counselors are currently available.")
+    if scheduled_at <= timezone.now():
+        raise ValidationError("Please choose a future date and time.")
 
-    chosen_counselor = counselor
+    # Determine counselor
+    if counselor is not None:
+        if isinstance(counselor, Profile):
+            counselor_profile = counselor
+        else:
+            try:
+                counselor_profile = Profile.objects.get(pk=counselor, role=RoleChoices.COUNSELOR, is_active=True)
+            except Profile.DoesNotExist:
+                raise ValidationError("Counselor not found or inactive.")
 
-    if chosen_counselor is None:
-        # Loop through active counselors alphabetically to find the first one free
-        for c in active_counselors:
-            if is_counselor_slot_free(c, scheduled_at):
-                chosen_counselor = c
+        if not is_counselor_slot_free(counselor_profile.id, scheduled_at):
+            raise ValidationError("That counselor is not available at this time.")
+    else:
+        # Pick earliest free counselor alphabetically
+        counselors = list(list_counselors())
+        if not counselors:
+            raise ValidationError("No active counselors available.")
+
+        counselor_profile = None
+        for c in counselors:
+            if is_counselor_slot_free(c.id, scheduled_at):
+                counselor_profile = c
                 break
 
-        if chosen_counselor is None:
-            raise ValidationError("No counselor is available at that time slot.")
-    else:
-        if not chosen_counselor.is_active or chosen_counselor.role != RoleChoices.COUNSELOR:
-            raise ValidationError("Selected counselor is not active or invalid.")
+        if not counselor_profile:
+            raise ValidationError("No counselor is free at that time.")
 
-        if not is_counselor_slot_free(chosen_counselor, scheduled_at):
-            raise ValidationError("The selected counselor is not available at that time.")
-
-    return book_appointment(
-        student=student,
-        counselor=chosen_counselor,
+    appointment = Appointment.objects.create(
+        student=student_profile,
+        counselor=counselor_profile,
         scheduled_at=scheduled_at,
+        status=AppointmentStatusChoices.PENDING,
         concern_type=concern_type,
-        notes=notes,
-        created_by_receptionist=True,
-        actor=receptionist
+        notes=notes[:2000] if notes else None,
     )
+
+    receptionist_profile = receptionist if isinstance(receptionist, Profile) else None
+
+    log_action(
+        user=receptionist_profile,
+        action="APPOINTMENT_CREATED_RECEPTION",
+        table_name="appointments",
+        record_id=appointment.pk,
+        metadata={
+            "appointment_id": appointment.pk,
+            "student_id": student_profile.pk,
+            "counselor_id": counselor_profile.pk,
+        },
+    )
+
+    return appointment
+
+
+book_for_student = book_receptionist_appointment

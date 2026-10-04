@@ -1,109 +1,70 @@
+"""
+GuidanceConnect Domain Models.
+Defines models for user profiles, counseling appointments, encrypted case notes,
+system audit logs, wellness chatbot sessions, and student mood alerts.
+"""
+import uuid
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
-from django.db.models import Max
-from apps.common.choices import RoleChoices, AppointmentStatusChoices, ConcernTypeChoices
+from .choices import ROLE_CHOICES, STATUS_CHOICES, CONCERN_CHOICES
 
 
 class Profile(models.Model):
-    """
-    Profile extension for auth.User, providing role-based access control
-    and user metadata matching GuidanceConnect schema.
-    """
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
-    role = models.CharField(
-        max_length=20,
-        choices=RoleChoices.choices,
-        default=RoleChoices.STUDENT,
-        db_index=True
-    )
+    """Extended user profile linked one-to-one with Django auth.User."""
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default="student")
     full_name = models.CharField(max_length=200)
     student_id = models.CharField(max_length=100, null=True, blank=True)
     department = models.CharField(max_length=200, null=True, blank=True)
-    is_active = models.BooleanField(default=True, db_index=True)
-    user_no = models.BigIntegerField(unique=True, db_index=True)
+    is_active = models.BooleanField(default=True)
+    user_no = models.BigIntegerField(unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ['user_no']
         indexes = [
-            models.Index(fields=['role', 'is_active']),
-            models.Index(fields=['user_no']),
+            models.Index(fields=["role"]),
+            models.Index(fields=["is_active"]),
         ]
 
-    def save(self, *args, **kwargs):
-        if not self.user_no:
-            max_no = Profile.objects.aggregate(Max('user_no'))['user_no__max']
-            self.user_no = (max_no or 0) + 1
-        super().save(*args, **kwargs)
-
     def __str__(self):
-        return f"{self.full_name} ({self.role}) - #{self.user_no}"
+        return f"{self.full_name} ({self.role})"
 
 
 class Appointment(models.Model):
-    """
-    Appointments between students and counselors with strict status lifecycle.
-    """
+    """Counseling session appointment scheduled between a student and counselor."""
     student = models.ForeignKey(
-        Profile,
-        on_delete=models.CASCADE,
-        related_name='appointments_as_student',
-        db_index=True
+        Profile, on_delete=models.CASCADE, related_name="appointments_as_student"
     )
     counselor = models.ForeignKey(
-        Profile,
-        on_delete=models.PROTECT,
-        related_name='appointments_as_counselor',
-        db_index=True
+        Profile, on_delete=models.PROTECT, related_name="appointments_as_counselor"
     )
-    scheduled_at = models.DateTimeField(db_index=True)
-    status = models.CharField(
-        max_length=20,
-        choices=AppointmentStatusChoices.choices,
-        default=AppointmentStatusChoices.PENDING,
-        db_index=True
-    )
-    concern_type = models.CharField(
-        max_length=50,
-        choices=ConcernTypeChoices.choices,
-        default=ConcernTypeChoices.ACADEMIC
-    )
+    scheduled_at = models.DateTimeField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+    concern_type = models.CharField(max_length=50, choices=CONCERN_CHOICES, default="other")
     notes = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ['-scheduled_at']
         indexes = [
-            models.Index(fields=['student', 'scheduled_at']),
-            models.Index(fields=['counselor', 'scheduled_at']),
-            models.Index(fields=['status']),
+            models.Index(fields=["student"]),
+            models.Index(fields=["counselor"]),
+            models.Index(fields=["scheduled_at"]),
         ]
 
-    def clean(self):
-        if self.notes and len(self.notes) > 2000:
-            raise ValidationError({'notes': 'Notes cannot exceed 2000 characters.'})
-
     def __str__(self):
-        return f"Appt #{self.id} | {self.student.full_name} with {self.counselor.full_name} ({self.status})"
+        return f"Appointment #{self.pk} — {self.student} with {self.counselor} at {self.scheduled_at}"
 
 
 class CaseNote(models.Model):
-    """
-    Confidential or shared clinical case notes authored by counselors.
-    Stores AES-256 encrypted ciphertext at rest.
-    """
+    """Encrypted counseling notes recorded for an appointment."""
     appointment = models.ForeignKey(
-        Appointment,
-        on_delete=models.CASCADE,
-        related_name='case_notes'
+        Appointment, on_delete=models.CASCADE, related_name="case_notes"
     )
     counselor = models.ForeignKey(
-        Profile,
-        on_delete=models.CASCADE,
-        related_name='case_notes'
+        Profile, on_delete=models.CASCADE, related_name="case_notes"
     )
-    content = models.TextField(help_text="Encrypted ciphertext payload")
+    content = models.TextField()  # Encrypted ciphertext storage
     is_confidential = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -111,103 +72,69 @@ class CaseNote(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=['appointment', 'counselor'],
-                name='uniq_case_note_appt_counselor'
-            )
+                fields=["appointment", "counselor"],
+                name="uniq_case_note_appt_counselor",
+            ),
         ]
-        ordering = ['-updated_at']
 
     def clean(self):
+        """Ensure the case note author matches the appointment's designated counselor."""
         if self.appointment_id and self.counselor_id:
             if self.counselor_id != self.appointment.counselor_id:
-                raise ValidationError({
-                    'counselor': 'Counselor author must match the counselor assigned to the appointment.'
-                })
+                raise ValidationError(
+                    "Case note counselor must match the appointment's assigned counselor."
+                )
 
     def __str__(self):
-        return f"CaseNote for Appt #{self.appointment_id} by {self.counselor.full_name}"
+        return f"CaseNote for Appointment #{self.appointment_id}"
 
 
 class AuditLog(models.Model):
-    """
-    Append-only security and operational audit trail.
-    """
+    """System activity audit log capturing user actions and security events."""
     user = models.ForeignKey(
-        Profile,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='audit_logs'
+        Profile, on_delete=models.SET_NULL, null=True, blank=True, related_name="audit_logs"
     )
-    action = models.CharField(max_length=100, db_index=True)
+    action = models.CharField(max_length=100)
     table_name = models.CharField(max_length=100)
     record_id = models.UUIDField(null=True, blank=True)
-    metadata = models.JSONField(default=dict, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
-
-    class Meta:
-        ordering = ['-created_at']
-        indexes = [
-            models.Index(fields=['created_at']),
-            models.Index(fields=['action']),
-            models.Index(fields=['user', 'created_at']),
-        ]
-
-    def __str__(self):
-        actor = self.user.full_name if self.user else 'System'
-        return f"[{self.created_at:%Y-%m-%d %H:%M}] {actor} -> {self.action} on {self.table_name}"
-
-
-class ChatbotSession(models.Model):
-    """
-    Student AI conversation sessions with persisted message histories.
-    """
-    student = models.ForeignKey(
-        Profile,
-        on_delete=models.CASCADE,
-        related_name='chatbot_sessions'
-    )
-    messages = models.JSONField(default=list, blank=True)
+    metadata = models.JSONField(default=dict)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ['-created_at']
-        indexes = [
-            models.Index(fields=['student', '-created_at']),
-        ]
+        ordering = ["-created_at"]
 
     def __str__(self):
-        return f"ChatSession #{self.id} for {self.student.full_name} ({len(self.messages)} msgs)"
+        return f"[{self.action}] {self.table_name} by {self.user}"
+
+
+class ChatbotSession(models.Model):
+    """Wellness assistant conversation history for a student."""
+    student = models.ForeignKey(
+        Profile, on_delete=models.CASCADE, related_name="chatbot_sessions"
+    )
+    messages = models.JSONField(default=list)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Chat session for {self.student}"
 
 
 class StudentMoodAlert(models.Model):
-    """
-    Dispatched when a student reports 'low' mood during wellness check-ins.
-    Assigned to the counselor of their latest non-cancelled appointment.
-    """
+    """Daily mood check-in alert flagged for counselor attention."""
     student = models.ForeignKey(
-        Profile,
-        on_delete=models.CASCADE,
-        related_name='student_mood_alerts'
+        Profile, on_delete=models.CASCADE, related_name="mood_alerts_as_student"
     )
     counselor = models.ForeignKey(
-        Profile,
-        on_delete=models.CASCADE,
-        related_name='counselor_mood_alerts'
+        Profile, on_delete=models.CASCADE, related_name="mood_alerts"
     )
     note = models.CharField(max_length=500, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ['-created_at']
         indexes = [
-            models.Index(fields=['counselor', '-created_at']),
-            models.Index(fields=['student', '-created_at']),
+            models.Index(fields=["counselor", "-created_at"]),
+            models.Index(fields=["student", "-created_at"]),
         ]
 
-    def clean(self):
-        if self.note and len(self.note) > 500:
-            raise ValidationError({'note': 'Note cannot exceed 500 characters.'})
-
     def __str__(self):
-        return f"MoodAlert #{self.id}: {self.student.full_name} -> {self.counselor.full_name}"
+        return f"Mood alert: {self.student} → {self.counselor}"

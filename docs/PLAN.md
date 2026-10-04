@@ -1,22 +1,17 @@
-# GuidanceConnect — Django Replica Master Plan
+# ConnectGuidance — System Architecture & Execution Plan
 
 | Field | Value |
 |---|---|
-| Target folder | `C:\School works\4yr_firstsem\connectguidance_django` |
 | Django project | `config` (settings: `config.settings`) |
-| Python | 3.12.10 (`.venv`) |
-| Django | 5.2.x |
-| Database | Supabase PostgreSQL (`sslmode=require`) |
-| Original system | `../connectguidance1` — Next.js 16 + Supabase (source of truth) |
+| Python | 3.11+ (`.venv`) |
+| Django | 5.x |
+| Database | SQLite (development) / PostgreSQL (production) |
+| Architecture | Django Monolithic Model-View-Template (MVT) Architecture |
 | UI approach | Django templates + server-rendered pages (16 screens) |
-| Auth | Django session auth + custom role guards (replaces Supabase Auth + `proxy.ts`) |
+| Auth | Django session auth + custom role guards (`@role_required`) |
 | Companion docs | `ERD.md`, `FLOWS.md`, `INTERFACES.md`, `RLS_AND_SECURITY.md`, `REFERENCES.md` |
 
-**Goal:** Feature-parity replica of GuidanceConnect in pure Django.
-
-**Rule:** No step is done until its Verify column passes.
-
-**Status legend:** done · needs fix · pending · later phase
+**Goal:** Comprehensive university guidance counseling management system built with pure Django.
 
 ---
 

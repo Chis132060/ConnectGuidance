@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Admin Dashboard — ConnectGuidance{% endblock %}
+{% block page_title %}Administrative Overview{% endblock %}
+
+{% block content %}
+<div class="admin-overview" style="max-width: 1200px; margin: 0 auto; padding: 0.5rem 0;">
+
+    <!-- Top KPI Cards Strip -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem; margin-bottom: 2rem;">
+        
+        <!-- Total Students -->
+        <div class="card" style="padding: 1.5rem; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <span style="font-size: 0.85rem; font-weight: 500; color: #64748B; display: block; margin-bottom: 0.25rem;">Total Registered Students</span>
+                    <strong style="font-size: 2rem; font-weight: 700; color: #0F172A;">{{ kpis.total_students|default:"0" }}</strong>
+                </div>
+                <div style="width: 44px; height: 44px; border-radius: 10px; background: #DBEAFE; color: #2563EB; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+                    🎓
+                </div>
+            </div>
+            <div style="margin-top: 0.75rem; font-size: 0.8rem; color: #10B981; font-weight: 500;">
+                Active student accounts
+            </div>
+        </div>
+
+        <!-- Active Counselors -->
+        <div class="card" style="padding: 1.5rem; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <span style="font-size: 0.85rem; font-weight: 500; color: #64748B; display: block; margin-bottom: 0.25rem;">Guidance Counselors</span>
+                    <strong style="font-size: 2rem; font-weight: 700; color: #0F172A;">{{ kpis.total_counselors|default:"0" }}</strong>
+                </div>
+                <div style="width: 44px; height: 44px; border-radius: 10px; background: #CCFBF1; color: #0D9488; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+                    💼
+                </div>
+            </div>
+            <div style="margin-top: 0.75rem; font-size: 0.8rem; color: #0D9488; font-weight: 500;">
+                Clinical staff roster
+            </div>
+        </div>
+
+        <!-- Appointments This Month -->
+        <div class="card" style="padding: 1.5rem; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <span style="font-size: 0.85rem; font-weight: 500; color: #64748B; display: block; margin-bottom: 0.25rem;">Monthly Appointments</span>
+                    <strong style="font-size: 2rem; font-weight: 700; color: #0F172A;">{{ kpis.month_appointments|default:"0" }}</strong>
+                </div>
+                <div style="width: 44px; height: 44px; border-radius: 10px; background: #FEF3C7; color: #D97706; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+                    📅
+                </div>
+            </div>
+            <div style="margin-top: 0.75rem; font-size: 0.8rem; color: #64748B;">
+                Scheduled this calendar month
+            </div>
+        </div>
+
+        <!-- Completion Rate -->
+        <div class="card" style="padding: 1.5rem; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <span style="font-size: 0.85rem; font-weight: 500; color: #64748B; display: block; margin-bottom: 0.25rem;">Session Completion Rate</span>
+                    <strong style="font-size: 2rem; font-weight: 700; color: #0F172A;">{{ kpis.completion_rate|default:"0" }}%</strong>
+                </div>
+                <div style="width: 44px; height: 44px; border-radius: 10px; background: #D1FAE5; color: #10B981; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+                    ✓
+                </div>
+            </div>
+            <div style="margin-top: 0.75rem; width: 100%; background: #E2E8F0; border-radius: 9999px; height: 6px; overflow: hidden;">
+                <div style="background: #10B981; height: 100%; width: {{ kpis.completion_rate|default:0 }}%;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Navigation Cards -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+        <a href="{% url 'admin_users' %}" class="card" style="padding: 1.25rem; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 10px; text-decoration: none; display: flex; align-items: center; gap: 1rem; transition: transform 0.15s ease;">
+            <div style="width: 40px; height: 40px; background: #EFF6FF; color: #2563EB; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.15rem;">👥</div>
+            <div>
+                <strong style="color: #0F172A; font-size: 0.95rem; display: block;">User Directory</strong>
+                <span style="color: #64748B; font-size: 0.8rem;">Manage accounts, roles, and access</span>
+            </div>
+        </a>
+        <a href="{% url 'admin_reports' %}" class="card" style="padding: 1.25rem; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 10px; text-decoration: none; display: flex; align-items: center; gap: 1rem; transition: transform 0.15s ease;">
+            <div style="width: 40px; height: 40px; background: #F0FDF4; color: #16A34A; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.15rem;">📊</div>
+            <div>
+                <strong style="color: #0F172A; font-size: 0.95rem; display: block;">Reporting & Analytics</strong>
+                <span style="color: #64748B; font-size: 0.8rem;">Export CSV and PDF summaries</span>
+            </div>
+        </a>
+        <a href="{% url 'admin_audit' %}" class="card" style="padding: 1.25rem; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 10px; text-decoration: none; display: flex; align-items: center; gap: 1rem; transition: transform 0.15s ease;">
+            <div style="width: 40px; height: 40px; background: #FAF5FF; color: #9333EA; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.15rem;">📋</div>
+            <div>
+                <strong style="color: #0F172A; font-size: 0.95rem; display: block;">Audit Trail</strong>
+                <span style="color: #64748B; font-size: 0.8rem;">Review security logs & operations</span>
+            </div>
+        </a>
+    </div>
+
+    <!-- Recent System Activity -->
+    <div class="card" style="padding: 1.75rem; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+            <div>
+                <h3 style="font-size: 1.15rem; font-weight: 600; color: #0F172A; margin: 0;">Recent System Activity</h3>
+                <p style="color: #64748B; font-size: 0.85rem; margin: 0.2rem 0 0;">Latest operational events and user actions</p>
+            </div>
+            <a href="{% url 'admin_audit' %}" style="color: #2563EB; font-weight: 500; font-size: 0.875rem; text-decoration: none;">
+                View All Logs →
+            </a>
+        </div>
+
+        {% if recent_activity %}
+        <div class="table-responsive" style="overflow-x: auto;">
+            <table class="table" style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
+                <thead>
+                    <tr style="border-bottom: 1px solid #E2E8F0; background: #F8FAFC;">
+                        <th style="padding: 0.75rem 1rem; color: #475569; font-weight: 600;">Timestamp</th>
+                        <th style="padding: 0.75rem 1rem; color: #475569; font-weight: 600;">User</th>
+                        <th style="padding: 0.75rem 1rem; color: #475569; font-weight: 600;">Action</th>
+                        <th style="padding: 0.75rem 1rem; color: #475569; font-weight: 600;">Module / Table</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in recent_activity %}
+                    <tr style="border-bottom: 1px solid #F1F5F9;">
+                        <td style="padding: 0.75rem 1rem; color: #64748B;">{{ log.created_at|date:"M d, Y · H:i:s" }}</td>
+                        <td style="padding: 0.75rem 1rem; font-weight: 500; color: #0F172A;">
+                            {{ log.user.full_name|default:"System" }}
+                        </td>
+                        <td style="padding: 0.75rem 1rem;">
+                            <span class="badge" style="background: #F1F5F9; color: #334155; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.8rem; font-family: monospace;">
+                                {{ log.action }}
+                            </span>
+                        </td>
+                        <td style="padding: 0.75rem 1rem; color: #64748B; font-family: monospace; font-size: 0.85rem;">
+                            {{ log.table_name }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div style="text-align: center; padding: 2rem; color: #94A3B8;">
+            No recent activity logged yet.
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

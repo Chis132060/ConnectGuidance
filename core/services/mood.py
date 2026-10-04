@@ -1,85 +1,119 @@
-from typing import Dict, Any, Optional
-from django.core.exceptions import ValidationError
-from django.db import transaction
-from core.models import Profile, Appointment, StudentMoodAlert
-from apps.common.choices import RoleChoices, AppointmentStatusChoices
-from apps.audit.services.logging import log_action
+"""
+Student Mood Check-In Service.
+Handles student wellness mood updates:
+- 'good' or 'okay': records audit log entry
+- 'low': flags counselor attention by creating a StudentMoodAlert
+"""
+from core.models import Appointment, StudentMoodAlert, Profile
+from core.services.audit import log_action
 
 
-@transaction.atomic
-def process_mood_checkin(
-    student: Profile,
-    mood: str,
-    note: Optional[str] = None
-) -> Dict[str, Any]:
+def process_mood_checkin(student_profile, mood, note=None):
     """
-    Handles wellness mood check-in.
-    'good' and 'okay' update the audit log.
-    'low' alerts the counselor of the student's latest non-cancelled appointment.
+    Process a mood check-in.
+    mood: "good" | "okay" | "low"
+    note: optional string, max 500 chars
+    Returns dict with success/alert info.
     """
-    if student.role != RoleChoices.STUDENT:
-        raise ValidationError("Only students may submit mood check-ins.")
-
-    valid_moods = ['good', 'okay', 'low']
-    if mood not in valid_moods:
-        raise ValidationError(f"Invalid mood value. Allowed values are: {', '.join(valid_moods)}.")
-
-    cleaned_note = (note or "").strip()[:500]
-
-    log_action(
-        user=student,
-        action="STUDENT_MOOD_CHECKIN",
-        table_name="student_mood",
-        metadata={
-            "mood": mood,
-            "has_note": bool(cleaned_note)
-        }
-    )
-
-    if mood in ['good', 'okay']:
+    if not student_profile.is_active:
         return {
-            'status': 'success',
-            'mood': mood,
-            'alert_created': False,
-            'message': 'Thank you for checking in! Keep maintaining your positive momentum.'
+            "status": "error",
+            "alert_created": False,
+            "ok": False,
+            "error": "Only active students can submit mood check-ins.",
+            "message": "Only active students can submit mood check-ins.",
         }
 
-    # Low mood branch: find counselor from latest non-cancelled appointment
-    latest_appt = Appointment.objects.filter(
-        student=student
-    ).exclude(
-        status=AppointmentStatusChoices.CANCELLED
-    ).order_by('-scheduled_at').first()
+    if mood not in ("good", "okay", "low"):
+        return {
+            "status": "error",
+            "alert_created": False,
+            "ok": False,
+            "error": "Invalid mood value.",
+            "message": "Invalid mood value.",
+        }
+
+    # Truncate note
+    if note and len(note) > 500:
+        note = note[:500]
+
+    if mood in ("good", "okay"):
+        log_action(
+            user=student_profile,
+            action="STUDENT_MOOD_CHECKIN",
+            table_name="student_mood_alerts",
+            metadata={"mood": mood},
+        )
+        return {
+            "status": "success",
+            "alert_created": False,
+            "ok": True,
+            "notified": False,
+            "message": "Mood check-in submitted successfully.",
+        }
+
+    # mood == "low" → find counselor from latest non-cancelled appointment
+    latest_appt = (
+        Appointment.objects.filter(student=student_profile)
+        .exclude(status="cancelled")
+        .order_by("-scheduled_at")
+        .select_related("counselor")
+        .first()
+    )
 
     if not latest_appt:
         return {
-            'status': 'warning',
-            'mood': 'low',
-            'alert_created': False,
-            'message': 'We noticed you are feeling low. We could not find an assigned counselor on record for you. Please book a guidance appointment so a counselor can support you.'
+            "status": "warning",
+            "alert_created": False,
+            "ok": False,
+            "notified": False,
+            "message": "Please book a guidance appointment with a counselor or visit the front desk.",
+            "error": "Please book a guidance appointment with a counselor or visit the front desk.",
         }
 
-    alert = StudentMoodAlert.objects.create(
-        student=student,
-        counselor=latest_appt.counselor,
-        note=cleaned_note if cleaned_note else "Student reported low mood via check-in."
-    )
+    counselor = latest_appt.counselor
+    if counselor.role != "counselor":
+        return {
+            "status": "warning",
+            "alert_created": False,
+            "ok": False,
+            "notified": False,
+            "message": "Your assigned counselor is no longer active. Please book a guidance appointment.",
+            "error": "Your assigned counselor is no longer active.",
+        }
+
+    try:
+        alert = StudentMoodAlert.objects.create(
+            student=student_profile,
+            counselor=counselor,
+            note=note or "",
+        )
+    except Exception:
+        return {
+            "status": "error",
+            "alert_created": False,
+            "ok": False,
+            "error": "Could not create mood alert.",
+            "message": "Could not create mood alert.",
+        }
 
     log_action(
-        user=student,
+        user=student_profile,
         action="STUDENT_MOOD_ALERT",
-        table_name="core_student_mood_alert",
-        record_id=alert.id,
+        table_name="student_mood_alerts",
+        record_id=alert.pk,
         metadata={
-            "counselor_id": latest_appt.counselor.id,
-            "appointment_id": latest_appt.id
-        }
+            "mood": "low",
+            "alert_id": alert.pk,
+            "counselor_id": counselor.pk,
+        },
     )
 
     return {
-        'status': 'alert_dispatched',
-        'mood': 'low',
-        'alert_created': True,
-        'counselor_name': latest_appt.counselor.full_name,
-        'message': f"Your counselor {latest_appt.counselor.full_name} has been gently notified that you are feeling low and may follow up with you."
+        "status": "alert_dispatched",
+        "alert_created": True,
+        "ok": True,
+        "notified": True,
+        "counselor_name": counselor.full_name,
+        "message": f"Alert sent to counselor {counselor.full_name}.",
     }

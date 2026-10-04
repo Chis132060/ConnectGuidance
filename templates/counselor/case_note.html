@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Case Note — Appointment #{{ appointment.pk }}{% endblock %}
+{% block page_title %}Clinical Case Note Editor{% endblock %}
+
+{% block content %}
+<div class="case-note-editor" style="max-width: 1000px; margin: 1rem auto; padding: 0 1rem;">
+    <!-- Breadcrumb / Header -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <div>
+            <a href="{% url 'counselor_workspace' %}" style="display: inline-flex; align-items: center; gap: 0.35rem; color: #2563EB; font-weight: 500; font-size: 0.9rem; text-decoration: none; margin-bottom: 0.5rem;">
+                ← Back to Counselor Workspace
+            </a>
+            <h2 style="font-size: 1.5rem; font-weight: 700; color: #0F172A; margin: 0;">
+                Case Note for {{ appointment.student.full_name }}
+            </h2>
+        </div>
+        <span class="status-badge" data-status="{{ appointment.status }}">
+            {{ appointment.status|capfirst }}
+        </span>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 320px 1fr; gap: 1.5rem; align-items: start;">
+        <!-- Left: Appointment & Student Info Summary Card -->
+        <div class="card" style="padding: 1.5rem; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+            <h3 style="font-size: 1.05rem; font-weight: 600; color: #0F172A; margin-bottom: 1rem; border-bottom: 1px solid #F1F5F9; padding-bottom: 0.5rem;">
+                Student Information
+            </h3>
+            
+            <div style="margin-bottom: 0.85rem;">
+                <span style="font-size: 0.8rem; color: #64748B; display: block;">Student Name</span>
+                <strong style="color: #0F172A; font-size: 0.95rem;">{{ appointment.student.full_name }}</strong>
+            </div>
+
+            <div style="margin-bottom: 0.85rem;">
+                <span style="font-size: 0.8rem; color: #64748B; display: block;">Student ID</span>
+                <span style="color: #334155; font-size: 0.95rem;">{{ appointment.student.student_id|default:"N/A" }}</span>
+            </div>
+
+            <div style="margin-bottom: 0.85rem;">
+                <span style="font-size: 0.8rem; color: #64748B; display: block;">Department</span>
+                <span style="color: #334155; font-size: 0.95rem;">{{ appointment.student.department|default:"N/A" }}</span>
+            </div>
+
+            <h3 style="font-size: 1.05rem; font-weight: 600; color: #0F172A; margin: 1.5rem 0 1rem; border-bottom: 1px solid #F1F5F9; padding-bottom: 0.5rem;">
+                Session Details
+            </h3>
+
+            <div style="margin-bottom: 0.85rem;">
+                <span style="font-size: 0.8rem; color: #64748B; display: block;">Date & Time</span>
+                <span style="color: #334155; font-size: 0.95rem;">{{ appointment.scheduled_at|date:"M d, Y · h:i A" }}</span>
+            </div>
+
+            <div style="margin-bottom: 0.85rem;">
+                <span style="font-size: 0.8rem; color: #64748B; display: block;">Concern Category</span>
+                <span class="badge" style="background: #EFF6FF; color: #1D4ED8; font-size: 0.85rem; padding: 0.25rem 0.6rem; border-radius: 6px;">
+                    {{ appointment.concern_type|title }}
+                </span>
+            </div>
+
+            {% if appointment.notes %}
+            <div style="margin-bottom: 0.85rem;">
+                <span style="font-size: 0.8rem; color: #64748B; display: block;">Student's Initial Intake Note</span>
+                <p style="color: #475569; font-size: 0.875rem; background: #F8FAFC; padding: 0.75rem; border-radius: 8px; border: 1px solid #E2E8F0; margin: 0.35rem 0 0; line-height: 1.4;">
+                    {{ appointment.notes }}
+                </p>
+            </div>
+            {% endif %}
+
+            <div style="margin-top: 1.5rem; padding: 0.85rem; background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: 8px; font-size: 0.825rem; color: #1E40AF;">
+                🔒 <strong>Encryption Active:</strong> Notes saved here are encrypted at rest with AES-256 for student clinical privacy.
+            </div>
+        </div>
+
+        <!-- Right: Case Note Textarea & Actions -->
+        <div class="card" style="padding: 1.75rem; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                <div>
+                    <h3 style="font-size: 1.15rem; font-weight: 600; color: #0F172A; margin: 0;">Clinical Notes & Observations</h3>
+                    <p style="color: #64748B; font-size: 0.875rem; margin: 0.2rem 0 0;">Record counseling observations, assessments, and action plans.</p>
+                </div>
+                {% if existing_note %}
+                <span style="font-size: 0.8rem; color: #10B981; background: #ECFDF5; padding: 0.3rem 0.6rem; border-radius: 6px; font-weight: 500;">
+                    ✓ Note on file (Updated {{ existing_note.updated_at|date:"M d, Y" }})
+                </span>
+                {% endif %}
+            </div>
+
+            <form method="POST" action="{% url 'case_note' appointment.pk %}">
+                {% csrf_token %}
+
+                <div class="form-group" style="margin-bottom: 1.25rem;">
+                    <label for="content" style="display: block; font-weight: 500; font-size: 0.875rem; color: #334155; margin-bottom: 0.4rem;">
+                        Note Content <span style="color: #EF4444;">*</span>
+                    </label>
+                    <textarea 
+                        name="content" 
+                        id="content" 
+                        rows="12" 
+                        class="form-textarea" 
+                        required
+                        placeholder="Write detailed clinical documentation, assessment, and recommendations here..."
+                        style="width: 100%; padding: 0.85rem; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 0.95rem; font-family: inherit; line-height: 1.5; box-sizing: border-box;"
+                    >{{ plaintext }}</textarea>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 1.75rem; padding: 1rem; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px;">
+                    <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer; margin: 0;">
+                        <input 
+                            type="checkbox" 
+                            name="is_confidential" 
+                            id="is_confidential"
+                            {% if existing_note and existing_note.is_confidential %}checked{% endif %}
+                            style="width: 18px; height: 18px; accent-color: #2563EB;"
+                        >
+                        <div>
+                            <span style="font-weight: 600; color: #0F172A; font-size: 0.9rem; display: block;">
+                                Mark Note as Strictly Confidential
+                            </span>
+                            <span style="color: #64748B; font-size: 0.8rem;">
+                                If checked, this clinical note will only be visible to licensed counselors and administrators, hidden from the student portal.
+                            </span>
+                        </div>
+                    </label>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+                    <a href="{% url 'counselor_workspace' %}" class="btn btn-secondary" style="padding: 0.65rem 1.25rem;">
+                        Cancel
+                    </a>
+                    <button type="submit" class="btn btn-primary" style="padding: 0.65rem 1.75rem; font-weight: 600;">
+                        Save Case Note
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

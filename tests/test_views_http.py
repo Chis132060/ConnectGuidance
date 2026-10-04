@@ -2,7 +2,7 @@
 tests/test_views_http.py — HTTP Route & Template Verification Suite.
 
 Verifies that all 16 designated screens (plus the widget include) respond with HTTP 200
-and render their exact corresponding template files as required by INTERFACES.md and PLAN step 63.
+and render their exact corresponding template files.
 """
 
 from django.test import TestCase, Client
@@ -10,7 +10,7 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 
 from core.models import Profile, Appointment, CaseNote
-from apps.common.choices import RoleChoices, AppointmentStatusChoices, ConcernTypeChoices
+from core.choices import RoleChoices, AppointmentStatusChoices, ConcernTypeChoices
 
 
 class ViewsHttpTemplateTestCase(TestCase):

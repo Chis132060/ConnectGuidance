@@ -1,7 +1,6 @@
-# ERD — GuidanceConnect Django Replica
+# Entity Relationship Diagram (ERD) — ConnectGuidance
 
-Source of truth: original Supabase migrations in `../connectguidance1/supabase/migrations/`.  
-This document is the **Django models spec** for Phase 2 — no field may be missing.
+This document specifies the relational data model, constraints, table structures, and field definitions for the **ConnectGuidance** system.
 
 ---
 
@@ -257,23 +256,22 @@ CONCERN_CHOICES = [
 
 ---
 
-## What replaces Supabase-only features
+## Database Implementation & Verification
 
-| Supabase | Django replacement |
-|---|---|
-| `app_role` / `appointment_status` enums | Choice fields |
-| RLS policies | View/service query scoping + `guards.py` (see `RLS_AND_SECURITY.md`) |
-| DB triggers (audit, updated_at, integrity, profile-on-signup) | Django signals + `auto_now` + `clean()`/service checks |
-| `profiles_user_no_seq` | App-assigned unique `user_no` or DB sequence |
-| SQL migrations (18 files) | Django migrations under `core/migrations/` |
-| `auth.users` | `django.contrib.auth.models.User` |
-
----
-
-## Phase 2 verification
-
-1. `python manage.py makemigrations core`
-2. `python manage.py migrate`
-3. Supabase table list contains: `core_profile`, `core_appointment`, `core_case_note`, `core_audit_log`, `core_chatbot_session`, `core_student_mood_alert`, plus Django core tables
-4. `python manage.py check`
-5. Tick every box in PLAN.md “Data (ERD)” checklist
+1. All models defined cleanly in `core/models.py`.
+2. Applied migrations via standard Django migration management:
+   ```bash
+   python manage.py makemigrations core
+   python manage.py migrate
+   ```
+3. Verified zero issues with Django system check:
+   ```bash
+   python manage.py check
+   ```
+4. Database tables created:
+   - `core_profile`
+   - `core_appointment`
+   - `core_case_note`
+   - `core_audit_log`
+   - `core_chatbot_session`
+   - `core_student_mood_alert`

@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Reports & Analytics — ConnectGuidance{% endblock %}
+{% block page_title %}Counseling Reports & Data Export{% endblock %}
+
+{% block content %}
+<div class="admin-reports" style="max-width: 1200px; margin: 0 auto; padding: 0.5rem 0;">
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <h2 style="font-size: 1.35rem; font-weight: 700; color: #0F172A; margin: 0;">Counseling Department Reports</h2>
+            <p style="color: #64748B; font-size: 0.875rem; margin: 0.2rem 0 0;">Generate appointment metrics, filter by concern, and export official summaries</p>
+        </div>
+    </div>
+
+    <!-- Filter Form -->
+    <div class="card" style="padding: 1.5rem; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; margin-bottom: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+        <form method="GET" action="{% url 'admin_reports' %}">
+            <input type="hidden" name="generate" value="1">
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.25rem;">
+                <div>
+                    <label style="display: block; font-size: 0.8rem; font-weight: 500; color: #475569; margin-bottom: 0.35rem;">Date From</label>
+                    <input type="date" name="date_from" value="{{ filters.date_from|default:'' }}" class="form-input" style="width: 100%; padding: 0.55rem; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 0.875rem; box-sizing: border-box;">
+                </div>
+
+                <div>
+                    <label style="display: block; font-size: 0.8rem; font-weight: 500; color: #475569; margin-bottom: 0.35rem;">Date To</label>
+                    <input type="date" name="date_to" value="{{ filters.date_to|default:'' }}" class="form-input" style="width: 100%; padding: 0.55rem; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 0.875rem; box-sizing: border-box;">
+                </div>
+
+                <div>
+                    <label style="display: block; font-size: 0.8rem; font-weight: 500; color: #475569; margin-bottom: 0.35rem;">Concern Type</label>
+                    <select name="concern_type" class="form-select" style="width: 100%; padding: 0.55rem; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 0.875rem; box-sizing: border-box;">
+                        <option value="">All Concerns</option>
+                        {% for c_val, c_label in concern_choices %}
+                            <option value="{{ c_val }}" {% if filters.concern_type == c_val %}selected{% endif %}>{{ c_label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label style="display: block; font-size: 0.8rem; font-weight: 500; color: #475569; margin-bottom: 0.35rem;">Status</label>
+                    <select name="status" class="form-select" style="width: 100%; padding: 0.55rem; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 0.875rem; box-sizing: border-box;">
+                        <option value="">All Statuses</option>
+                        {% for s_val, s_label in status_choices %}
+                            <option value="{{ s_val }}" {% if filters.status == s_val %}selected{% endif %}>{{ s_label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label style="display: block; font-size: 0.8rem; font-weight: 500; color: #475569; margin-bottom: 0.35rem;">Counselor</label>
+                    <select name="counselor_id" class="form-select" style="width: 100%; padding: 0.55rem; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 0.875rem; box-sizing: border-box;">
+                        <option value="">All Counselors</option>
+                        {% for c in counselors %}
+                            <option value="{{ c.pk }}" {% if filters.counselor_id == c.pk|stringformat:"s" %}selected{% endif %}>{{ c.full_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
+                <div style="display: flex; gap: 0.5rem;">
+                    <button type="submit" class="btn btn-primary" style="padding: 0.6rem 1.5rem; font-weight: 600;">
+                        Generate Report Preview
+                    </button>
+                    <a href="{% url 'admin_reports' %}" class="btn btn-secondary" style="padding: 0.6rem 1rem;">Reset Filters</a>
+                </div>
+
+                {% if appointments is not None %}
+                <div style="display: flex; gap: 0.5rem;">
+                    <button type="submit" name="export" value="csv" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.875rem;">
+                        📄 Export CSV
+                    </button>
+                    <button type="submit" name="export" value="pdf" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.875rem;">
+                        📑 Export PDF
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <!-- Summary Strip -->
+    {% if summary %}
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+        <div class="card" style="padding: 1.25rem; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 10px; text-align: center;">
+            <span style="font-size: 0.8rem; color: #64748B; display: block; margin-bottom: 0.25rem;">Total Matches</span>
+            <strong style="font-size: 1.75rem; color: #0F172A;">{{ summary.total }}</strong>
+        </div>
+        <div class="card" style="padding: 1.25rem; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 10px; text-align: center;">
+            <span style="font-size: 0.8rem; color: #D97706; display: block; margin-bottom: 0.25rem;">Pending</span>
+            <strong style="font-size: 1.75rem; color: #D97706;">{{ summary.pending }}</strong>
+        </div>
+        <div class="card" style="padding: 1.25rem; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 10px; text-align: center;">
+            <span style="font-size: 0.8rem; color: #2563EB; display: block; margin-bottom: 0.25rem;">Confirmed</span>
+            <strong style="font-size: 1.75rem; color: #2563EB;">{{ summary.confirmed }}</strong>
+        </div>
+        <div class="card" style="padding: 1.25rem; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 10px; text-align: center;">
+            <span style="font-size: 0.8rem; color: #16A34A; display: block; margin-bottom: 0.25rem;">Completed</span>
+            <strong style="font-size: 1.75rem; color: #16A34A;">{{ summary.completed }}</strong>
+        </div>
+        <div class="card" style="padding: 1.25rem; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 10px; text-align: center;">
+            <span style="font-size: 0.8rem; color: #DC2626; display: block; margin-bottom: 0.25rem;">Cancelled</span>
+            <strong style="font-size: 1.75rem; color: #DC2626;">{{ summary.cancelled }}</strong>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Preview Table -->
+    {% if appointments is not None %}
+    <div class="card" style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+        <div style="padding: 1rem 1.25rem; border-bottom: 1px solid #E2E8F0; background: #F8FAFC; display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="font-size: 1rem; font-weight: 600; color: #0F172A; margin: 0;">Report Preview (Showing up to 50 records)</h3>
+            <span style="font-size: 0.8rem; color: #64748B;">Official counseling records</span>
+        </div>
+        <div class="table-responsive" style="overflow-x: auto;">
+            <table class="table" style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.875rem;">
+                <thead>
+                    <tr style="border-bottom: 1px solid #E2E8F0;">
+                        <th style="padding: 0.75rem 1rem; color: #475569; font-weight: 600;">ID</th>
+                        <th style="padding: 0.75rem 1rem; color: #475569; font-weight: 600;">Student</th>
+                        <th style="padding: 0.75rem 1rem; color: #475569; font-weight: 600;">Counselor</th>
+                        <th style="padding: 0.75rem 1rem; color: #475569; font-weight: 600;">Date & Time</th>
+                        <th style="padding: 0.75rem 1rem; color: #475569; font-weight: 600;">Concern</th>
+                        <th style="padding: 0.75rem 1rem; color: #475569; font-weight: 600;">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for a in appointments %}
+                    <tr style="border-bottom: 1px solid #F1F5F9;">
+                        <td style="padding: 0.75rem 1rem; color: #64748B;">#{{ a.pk }}</td>
+                        <td style="padding: 0.75rem 1rem; font-weight: 500; color: #0F172A;">
+                            {{ a.student.full_name }}
+                        </td>
+                        <td style="padding: 0.75rem 1rem; color: #334155;">{{ a.counselor.full_name }}</td>
+                        <td style="padding: 0.75rem 1rem; color: #64748B;">{{ a.scheduled_at|date:"M d, Y · h:i A" }}</td>
+                        <td style="padding: 0.75rem 1rem;">
+                            <span class="badge" style="background: #EFF6FF; color: #1D4ED8; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.8rem;">
+                                {{ a.concern_type|title }}
+                            </span>
+                        </td>
+                        <td style="padding: 0.75rem 1rem;">
+                            <span class="status-badge" data-status="{{ a.status }}">
+                                {{ a.status|capfirst }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" style="padding: 2.5rem; text-align: center; color: #94A3B8;">
+                            No appointments match the selected criteria.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}
