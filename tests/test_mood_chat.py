@@ -124,7 +124,7 @@ class MoodAndChatTestCase(TestCase):
         """POST /chat/ allows at most 24 requests per 15-minute window; 25th returns 429."""
         self.client.force_login(self.student_user)
 
-        with patch('core.views.chat.has_llm_api_key', return_value=True):
+        with patch('core.views.has_llm_api_key', return_value=True):
             # Fill 24 slots
             for _ in range(24):
                 self.assertTrue(check_chat_rate_limit(self.student.id))
@@ -185,7 +185,7 @@ class MoodAndChatTestCase(TestCase):
         self.client.force_login(self.student_user)
 
         with override_settings(GROQ_API_KEY='', ANTHROPIC_API_KEY=''):
-            with patch('core.views.chat.has_llm_api_key', return_value=False):
+            with patch('core.views.has_llm_api_key', return_value=False):
                 resp = self.client.post(
                     reverse('chat_stream_post'),
                     data=json.dumps({'messages': [{'role': 'user', 'content': 'Hello AI'}]}),
@@ -242,7 +242,7 @@ class MoodAndChatTestCase(TestCase):
         self.assertIsNone(resp2.json()['sessionId'])
 
         # Student 2 attempts to post with Student 1's sessionId -> 403 Forbidden
-        with patch('core.views.chat.has_llm_api_key', return_value=True):
+        with patch('core.views.has_llm_api_key', return_value=True):
             resp_cross = self.client.post(
                 reverse('chat_stream_post'),
                 data=json.dumps({

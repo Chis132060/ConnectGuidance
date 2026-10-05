@@ -4,8 +4,9 @@ core/urls.py — Guidance System & Business Module URL Routing
 
 from django.urls import path
 
-# Student Views
-from core.views.student import (
+# Core Domain Views
+from core.views import (
+    # Student Views
     student_dashboard_view,
     student_appointments_list_view,
     student_slots_view,
@@ -14,10 +15,7 @@ from core.views.student import (
     student_mood_checkin_view,
     student_profile_view,
     student_front_desk_view,
-)
-
-# Counselor Views
-from core.views.counselor import (
+    # Counselor Views
     counselor_workspace_view,
     counselor_appointments_view,
     counselor_case_notes_list_view,
@@ -25,30 +23,21 @@ from core.views.counselor import (
     counselor_wellness_view,
     counselor_profile_view,
     counselor_status_update_view,
-)
-
-# Receptionist Views
-from core.views.receptionist import (
+    # Receptionist Views
     receptionist_dashboard_view,
     receptionist_walk_ins_view,
     receptionist_front_desk_view,
     receptionist_profile_view,
     receptionist_search_students_view,
     receptionist_book_view,
-)
-
-# Admin Portal Views
-from core.views.admin import (
+    # Admin Portal Views
     admin_overview_view,
     admin_reports_view,
     admin_users_view,
     admin_audit_logs_view,
     admin_appointments_view,
     admin_profile_view,
-)
-
-# AI Chatbot Endpoints
-from core.views.chat import (
+    # AI Chatbot Endpoints
     student_chatbot_page_view,
     chat_session_get_view,
     chat_stream_post_view,
