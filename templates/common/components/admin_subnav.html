@@ -1,0 +1,24 @@
+<a href="{% url 'admin_overview' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_overview' %}active{% endif %}" data-tooltip="Dashboard">
+    <i data-lucide="layout-dashboard" class="nav-icon"></i>
+    <span class="nav-label">Dashboard</span>
+</a>
+<a href="{% url 'admin_reports' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_reports' %}active{% endif %}" data-tooltip="Analytics & Reports">
+    <i data-lucide="bar-chart-3" class="nav-icon"></i>
+    <span class="nav-label">Analytics &amp; Reports</span>
+</a>
+<a href="{% url 'admin_users' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_users' %}active{% endif %}" data-tooltip="User Management">
+    <i data-lucide="users-round" class="nav-icon"></i>
+    <span class="nav-label">User Management</span>
+</a>
+<a href="{% url 'admin_audit' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_audit' %}active{% endif %}" data-tooltip="Audit Logs">
+    <i data-lucide="scroll-text" class="nav-icon"></i>
+    <span class="nav-label">Audit Logs</span>
+</a>
+<a href="{% url 'admin_appointments' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_appointments' %}active{% endif %}" data-tooltip="Appointments">
+    <i data-lucide="calendar-days" class="nav-icon"></i>
+    <span class="nav-label">Appointments</span>
+</a>
+<a href="{% url 'admin_profile' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_profile' %}active{% endif %}" data-tooltip="Profile">
+    <i data-lucide="shield-cog" class="nav-icon"></i>
+    <span class="nav-label">Profile</span>
+</a>

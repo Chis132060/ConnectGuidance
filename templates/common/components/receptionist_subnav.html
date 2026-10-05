@@ -1,0 +1,16 @@
+<a href="{% url 'receptionist_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'receptionist_dashboard' %}active{% endif %}" data-tooltip="Dashboard">
+    <i data-lucide="layout-dashboard" class="nav-icon"></i>
+    <span class="nav-label">Dashboard</span>
+</a>
+<a href="{% url 'receptionist_walk_ins' %}" class="nav-link {% if request.resolver_match.url_name == 'receptionist_walk_ins' %}active{% endif %}" data-tooltip="Appointments / Walk-ins">
+    <i data-lucide="calendar-plus" class="nav-icon"></i>
+    <span class="nav-label">Appointments / Walk-ins</span>
+</a>
+<a href="{% url 'receptionist_front_desk' %}" class="nav-link {% if request.resolver_match.url_name == 'receptionist_front_desk' %}active{% endif %}" data-tooltip="Front Desk">
+    <i data-lucide="concierge-bell" class="nav-icon"></i>
+    <span class="nav-label">Front Desk</span>
+</a>
+<a href="{% url 'receptionist_profile' %}" class="nav-link {% if request.resolver_match.url_name == 'receptionist_profile' %}active{% endif %}" data-tooltip="Profile">
+    <i data-lucide="circle-user-round" class="nav-icon"></i>
+    <span class="nav-label">Profile</span>
+</a>
