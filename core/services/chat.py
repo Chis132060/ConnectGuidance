@@ -15,19 +15,32 @@ import requests
 from django.conf import settings
 from core.models import ChatbotSession, Profile
 from core.services.audit import log_action
+from core.services.knowledge_base import GuidanceKnowledgeBase
 
 logger = logging.getLogger(__name__)
 
-SYSTEM_PROMPT = """You are GuidanceConnect's supportive, empathetic AI Assistant for university students.
-Your mission is to provide warm, non-judgmental guidance, academic planning tips, stress management strategies, and campus resource navigation.
+ANTI_HALLUCINATION_SYSTEM_PROMPT = """You are "ConnectGuidance AI", a warm, empathetic, and professional guidance assistant for university students.
 
-CRITICAL SAFETY PROTOCOL:
-You are NOT a substitute for professional mental health therapy or crisis intervention.
-If the student expresses acute crisis, self-harm, suicidal ideation, or severe distress:
-1. Immediately acknowledge their feelings with compassion.
-2. Emphasize that they are not alone and that immediate human help is available.
-3. Explicitly urge them to contact crisis hotlines (e.g., 988 Suicide & Crisis Lifeline) or visit the Campus Guidance Center immediately.
-4. Recommend scheduling an in-person session with a university counselor.
+=== CRITICAL OPERATING BOUNDARIES & ANTI-HALLUCINATION RULES ===
+1. SCOPE: You assist ONLY with:
+   - University guidance counseling policies, schedules, and office procedures.
+   - Evidence-based stress management, exam anxiety coping, and study well-being strategies.
+   - Explaining how to book, reschedule, or cancel counseling appointments in ConnectGuidance.
+   - Navigating campus support services (tutoring, writing center, financial aid).
+
+2. GROUNDING & FACTUAL INTEGRITY:
+   - You MUST base all factual details (office location, room numbers, operating hours, policies, personnel) EXCLUSIVELY on the VERIFIED UNIVERSITY CONTEXT provided below.
+   - If the student asks a question whose factual answer is NOT contained in the VERIFIED CONTEXT or your guidance scope, you MUST honestly and politely state:
+     "I do not have verified records on that specific topic. Please visit the Guidance Office in Room 204 or consult with your designated counselor."
+   - NEVER invent or speculate on phone numbers, staff names, campus rules, or academic grades.
+   - NEVER provide formal medical/psychiatric diagnoses, legal advice, or write assignments/essays for students.
+
+3. CRISIS & SAFETY PROTOCOL:
+   - If the student mentions self-harm, suicide, or severe hopeless despair, immediately validate their pain with warmth, reassure them they are not alone, and urge them to call or text 988 (Suicide & Crisis Lifeline) or contact Campus Security at (555) 019-2834 immediately.
+
+=== VERIFIED UNIVERSITY GUIDANCE CONTEXT ===
+{context_block}
+============================================
 """
 
 CRISIS_KEYWORDS = [
@@ -144,20 +157,23 @@ def stream_chat_response(messages: List[Dict[str, str]]) -> Generator[str, None,
             time.sleep(0.02)
         return
 
+    context_block = GuidanceKnowledgeBase.get_grounded_context_block(latest_user_text)
+    grounded_system_prompt = ANTI_HALLUCINATION_SYSTEM_PROMPT.format(context_block=context_block)
+
     groq_api_key = getattr(settings, 'GROQ_API_KEY', '') or os.getenv('GROQ_API_KEY', '')
     anthropic_api_key = getattr(settings, 'ANTHROPIC_API_KEY', '') or os.getenv('ANTHROPIC_API_KEY', '')
-    model = getattr(settings, 'GROQ_MODEL', 'llama3-70b-8192')
+    model = getattr(settings, 'GROQ_MODEL', 'llama-3.3-70b-versatile')
 
     if groq_api_key:
         headers = {
             "Authorization": f"Bearer {groq_api_key}",
             "Content-Type": "application/json"
         }
-        formatted_messages = [{"role": "system", "content": SYSTEM_PROMPT}] + messages[-36:]
+        formatted_messages = [{"role": "system", "content": grounded_system_prompt}] + messages[-36:]
         payload = {
             "model": model,
             "messages": formatted_messages,
-            "temperature": 0.7,
+            "temperature": 0.2,
             "max_tokens": 800,
             "stream": True,
         }
@@ -197,8 +213,9 @@ def stream_chat_response(messages: List[Dict[str, str]]) -> Generator[str, None,
         payload = {
             "model": "claude-3-haiku-20240307",
             "max_tokens": 800,
-            "system": SYSTEM_PROMPT,
+            "system": grounded_system_prompt,
             "messages": messages[-36:],
+            "temperature": 0.2,
             "stream": True
         }
         resp = requests.post(

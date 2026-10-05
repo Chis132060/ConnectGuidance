@@ -1,0 +1,32 @@
+[
+  {
+    "id": "office_location_hours",
+    "topic": "Guidance Office Location and Working Hours",
+    "keywords": ["hours", "open", "time", "schedule", "location", "room", "office", "visit", "building", "where"],
+    "content": "The University Guidance and Counseling Center is located on the 2nd Floor of the Student Services Building, Room 204. Regular office hours are Monday through Friday, 8:00 AM to 5:00 PM. The office is closed on weekends and official university holidays."
+  },
+  {
+    "id": "booking_procedures",
+    "topic": "How to Book a Counseling Appointment",
+    "keywords": ["book", "appointment", "schedule", "session", "counselor", "meet", "how to book", "consultation"],
+    "content": "Students can book an appointment online anytime through the ConnectGuidance portal by going to 'Book Appointment' or visiting /student/book/. Standard sessions are 45 minutes. You select your preferred counselor, target date, available time slot, and concern category (Academic, Mental Health, Career, or Personal). You can also walk in at the Reception Desk in Room 204 for intake."
+  },
+  {
+    "id": "confidentiality_privacy",
+    "topic": "Confidentiality and Case Note Privacy",
+    "keywords": ["confidential", "privacy", "secret", "record", "case note", "notes", "parents", "grades", "transcript", "secure"],
+    "content": "All counseling consultations and clinical case notes are strictly confidential and encrypted at rest with military-grade AES-256 encryption. Guidance records are completely separate from your academic transcript and will NEVER be disclosed to parents, professors, faculty, or future employers without your explicit written consent, except in acute situations where there is immediate, life-threatening danger to yourself or others."
+  },
+  {
+    "id": "cancellation_policy",
+    "topic": "Appointment Cancellation & Rescheduling",
+    "keywords": ["cancel", "reschedule", "change", "miss", "late", "cancellation"],
+    "content": "Students can cancel an upcoming appointment directly from their Student Portal dashboard up until the session begins. If you need to reschedule, cancel your existing appointment and select a new available slot with your counselor."
+  },
+  {
+    "id": "emergency_crisis_contacts",
+    "topic": "Crisis and Immediate Emergency Hotlines",
+    "keywords": ["emergency", "crisis", "hotline", "urgent", "danger", "die", "suicide", "kill", "harm", "police", "security"],
+    "content": "For immediate mental health crises or life-threatening situations: Call or text the 988 Suicide & Crisis Lifeline (available 24/7, free, confidential). Campus Security emergency dispatch: (555) 019-2834. For immediate medical or physical emergency, dial 911 or proceed to the nearest hospital emergency room."
+  }
+]

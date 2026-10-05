@@ -1,0 +1,20 @@
+[
+  {
+    "id": "stress_burnout_management",
+    "topic": "Managing Stress and Academic Burnout",
+    "keywords": ["stress", "stressed", "burnout", "exhausted", "overwhelmed", "tired", "anxiety", "pressure", "relax"],
+    "content": "To cope with academic burnout and severe stress: 1) Practice the 20-minute Pomodoro study technique with mandatory 5-minute cognitive breaks. 2) Ensure at least 7 to 8 hours of sleep per night to allow cognitive restoration. 3) Engage in Box Breathing (4 seconds inhale, 4 seconds hold, 4 seconds exhale, 4 seconds hold). 4) Speak with a guidance counselor to adjust course load or build an academic recovery plan."
+  },
+  {
+    "id": "exam_anxiety_techniques",
+    "topic": "Exam Anxiety and Test-Taking Tips",
+    "keywords": ["exam", "test", "quiz", "finals", "midterms", "panic", "nervous", "anxious", "freeze", "study"],
+    "content": "For test and exam anxiety: 1) Avoid cramming the night before; prioritize sleep over all-nighters. 2) Arrive at the examination venue 15 minutes early to settle your nervous system. 3) Start with questions you know well to build positive momentum. 4) If your mind goes blank, take three deep belly breaths and re-read the prompt slowly."
+  },
+  {
+    "id": "mood_checkin_alerts",
+    "topic": "Student Mood Check-in System",
+    "keywords": ["mood", "checkin", "check-in", "feeling", "alert", "tracker", "log"],
+    "content": "Students can track their mental state daily using the Mood Check-in widget on the dashboard. Submitting a 'Low' mood will immediately notify your designated counselor with a confidential wellness alert so they can reach out and provide proactive support."
+  }
+]

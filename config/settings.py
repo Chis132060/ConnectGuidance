@@ -155,7 +155,7 @@ ENCRYPTION_KEY = os.getenv('ENCRYPTION_KEY', '0123456789abcdef0123456789abcdef01
 # AI Chat Configurations
 GROQ_API_KEY = os.getenv('GROQ_API_KEY', '')
 ANTHROPIC_API_KEY = os.getenv('ANTHROPIC_API_KEY', '')
-GROQ_MODEL = os.getenv('GROQ_MODEL', 'llama3-70b-8192')
+GROQ_MODEL = os.getenv('GROQ_MODEL', 'openai/gpt-oss-120b')
 CHAT_RATE_LIMIT_MAX = int(os.getenv('CHAT_RATE_LIMIT_MAX', 24))
 CHAT_SESSION_GET_MAX = int(os.getenv('CHAT_SESSION_GET_MAX', 60))
 CHAT_RATE_LIMIT_WINDOW_MS = int(os.getenv('CHAT_RATE_LIMIT_WINDOW_MS', 900000))

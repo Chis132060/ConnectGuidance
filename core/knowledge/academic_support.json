@@ -1,0 +1,14 @@
+[
+  {
+    "id": "academic_tutoring_services",
+    "topic": "Peer Tutoring and Writing Center",
+    "keywords": ["tutor", "tutoring", "math", "writing", "essay", "center", "grades", "failing", "help with class"],
+    "content": "The University Learning & Tutoring Center is located on the 1st Floor of the Main Library. Free peer tutoring is available for Mathematics, Computer Science, Natural Sciences, and Languages. The University Writing Center offers free one-on-one feedback on essays, term papers, and thesis manuscripts by appointment."
+  },
+  {
+    "id": "financial_aid_scholarships",
+    "topic": "Financial Aid and Student Scholarships",
+    "keywords": ["financial aid", "scholarship", "tuition", "money", "payment", "fees", "grant"],
+    "content": "Inquiries regarding student grants, tuition installment plans, and academic scholarship renewals are processed at the Student Financial Assistance Office, Room 102, Student Services Building. You can also email financialaid@university.edu."
+  }
+]
