@@ -23,14 +23,16 @@ from django.utils.dateparse import parse_date
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
 
-from apps.authentication.guards import require_student
-from core.models import Profile, Appointment, CaseNote
-from apps.common.choices import RoleChoices, AppointmentStatusChoices
+from accounts.decorators import require_student
+from accounts.models import Profile
+from accounts.choices import RoleChoices
+from core.models import Appointment, CaseNote
+from core.choices import AppointmentStatusChoices
 from core.forms import AppointmentBookingForm, MoodCheckInForm
 from core.services.slots import get_available_slots_for_counselor
 from core.services.appointments import book_appointment, student_cancel_appointment
 from core.services.mood import process_mood_checkin
-from apps.case_notes.services.case_notes import get_decrypted_case_note
+from core.services.case_notes import get_decrypted_case_note
 
 
 @require_student

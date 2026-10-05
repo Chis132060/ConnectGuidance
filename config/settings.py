@@ -36,7 +36,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # Single Monolithic Core App
+    # Modular Apps (Textbook Standard)
+    'accounts',
     'core',
 ]
 

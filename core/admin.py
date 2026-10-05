@@ -1,13 +1,5 @@
 from django.contrib import admin
-from .models import Profile, Appointment, CaseNote, AuditLog, ChatbotSession, StudentMoodAlert
-
-
-@admin.register(Profile)
-class ProfileAdmin(admin.ModelAdmin):
-    list_display = ('user_no', 'full_name', 'role', 'is_active', 'department', 'student_id', 'created_at')
-    list_filter = ('role', 'is_active', 'department')
-    search_fields = ('full_name', 'student_id', 'user__username', 'user__email')
-    ordering = ('user_no',)
+from .models import Appointment, CaseNote, AuditLog, ChatbotSession, StudentMoodAlert
 
 
 @admin.register(Appointment)

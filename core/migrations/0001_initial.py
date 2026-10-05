@@ -11,6 +11,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+        ('accounts', '0001_initial'),
     ]
 
     operations = [
@@ -29,29 +30,12 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.CreateModel(
-            name='Profile',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('role', models.CharField(choices=[('admin', 'Admin'), ('counselor', 'Counselor'), ('student', 'Student'), ('receptionist', 'Receptionist')], db_index=True, default='student', max_length=20)),
-                ('full_name', models.CharField(max_length=200)),
-                ('student_id', models.CharField(blank=True, max_length=100, null=True)),
-                ('department', models.CharField(blank=True, max_length=200, null=True)),
-                ('is_active', models.BooleanField(db_index=True, default=True)),
-                ('user_no', models.BigIntegerField(db_index=True, unique=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='profile', to=settings.AUTH_USER_MODEL)),
-            ],
-            options={
-                'ordering': ['user_no'],
-            },
-        ),
-        migrations.CreateModel(
             name='ChatbotSession',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('messages', models.JSONField(blank=True, default=list)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('student', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='chatbot_sessions', to='core.profile')),
+                ('student', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='chatbot_sessions', to='accounts.profile')),
             ],
             options={
                 'ordering': ['-created_at'],
@@ -66,7 +50,7 @@ class Migration(migrations.Migration):
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('appointment', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='case_notes', to='core.appointment')),
-                ('counselor', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='case_notes', to='core.profile')),
+                ('counselor', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='case_notes', to='accounts.profile')),
             ],
             options={
                 'ordering': ['-updated_at'],
@@ -81,7 +65,7 @@ class Migration(migrations.Migration):
                 ('record_id', models.UUIDField(blank=True, null=True)),
                 ('metadata', models.JSONField(blank=True, default=dict)),
                 ('created_at', models.DateTimeField(auto_now_add=True, db_index=True)),
-                ('user', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='audit_logs', to='core.profile')),
+                ('user', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='audit_logs', to='accounts.profile')),
             ],
             options={
                 'ordering': ['-created_at'],
@@ -90,12 +74,12 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='appointment',
             name='counselor',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='appointments_as_counselor', to='core.profile'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='appointments_as_counselor', to='accounts.profile'),
         ),
         migrations.AddField(
             model_name='appointment',
             name='student',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='appointments_as_student', to='core.profile'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='appointments_as_student', to='accounts.profile'),
         ),
         migrations.CreateModel(
             name='StudentMoodAlert',
@@ -103,20 +87,12 @@ class Migration(migrations.Migration):
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('note', models.CharField(blank=True, max_length=500, null=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('counselor', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='counselor_mood_alerts', to='core.profile')),
-                ('student', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='student_mood_alerts', to='core.profile')),
+                ('counselor', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='counselor_mood_alerts', to='accounts.profile')),
+                ('student', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='student_mood_alerts', to='accounts.profile')),
             ],
             options={
                 'ordering': ['-created_at'],
             },
-        ),
-        migrations.AddIndex(
-            model_name='profile',
-            index=models.Index(fields=['role', 'is_active'], name='core_profil_role_bd4c58_idx'),
-        ),
-        migrations.AddIndex(
-            model_name='profile',
-            index=models.Index(fields=['user_no'], name='core_profil_user_no_1cdf27_idx'),
         ),
         migrations.AddIndex(
             model_name='chatbotsession',

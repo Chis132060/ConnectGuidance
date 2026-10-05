@@ -3,9 +3,9 @@ from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.utils import timezone
 from core.models import Appointment, Profile
-from apps.common.choices import RoleChoices, AppointmentStatusChoices
+from core.choices import RoleChoices, AppointmentStatusChoices
 from .slots import is_counselor_slot_free
-from apps.audit.services.logging import log_action
+from core.services.audit import log_action
 
 ALLOWED_TRANSITIONS = {
     AppointmentStatusChoices.PENDING: [

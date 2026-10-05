@@ -2,7 +2,8 @@ from django import forms
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from .models import Profile, Appointment, StudentMoodAlert
-from apps.common.choices import ConcernTypeChoices, RoleChoices, AppointmentStatusChoices
+from core.choices import ConcernTypeChoices, RoleChoices, AppointmentStatusChoices
+from accounts.forms import StudentRegistrationForm
 
 
 class StudentProfileUpdateForm(forms.ModelForm):

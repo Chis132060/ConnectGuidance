@@ -19,9 +19,11 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 from django.utils.dateparse import parse_date
 
-from apps.authentication.guards import require_receptionist
-from core.models import Profile, Appointment
-from apps.common.choices import RoleChoices, ConcernTypeChoices, AppointmentStatusChoices
+from accounts.decorators import require_receptionist
+from accounts.models import Profile
+from accounts.choices import RoleChoices
+from core.models import Appointment
+from core.choices import ConcernTypeChoices, AppointmentStatusChoices
 from core.forms import ReceptionistBookingForm
 from core.services.receptionist import (
     search_students,

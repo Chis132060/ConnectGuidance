@@ -14,7 +14,7 @@ from typing import List, Dict, Any, Generator, Optional
 import requests
 from django.conf import settings
 from core.models import ChatbotSession, Profile
-from apps.audit.services.logging import log_action
+from core.services.audit import log_action
 
 logger = logging.getLogger(__name__)
 

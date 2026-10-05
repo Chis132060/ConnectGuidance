@@ -8,8 +8,8 @@ from django.urls import reverse
 from django.http import HttpResponse
 
 from core.models import Profile
-from apps.common.choices import RoleChoices
-from apps.authentication.guards import (
+from accounts.choices import RoleChoices
+from accounts.decorators import (
     role_required,
     require_student,
     require_counselor,

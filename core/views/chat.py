@@ -13,7 +13,7 @@ from django.http import JsonResponse, StreamingHttpResponse, HttpResponseForbidd
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 
-from apps.authentication.guards import require_student
+from accounts.decorators import require_student
 from core.models import ChatbotSession
 from core.services.chat import (
     check_chat_rate_limit,

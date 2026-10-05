@@ -12,7 +12,7 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 
 from core.models import Profile, Appointment
-from apps.common.choices import RoleChoices
+from accounts.choices import RoleChoices
 from core.services.slots import (
     is_counselor_slot_free,
     get_available_slots_for_counselor,

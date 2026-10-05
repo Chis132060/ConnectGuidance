@@ -14,21 +14,21 @@ from django.utils import timezone
 from django.http import HttpResponse
 
 from core.models import Profile, Appointment, CaseNote, AuditLog
-from apps.common.choices import RoleChoices, AppointmentStatusChoices, ConcernTypeChoices
-from apps.users.services.management import (
+from core.choices import RoleChoices, AppointmentStatusChoices, ConcernTypeChoices
+from core.services.management import (
     can_change_role,
     update_user_role,
     can_change_active_status,
     update_user_status,
     create_user_by_admin,
 )
-from apps.analytics.services.metrics import get_admin_metrics
-from apps.analytics.services.reports import (
+from core.services.metrics import get_admin_metrics
+from core.services.reports import (
     filter_appointments,
     export_appointments_csv,
     export_appointments_pdf,
 )
-from apps.audit.services.logging import log_action
+from core.services.audit import log_action
 
 
 class AdminSafeguardsTestCase(TestCase):

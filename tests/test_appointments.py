@@ -10,7 +10,7 @@ from django.utils import timezone
 from django.core.exceptions import ValidationError
 
 from core.models import Profile, Appointment, AuditLog
-from apps.common.choices import RoleChoices, AppointmentStatusChoices, ConcernTypeChoices
+from core.choices import RoleChoices, AppointmentStatusChoices, ConcernTypeChoices
 from core.services.appointments import (
     book_appointment,
     student_cancel_appointment,

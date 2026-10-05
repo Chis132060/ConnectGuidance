@@ -20,10 +20,13 @@ from django.core.exceptions import ValidationError, PermissionDenied
 from django.utils import timezone
 from django.db.models import Q
 
-from apps.authentication.guards import require_counselor
-from core.models import Appointment, StudentMoodAlert, CaseNote, Profile
-from apps.common.choices import AppointmentStatusChoices, ConcernTypeChoices
+from accounts.decorators import require_counselor
+from accounts.models import Profile
+from core.models import Appointment, StudentMoodAlert, CaseNote
+from core.choices import AppointmentStatusChoices, ConcernTypeChoices
 from core.services.appointments import counselor_update_status
+from core.services.case_notes import save_case_note, get_decrypted_case_note
+from core.services.encryption import encrypt, decrypt
 
 
 @require_counselor
@@ -292,3 +295,57 @@ def counselor_status_update_view(request, pk: int):
 
     next_url = request.POST.get('next') or request.META.get('HTTP_REFERER') or 'counselor_workspace'
     return redirect(next_url)
+
+
+@require_counselor
+@require_http_methods(["GET", "POST"])
+def counselor_case_note_view(request, appointment_id: int):
+    """
+    Case note editor and viewer for assigned counselor.
+    Encrypts note content with AES-256 before persisting to database.
+    """
+    from django.http import Http404, HttpResponseForbidden
+    counselor = request.user.profile
+
+    try:
+        appointment = Appointment.objects.select_related('student', 'student__user').get(id=appointment_id)
+    except Appointment.DoesNotExist:
+        raise Http404("Appointment not found.")
+
+    if appointment.counselor_id != counselor.id:
+        return HttpResponseForbidden("You are not assigned to this appointment.")
+
+    existing_note = CaseNote.objects.filter(appointment=appointment, counselor=counselor).first()
+    decrypted_content = ""
+
+    if existing_note:
+        try:
+            decrypted_content = decrypt(existing_note.content)
+        except Exception:
+            messages.error(request, "Unable to decrypt existing note.")
+
+    if request.method == 'POST':
+        content = request.POST.get('content', '').strip()
+        is_confidential = request.POST.get('is_confidential') == 'on'
+        if content:
+            try:
+                save_case_note(
+                    appointment=appointment,
+                    counselor=counselor,
+                    raw_content=content,
+                    is_confidential=is_confidential
+                )
+                messages.success(request, "Case note saved securely.")
+                return redirect('counselor_case_note', appointment_id=appointment.id)
+            except Exception as e:
+                messages.error(request, f"Could not save case note: {e}")
+        else:
+            messages.error(request, "Note content cannot be empty.")
+
+    context = {
+        'appointment': appointment,
+        'existing_note': existing_note,
+        'decrypted_content': decrypted_content,
+        'profile': counselor,
+    }
+    return render(request, 'case_notes/editor.html', context)
