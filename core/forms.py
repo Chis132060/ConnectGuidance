@@ -1,20 +1,7 @@
 from django import forms
-from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
-from .models import Profile, Appointment, StudentMoodAlert
+from .models import Appointment, StudentMoodAlert
 from core.choices import ConcernTypeChoices, RoleChoices, AppointmentStatusChoices
-from accounts.forms import StudentRegistrationForm
-
-
-class StudentProfileUpdateForm(forms.ModelForm):
-    class Meta:
-        model = Profile
-        fields = ['full_name', 'student_id', 'department']
-        widgets = {
-            'full_name': forms.TextInput(attrs={'class': 'form-input'}),
-            'student_id': forms.TextInput(attrs={'class': 'form-input'}),
-            'department': forms.TextInput(attrs={'class': 'form-input'}),
-        }
 
 
 class AppointmentBookingForm(forms.Form):

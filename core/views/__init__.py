@@ -1,11 +1,3 @@
-from accounts.views import (
-    landing_view,
-    login_view,
-    register_view,
-    logout_view,
-    password_change_view,
-    role_home_view,
-)
 from .student import (
     student_dashboard_view,
     student_appointments_list_view,
