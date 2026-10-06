@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
+from accounts.constants import FSUU_PROGRAM_CHOICES
 from accounts.models import Profile
 
 
@@ -19,10 +20,10 @@ class StudentRegistrationForm(forms.Form):
         required=False,
         widget=forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Student ID Number'})
     )
-    department = forms.CharField(
-        max_length=200,
+    department = forms.ChoiceField(
+        choices=[('', 'Select your college')] + FSUU_PROGRAM_CHOICES,
         required=False,
-        widget=forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Department / College'})
+        widget=forms.Select(attrs={'class': 'form-input'}),
     )
     password = forms.CharField(
         min_length=8,
@@ -57,5 +58,8 @@ class StudentProfileUpdateForm(forms.ModelForm):
         widgets = {
             'full_name': forms.TextInput(attrs={'class': 'form-input'}),
             'student_id': forms.TextInput(attrs={'class': 'form-input'}),
-            'department': forms.TextInput(attrs={'class': 'form-input'}),
+            'department': forms.Select(
+                choices=[('', 'Select your college (optional)')] + FSUU_PROGRAM_CHOICES,
+                attrs={'class': 'form-input'},
+            ),
         }

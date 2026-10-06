@@ -42,6 +42,7 @@ from accounts.decorators import (
 )
 from accounts.models import Profile
 from accounts.choices import RoleChoices
+from accounts.constants import FSUU_PROGRAM_CHOICES
 
 # Core Models, Choices, and Forms
 from core.models import (
@@ -90,8 +91,6 @@ from core.services.reports import (
 )
 from core.services.audit import log_action
 from core.services.management import (
-    can_change_role,
-    update_user_role,
     can_change_active_status,
     update_user_status,
     create_user_by_admin,
@@ -997,16 +996,6 @@ def admin_users_view(request):
             except Exception as e:
                 messages.error(request, str(e))
 
-        elif action == 'change_role':
-            target_id = request.POST.get('target_id')
-            new_role = request.POST.get('new_role')
-            target = get_object_or_404(Profile, id=target_id)
-            try:
-                update_user_role(admin_profile, target, new_role)
-                messages.success(request, f"Role for {target.full_name} updated to {new_role}.")
-            except Exception as e:
-                messages.error(request, str(e))
-
         elif action == 'toggle_status':
             target_id = request.POST.get('target_id')
             new_status_str = request.POST.get('new_is_active', 'false').lower()
@@ -1053,6 +1042,7 @@ def admin_users_view(request):
         'role_filter': role_filter,
         'status_filter': status_filter,
         'roles': RoleChoices.choices,
+        'programs': FSUU_PROGRAM_CHOICES,
     }
     return render(request, 'users/users.html', context)
 

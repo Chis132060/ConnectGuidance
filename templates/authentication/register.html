@@ -303,16 +303,18 @@
 
         <div class="auth-field">
           <label for="reg-department" class="auth-label">
-            Department <span class="optional">(optional)</span>
+            College <span class="optional">(optional)</span>
           </label>
-          <input
-            type="text"
+          <select
             name="{{ form.department.html_name }}"
             id="reg-department"
             class="auth-input {% if form.department.errors %}is-error{% endif %}"
-            placeholder="Computer Science"
-            value="{{ form.department.value|default:'' }}"
           >
+            <option value="">Select your college</option>
+            {% for value, label in form.department.field.choices %}
+            {% if value %}<option value="{{ value }}" {% if form.department.value == value %}selected{% endif %}>{{ value }} — {{ label }}</option>{% endif %}
+            {% endfor %}
+          </select>
           {% if form.department.errors %}
           <div class="auth-field-error" id="reg-department-error">{{ form.department.errors.0 }}</div>
           {% endif %}

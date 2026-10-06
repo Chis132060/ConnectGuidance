@@ -47,8 +47,13 @@
                     <input type="text" name="student_id" class="form-input" placeholder="STU-0000">
                 </div>
                 <div class="form-group" style="margin: 0;">
-                    <label class="form-label">Department (Optional)</label>
-                    <input type="text" name="department" class="form-input" placeholder="e.g. Psychology / Engineering">
+                    <label class="form-label">College (Optional)</label>
+                    <select name="department" class="form-select">
+                        <option value="">Select a college</option>
+                        {% for code, name in programs %}
+                        <option value="{{ code }}">{{ code }} — {{ name }}</option>
+                        {% endfor %}
+                    </select>
                 </div>
             </div>
             <div style="display: flex; gap: 0.75rem;">
@@ -95,7 +100,6 @@
                         <th>Department</th>
                         <th>Role</th>
                         <th>Status</th>
-                        <th>Change Role</th>
                         <th>Action</th>
                     </tr>
                 </thead>
@@ -124,18 +128,6 @@
                             {% endif %}
                         </td>
                         <td>
-                            <form method="POST" action="{% url 'admin_users' %}" style="display: inline-flex; gap: 0.25rem;">
-                                {% csrf_token %}
-                                <input type="hidden" name="action" value="change_role">
-                                <input type="hidden" name="target_id" value="{{ u.id }}">
-                                <select name="new_role" class="form-select" style="padding: 0.2rem 0.4rem; font-size: 0.8rem; width: auto;" onchange="this.form.submit()">
-                                    {% for val, label in roles %}
-                                    <option value="{{ val }}" {% if u.role == val %}selected{% endif %}>{{ label }}</option>
-                                    {% endfor %}
-                                </select>
-                            </form>
-                        </td>
-                        <td>
                             <form method="POST" action="{% url 'admin_users' %}" style="display: inline;">
                                 {% csrf_token %}
                                 <input type="hidden" name="action" value="toggle_status">
@@ -156,7 +148,7 @@
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="8" class="empty-state">No users match your search criteria.</td>
+                        <td colspan="7" class="empty-state">No users match your search criteria.</td>
                     </tr>
                     {% endfor %}
                 </tbody>

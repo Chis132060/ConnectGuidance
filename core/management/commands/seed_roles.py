@@ -5,6 +5,7 @@ from django.utils import timezone
 from core.models import Profile, Appointment, CaseNote, AuditLog, StudentMoodAlert
 from core.choices import RoleChoices, AppointmentStatusChoices, ConcernTypeChoices
 from core.services.encryption import encrypt_text
+from accounts.constants import COUNSELOR_SEED_ACCOUNTS, RECEPTIONIST_SEED_ACCOUNTS
 
 
 class Command(BaseCommand):
@@ -12,6 +13,16 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         self.stdout.write("Seeding GuidanceConnect test roles and initial fixtures...")
+
+        staff_accounts = [
+            {**account, 'role': RoleChoices.COUNSELOR, 'student_id': None,
+             'is_superuser': False, 'is_staff': False}
+            for account in COUNSELOR_SEED_ACCOUNTS
+        ] + [
+            {**account, 'role': RoleChoices.RECEPTIONIST, 'student_id': None,
+             'is_superuser': False, 'is_staff': False}
+            for account in RECEPTIONIST_SEED_ACCOUNTS
+        ]
 
         accounts = [
             {
@@ -24,39 +35,6 @@ class Command(BaseCommand):
                 "student_id": None,
                 "is_superuser": True,
                 "is_staff": True
-            },
-            {
-                "username": "counselor1",
-                "email": "counselor@guidance.edu",
-                "password": "CounselorPassword123!",
-                "full_name": "Prof. Marcus Thorne",
-                "role": RoleChoices.COUNSELOR,
-                "department": "Psychological Services",
-                "student_id": None,
-                "is_superuser": False,
-                "is_staff": False
-            },
-            {
-                "username": "counselor2",
-                "email": "counselor2@guidance.edu",
-                "password": "CounselorPassword123!",
-                "full_name": "Dr. Sarah Jenkins",
-                "role": RoleChoices.COUNSELOR,
-                "department": "Career & Academic Wellness",
-                "student_id": None,
-                "is_superuser": False,
-                "is_staff": False
-            },
-            {
-                "username": "receptionist",
-                "email": "receptionist@guidance.edu",
-                "password": "ReceptionPassword123!",
-                "full_name": "Clara Oswald (Front Desk)",
-                "role": RoleChoices.RECEPTIONIST,
-                "department": "Student Care Helpdesk",
-                "student_id": None,
-                "is_superuser": False,
-                "is_staff": False
             },
             {
                 "username": "student1",
@@ -80,7 +58,7 @@ class Command(BaseCommand):
                 "is_superuser": False,
                 "is_staff": False
             }
-        ]
+        ] + staff_accounts
 
         created_profiles = {}
         for acc in accounts:

@@ -19,7 +19,7 @@ from core.services.knowledge_base import GuidanceKnowledgeBase
 
 logger = logging.getLogger(__name__)
 
-ANTI_HALLUCINATION_SYSTEM_PROMPT = """You are "ConnectGuidance AI", a warm, empathetic, and professional guidance assistant for university students.
+ANTI_HALLUCINATION_SYSTEM_PROMPT = """You are "ConnectGuidance AI", a formal, professional, and supportive guidance counselor assistant for university students.
 
 === CRITICAL OPERATING BOUNDARIES & ANTI-HALLUCINATION RULES ===
 1. SCOPE: You assist ONLY with:
@@ -38,9 +38,29 @@ ANTI_HALLUCINATION_SYSTEM_PROMPT = """You are "ConnectGuidance AI", a warm, empa
 3. CRISIS & SAFETY PROTOCOL:
    - If the student mentions self-harm, suicide, or severe hopeless despair, immediately validate their pain with warmth, reassure them they are not alone, and urge them to call or text 988 (Suicide & Crisis Lifeline) or contact Campus Security at (555) 019-2834 immediately.
 
+=== STRICT RESPONSE FORMAT AND STYLE GUIDELINES ===
+1. FORMAL, RESPECTFUL, AND PROFESSIONAL TONE:
+   - Communicate in a formal, respectful, and courteous counselor manner.
+   - Do not use casual conversational slang or enthusiastic fillers (avoid phrases like "Sure thing!", "Awesome!", "Absolutely!").
+   - Begin directly with a polite, professional opening statement.
+
+2. NO MARKDOWN SYMBOLS OR ASTERISKS:
+   - STRICT PROHIBITION: Do NOT use any asterisks (*) or double asterisks (**) anywhere in your response. No bold or italic markdown.
+   - Do NOT use markdown heading tags (#, ##, ###).
+   - Do NOT use horizontal divider lines (--- or ===).
+   - Do NOT use markdown pipe table syntax (| or |---|).
+   - All text must be pure, clean, readable plain text.
+
+3. STRUCTURE AND READABILITY:
+   - Use clean paragraphs separated by a blank line.
+   - Number sections cleanly without markdown symbols (for example: "1. Guidance and Counseling Office:").
+   - For lists, use simple numbers (1., 2., 3.) or plain hyphens (- ) without asterisks.
+   - Present information in well-spaced, clean paragraphs.
+   - Conclude with a formal offer of assistance (for example: "Please let me know if you require further assistance or details regarding any of these services.").
+
 === VERIFIED UNIVERSITY GUIDANCE CONTEXT ===
 {context_block}
-============================================
+===========================================
 """
 
 CRISIS_KEYWORDS = [
@@ -199,7 +219,9 @@ def stream_chat_response(messages: List[Dict[str, str]]) -> Generator[str, None,
                     delta = data.get('choices', [{}])[0].get('delta', {})
                     chunk = delta.get('content', '')
                     if chunk:
-                        yield chunk
+                        chunk = chunk.replace('*', '')
+                        if chunk:
+                            yield chunk
                 except json.JSONDecodeError:
                     continue
         return
@@ -238,7 +260,9 @@ def stream_chat_response(messages: List[Dict[str, str]]) -> Generator[str, None,
                     if event.get('type') == 'content_block_delta':
                         chunk = event.get('delta', {}).get('text', '')
                         if chunk:
-                            yield chunk
+                            chunk = chunk.replace('*', '')
+                            if chunk:
+                                yield chunk
                 except json.JSONDecodeError:
                     continue
         return

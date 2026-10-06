@@ -93,7 +93,7 @@ class AuthAndGuardsTestCase(TestCase):
             'password': 'SecurePassword123!',
             'confirm_password': 'SecurePassword123!',
             'student_id': 'STU-9999',
-            'department': 'Computer Science',
+            'department': 'CITEC',
         })
         # Successful registration redirects to login
         self.assertRedirects(response, reverse('login'))
@@ -106,7 +106,7 @@ class AuthAndGuardsTestCase(TestCase):
         self.assertEqual(user.profile.role, RoleChoices.STUDENT)
         self.assertEqual(user.profile.full_name, 'Jane Student')
         self.assertEqual(user.profile.student_id, 'STU-9999')
-        self.assertEqual(user.profile.department, 'Computer Science')
+        self.assertEqual(user.profile.department, 'CITEC')
         self.assertTrue(user.profile.is_active)
 
     def test_login_by_email_success(self):
