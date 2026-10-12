@@ -9,29 +9,29 @@
 <div class="content-container">
     
     <!-- Welcome Section -->
-    <div class="card mb-6">
-        <div style="display: flex; align-items: center; gap: var(--space-4); flex-wrap: wrap;">
-            <div class="user-avatar" style="width: 56px; height: 56px; font-size: var(--text-xl);">
+    <div class="card mb-6 student-welcome-card">
+        <div class="student-welcome-content">
+            <div class="user-avatar student-welcome-avatar">
                 {{ profile.full_name|slice:":1"|upper|default:"S" }}
             </div>
-            <div style="flex: 1; min-width: 0;">
-                <p class="text-muted" style="font-size: var(--text-xs); margin-bottom: var(--space-1);">Student Dashboard</p>
-                <h1 style="font-size: var(--text-2xl); font-weight: var(--font-semibold); color: var(--brand-ink); margin-bottom: var(--space-2);">
-                    Welcome back, {{ profile.full_name }}
+            <div class="student-welcome-copy">
+                <p class="student-welcome-eyebrow">Your guidance space</p>
+                <h1 class="student-welcome-title">
+                    Welcome back, {{ profile.full_name }}!
                 </h1>
-                <div style="display: flex; gap: var(--space-4); flex-wrap: wrap; font-size: var(--text-sm); color: var(--neutral-600);">
+                <div class="student-welcome-meta">
                     <span><strong>Student ID:</strong> {{ profile.student_id|default:"Not Assigned" }}</span>
                     <span><strong>Department:</strong> {{ profile.department|default:"General" }}</span>
                 </div>
             </div>
-            <div style="display: flex; gap: var(--space-3); flex-wrap: wrap;">
+            <div class="student-welcome-actions">
                 <a href="{% url 'student_book_appointment' %}" class="btn btn-primary">
                     <i data-lucide="calendar-plus" class="nav-icon"></i>
-                    Book Session
+                    Book an appointment
                 </a>
                 <a href="{% url 'student_appointments' %}" class="btn btn-secondary">
                     <i data-lucide="calendar" class="nav-icon"></i>
-                    My Schedule
+                    View my appointments
                 </a>
             </div>
         </div>
@@ -41,27 +41,27 @@
     <div class="grid-4 mb-6">
         <div class="stat-card">
             <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: var(--space-3);">
-                <span class="stat-label">Upcoming Sessions</span>
+                <span class="stat-label">Upcoming appointments</span>
                 <i data-lucide="calendar-check" style="width:20px;height:20px;color:var(--brand-primary);"></i>
             </div>
             <div class="stat-value" style="color: var(--brand-primary);">{{ upcoming_count }}</div>
             <p class="stat-description">
-                {% if upcoming_count > 0 %}Active appointments scheduled{% else %}No sessions booked{% endif %}
+                {% if upcoming_count > 0 %}Appointments on your calendar{% else %}Nothing scheduled yet{% endif %}
             </p>
         </div>
 
         <div class="stat-card">
             <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: var(--space-3);">
-                <span class="stat-label">Completed</span>
+                <span class="stat-label">Completed appointments</span>
                 <i data-lucide="check-circle-2" style="width:20px;height:20px;color:var(--semantic-success);"></i>
             </div>
             <div class="stat-value" style="color: var(--semantic-success);">{{ past_count }}</div>
-            <p class="stat-description">Total sessions attended</p>
+            <p class="stat-description">Appointments you have attended</p>
         </div>
 
         <div class="stat-card">
             <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: var(--space-3);">
-                <span class="stat-label">Office Hours</span>
+                <span class="stat-label">Guidance office</span>
                 <i data-lucide="clock" style="width:20px;height:20px;color:var(--brand-primary);"></i>
             </div>
             <div style="font-size: var(--text-xl); font-weight: var(--font-semibold); color: var(--brand-ink); margin-bottom: var(--space-1);">
@@ -72,14 +72,14 @@
 
         <div class="stat-card">
             <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: var(--space-3);">
-                <span class="stat-label">AI Assistant</span>
+                <span class="stat-label">Wellness chat</span>
                 <i data-lucide="bot" style="width:20px;height:20px;color:var(--semantic-warning);"></i>
             </div>
             <div style="font-size: var(--text-xl); font-weight: var(--font-semibold); color: var(--brand-ink); margin-bottom: var(--space-1);">
-                24/7 Available
+                Available anytime
             </div>
             <a href="{% url 'student_chatbot' %}" class="text-primary" style="font-size: var(--text-sm); text-decoration: none; font-weight: var(--font-medium);">
-                Launch Chatbot →
+                Open Wellness Chat →
             </a>
         </div>
     </div>
@@ -95,7 +95,7 @@
                 <div class="card-header">
                     <div>
                         <p class="text-muted" style="font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: var(--space-1);">
-                            Upcoming Consultation
+                            Next appointment
                         </p>
                         <h2 class="card-title">Next Scheduled Session</h2>
                     </div>
@@ -175,13 +175,13 @@
                         <div class="empty-state-icon">
                             <i data-lucide="calendar-plus" style="width:100%;height:100%;"></i>
                         </div>
-                        <h3 class="empty-state-title">No upcoming appointments</h3>
+                        <h3 class="empty-state-title">Nothing scheduled yet</h3>
                         <p class="empty-state-description">
-                            Schedule a consultation with a guidance counselor to discuss academic planning, wellness, or career questions.
+                            When you are ready, book a private conversation with a counselor about school, wellbeing, or career plans.
                         </p>
                         <a href="{% url 'student_book_appointment' %}" class="btn btn-primary">
                             <i data-lucide="calendar-plus" class="nav-icon"></i>
-                            Schedule Session
+                            Book an appointment
                         </a>
                     </div>
                 {% endif %}
@@ -320,7 +320,7 @@
             <!-- Quick Actions -->
             <div class="card mb-6">
                 <h3 style="font-size: var(--text-base); font-weight: var(--font-semibold); color: var(--brand-ink); margin-bottom: var(--space-4);">
-                    Quick Actions
+                    What would you like to do?
                 </h3>
 
                 <div style="display: flex; flex-direction: column; gap: var(--space-3);">
@@ -329,8 +329,8 @@
                             <i data-lucide="calendar-plus" style="width:18px;height:18px;"></i>
                         </div>
                         <div style="flex: 1;">
-                            <strong style="display: block; margin-bottom: 2px; font-size: var(--text-sm);">Book Session</strong>
-                            <span style="font-size: var(--text-xs); opacity: 0.9;">Choose counselor & time</span>
+                            <strong style="display: block; margin-bottom: 2px; font-size: var(--text-sm);">Book an appointment</strong>
+                            <span style="font-size: var(--text-xs); opacity: 0.9;">Choose a counselor and time</span>
                         </div>
                         <i data-lucide="chevron-right" style="width:16px;height:16px;opacity:0.7;"></i>
                     </a>
@@ -340,8 +340,8 @@
                             <i data-lucide="bot" style="width:18px;height:18px;color:var(--semantic-warning);"></i>
                         </div>
                         <div style="flex: 1;">
-                            <strong style="display: block; margin-bottom: 2px; font-size: var(--text-sm);">AI Wellness Chat</strong>
-                            <span class="text-muted" style="font-size: var(--text-xs);">Private 24/7 support</span>
+                            <strong style="display: block; margin-bottom: 2px; font-size: var(--text-sm);">Wellness chat</strong>
+                            <span class="text-muted" style="font-size: var(--text-xs);">Private support, anytime</span>
                         </div>
                         <i data-lucide="chevron-right" style="width:16px;height:16px;" class="text-muted"></i>
                     </a>
@@ -351,8 +351,8 @@
                             <i data-lucide="building" style="width:18px;height:18px;color:var(--neutral-600);"></i>
                         </div>
                         <div style="flex: 1;">
-                            <strong style="display: block; margin-bottom: 2px; font-size: var(--text-sm);">Front Desk</strong>
-                            <span class="text-muted" style="font-size: var(--text-xs);">Hours & walk-ins</span>
+                            <strong style="display: block; margin-bottom: 2px; font-size: var(--text-sm);">Visit the front desk</strong>
+                            <span class="text-muted" style="font-size: var(--text-xs);">Hours and walk-in help</span>
                         </div>
                         <i data-lucide="chevron-right" style="width:16px;height:16px;" class="text-muted"></i>
                     </a>

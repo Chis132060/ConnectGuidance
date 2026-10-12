@@ -1026,3 +1026,619 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+/* Light dashboard sidebar pattern for student, receptionist, and admin shells. */
+.app-layout[data-role="student"] .app-sidebar,
+.app-layout[data-role="receptionist"] .app-sidebar,
+.app-layout[data-role="admin"] .app-sidebar {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border-right: 1px solid #e5e7eb !important;
+}
+
+.app-layout[data-role="student"] .sidebar-header,
+.app-layout[data-role="receptionist"] .sidebar-header,
+.app-layout[data-role="admin"] .sidebar-header {
+  border-bottom-color: #eef2f7 !important;
+}
+
+.app-layout[data-role="student"] .sidebar-brand,
+.app-layout[data-role="receptionist"] .sidebar-brand,
+.app-layout[data-role="admin"] .sidebar-brand {
+  color: #0f172a !important;
+}
+
+.app-layout[data-role="student"] .sidebar-brand-text,
+.app-layout[data-role="receptionist"] .sidebar-brand-text,
+.app-layout[data-role="admin"] .sidebar-brand-text {
+  color: #0f172a !important;
+}
+
+.app-layout[data-role="student"] .sidebar-toggle,
+.app-layout[data-role="receptionist"] .sidebar-toggle,
+.app-layout[data-role="admin"] .sidebar-toggle {
+  color: #64748b !important;
+}
+
+.app-layout[data-role="student"] .sidebar-toggle:hover,
+.app-layout[data-role="receptionist"] .sidebar-toggle:hover,
+.app-layout[data-role="admin"] .sidebar-toggle:hover {
+  background: #f1f5f9 !important;
+  color: #2563eb !important;
+}
+
+.app-layout[data-role="student"] .sidebar-toggle svg,
+.app-layout[data-role="student"] .sidebar-toggle i,
+.app-layout[data-role="receptionist"] .sidebar-toggle svg,
+.app-layout[data-role="receptionist"] .sidebar-toggle i,
+.app-layout[data-role="admin"] .sidebar-toggle svg,
+.app-layout[data-role="admin"] .sidebar-toggle i {
+  stroke: currentColor !important;
+  color: currentColor !important;
+}
+
+.app-layout[data-role="student"] .nav-link,
+.app-layout[data-role="receptionist"] .nav-link,
+.app-layout[data-role="admin"] .nav-link {
+  color: #64748b !important;
+}
+
+.app-layout[data-role="student"] .nav-link .nav-icon,
+.app-layout[data-role="student"] .nav-link svg,
+.app-layout[data-role="student"] .nav-link i,
+.app-layout[data-role="receptionist"] .nav-link .nav-icon,
+.app-layout[data-role="receptionist"] .nav-link svg,
+.app-layout[data-role="receptionist"] .nav-link i,
+.app-layout[data-role="admin"] .nav-link .nav-icon,
+.app-layout[data-role="admin"] .nav-link svg,
+.app-layout[data-role="admin"] .nav-link i {
+  color: #64748b !important;
+  stroke: currentColor !important;
+}
+
+.app-layout[data-role="student"] .nav-link:hover,
+.app-layout[data-role="receptionist"] .nav-link:hover,
+.app-layout[data-role="admin"] .nav-link:hover {
+  background: #f5f8ff !important;
+  color: #1d4ed8 !important;
+}
+
+.app-layout[data-role="student"] .nav-link.active,
+.app-layout[data-role="receptionist"] .nav-link.active,
+.app-layout[data-role="admin"] .nav-link.active {
+  background: #eef4ff !important;
+  color: #1d4ed8 !important;
+  box-shadow: none !important;
+  border-left: 3px solid #2563eb;
+}
+
+.app-layout[data-role="student"] .nav-link.active .nav-label,
+.app-layout[data-role="student"] .nav-link.active span,
+.app-layout[data-role="student"] .nav-link.active .nav-icon,
+.app-layout[data-role="student"] .nav-link.active svg,
+.app-layout[data-role="student"] .nav-link.active i,
+.app-layout[data-role="receptionist"] .nav-link.active .nav-label,
+.app-layout[data-role="receptionist"] .nav-link.active span,
+.app-layout[data-role="receptionist"] .nav-link.active .nav-icon,
+.app-layout[data-role="receptionist"] .nav-link.active svg,
+.app-layout[data-role="receptionist"] .nav-link.active i,
+.app-layout[data-role="admin"] .nav-link.active .nav-label,
+.app-layout[data-role="admin"] .nav-link.active span,
+.app-layout[data-role="admin"] .nav-link.active .nav-icon,
+.app-layout[data-role="admin"] .nav-link.active svg,
+.app-layout[data-role="admin"] .nav-link.active i {
+  color: #1d4ed8 !important;
+  stroke: currentColor !important;
+}
+
+.app-layout[data-role="student"] .sidebar-footer,
+.app-layout[data-role="receptionist"] .sidebar-footer,
+.app-layout[data-role="admin"] .sidebar-footer {
+  border-top-color: #eef2f7 !important;
+}
+
+.app-layout[data-role="student"] .user-info-name,
+.app-layout[data-role="receptionist"] .user-info-name,
+.app-layout[data-role="admin"] .user-info-name {
+  color: #0f172a !important;
+}
+
+.app-layout[data-role="student"] .user-info-role,
+.app-layout[data-role="receptionist"] .user-info-role,
+.app-layout[data-role="admin"] .user-info-role {
+  color: #64748b !important;
+}
+
+.app-layout[data-role="student"] .user-signout,
+.app-layout[data-role="student"] .user-signout-text,
+.app-layout[data-role="receptionist"] .user-signout,
+.app-layout[data-role="receptionist"] .user-signout-text,
+.app-layout[data-role="admin"] .user-signout,
+.app-layout[data-role="admin"] .user-signout-text {
+  color: #64748b !important;
+}
+
+/* Shared minimalist shell inspired by the reference dashboard. */
+.app-layout[data-role] {
+  background: #f5f7fb;
+}
+
+.app-layout[data-role] .app-sidebar {
+  top: 12px;
+  left: 12px;
+  height: calc(100vh - 24px);
+  background: #ffffff !important;
+  border: 1px solid #e7ebf1 !important;
+  border-radius: 0 18px 18px 0;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+  overflow: hidden;
+}
+
+.app-layout[data-role] .app-main {
+  margin-left: 268px !important;
+}
+
+.app-layout[data-role] .app-sidebar.collapsed + .app-main {
+  margin-left: 84px !important;
+}
+
+.app-layout[data-role] .sidebar-header {
+  min-height: 68px;
+  padding: 0 18px;
+  border-bottom: 1px solid #eef1f5 !important;
+}
+
+.app-layout[data-role] .sidebar-brand,
+.app-layout[data-role] .sidebar-brand-text {
+  color: #172033 !important;
+}
+
+.app-layout[data-role] .sidebar-nav {
+  padding: 18px 12px;
+  gap: 4px;
+}
+
+.app-layout[data-role] .nav-link {
+  min-height: 42px;
+  padding: 0 14px;
+  border-radius: 10px;
+  color: #667085 !important;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.app-layout[data-role] .nav-link:hover {
+  background: #f4f7ff !important;
+  color: #2563eb !important;
+}
+
+.app-layout[data-role] .nav-link.active {
+  background: #edf4ff !important;
+  color: #2563eb !important;
+  border-left: 0;
+}
+
+.app-layout[data-role] .nav-link.active::before {
+  left: 0;
+  width: 3px;
+  height: 22px;
+  background: #2563eb;
+  border-radius: 0 3px 3px 0;
+}
+
+.app-layout[data-role] .nav-link .nav-icon,
+.app-layout[data-role] .nav-link svg,
+.app-layout[data-role] .nav-link i {
+  color: currentColor !important;
+  stroke: currentColor !important;
+}
+
+.app-layout[data-role] .nav-link .nav-label,
+.app-layout[data-role] .nav-link span {
+  color: inherit !important;
+}
+
+.app-layout[data-role] .sidebar-footer {
+  padding: 16px 14px;
+  border-top: 1px solid #eef1f5 !important;
+}
+
+.app-layout[data-role] .user-avatar {
+  background: #edf4ff !important;
+  border: 1px solid #d8e6ff !important;
+  color: #2563eb !important;
+}
+
+.app-layout[data-role] .user-info-name {
+  color: #172033 !important;
+}
+
+.app-layout[data-role] .user-info-role,
+.app-layout[data-role] .user-signout,
+.app-layout[data-role] .user-signout-text {
+  color: #667085 !important;
+}
+
+.app-layout[data-role] .user-signout:hover {
+  background: #fff1f0 !important;
+  color: #dc5b54 !important;
+}
+
+/* Student dashboard welcome header */
+.student-welcome-card {
+  padding: 1.5rem 1.75rem !important;
+}
+
+.student-welcome-content {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1rem 1.125rem;
+}
+
+.student-welcome-avatar {
+  width: 56px !important;
+  height: 56px !important;
+  font-size: 1.25rem !important;
+}
+
+.student-welcome-copy {
+  min-width: 0;
+}
+
+.student-welcome-eyebrow {
+  margin-bottom: 0.25rem;
+  color: #667085;
+  font-size: 0.75rem;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.student-welcome-title {
+  margin: 0 0 0.45rem;
+  color: #172033;
+  font-size: clamp(1.25rem, 2.2vw, 1.7rem);
+  font-weight: 750;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+}
+
+.student-welcome-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  color: #667085;
+  font-size: 0.8125rem;
+}
+
+.student-welcome-meta strong {
+  color: #344054;
+  font-weight: 650;
+}
+
+.student-welcome-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.625rem;
+}
+
+.student-welcome-actions .btn {
+  min-height: 40px;
+}
+
+@media (max-width: 1024px) {
+  .app-layout[data-role] .app-main {
+    margin-left: 232px !important;
+  }
+
+  .app-layout[data-role] .app-sidebar.collapsed + .app-main {
+    margin-left: 84px !important;
+  }
+
+  .app-layout[data-role] .app-sidebar {
+    top: 0;
+    left: 0;
+    height: 100vh;
+    border-radius: 0;
+  }
+}
+
+/* Shared template polish: consistent across dashboards, forms, tables, and auth pages. */
+body {
+  background: #f5f7fb;
+}
+
+.app-main,
+.app-content,
+.public-layout,
+.public-main {
+  background: #f5f7fb !important;
+}
+
+.app-content {
+  padding: clamp(1.25rem, 3vw, 2rem) clamp(1rem, 3vw, 2.5rem) 3rem;
+}
+
+.app-topbar {
+  min-height: 68px;
+  background: rgba(255, 255, 255, 0.96) !important;
+  border-bottom: 1px solid #e8edf3 !important;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.03) !important;
+}
+
+.page-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+
+.page-header {
+  margin-bottom: 1.5rem;
+}
+
+.page-header h1,
+.admin-overview h1 {
+  font-size: clamp(1.35rem, 2vw, 1.75rem);
+  letter-spacing: -0.03em;
+}
+
+.page-description,
+.section-description {
+  max-width: 680px;
+  color: #667085;
+}
+
+.card,
+.stat-card,
+.appt-card-item,
+.fd-card,
+.bk-card,
+.dash-card,
+.history-table-wrapper,
+.table-responsive,
+.auth-card {
+  border-color: #e7ebf1 !important;
+  border-radius: 16px !important;
+  box-shadow: 0 4px 18px rgba(15, 23, 42, 0.035) !important;
+}
+
+.card:hover,
+.stat-card:hover,
+.appt-card-item:hover,
+.fd-card:hover,
+.bk-card:hover,
+.dash-card:hover {
+  border-color: #d8e2ef !important;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06) !important;
+}
+
+.card-header,
+.section-header {
+  border-bottom-color: #eef1f5 !important;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.section-header h2,
+.card-title {
+  color: #172033 !important;
+  font-size: 1rem;
+  letter-spacing: -0.015em;
+}
+
+.stat-card {
+  min-height: 132px;
+  padding: 1.25rem 1.375rem;
+}
+
+.stat-label {
+  color: #667085 !important;
+  font-size: 0.72rem;
+  letter-spacing: 0.045em;
+}
+
+.stat-value {
+  color: #172033 !important;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+}
+
+.btn {
+  min-height: 38px;
+  border-radius: 9px !important;
+  font-weight: 600;
+}
+
+.btn-primary,
+.btn-book-primary {
+  background: #2563eb !important;
+  border-color: #2563eb !important;
+}
+
+.btn-primary:hover,
+.btn-book-primary:hover {
+  background: #1d4ed8 !important;
+  border-color: #1d4ed8 !important;
+}
+
+.btn-secondary {
+  background: #ffffff !important;
+  border-color: #d9e1eb !important;
+  color: #344054 !important;
+}
+
+.btn-secondary:hover {
+  background: #f8fafc !important;
+  border-color: #b9c7d8 !important;
+}
+
+.form-group {
+  margin-bottom: 1.125rem;
+}
+
+.form-label {
+  color: #344054 !important;
+  font-size: 0.8125rem;
+  font-weight: 650;
+}
+
+.form-control,
+.form-input,
+.form-select,
+.form-textarea,
+.cg-text-input,
+.bk-input,
+.form-group input,
+.form-group select,
+.form-group textarea {
+  min-height: 42px;
+  border-color: #d9e1eb !important;
+  border-radius: 9px !important;
+  box-shadow: none !important;
+}
+
+.form-control:focus,
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus,
+.cg-text-input:focus,
+.bk-input:focus,
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: #7aa7f8 !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12) !important;
+}
+
+.table-wrapper,
+.table-responsive,
+.history-table-wrapper {
+  border-color: #e7ebf1 !important;
+  border-radius: 14px !important;
+  box-shadow: 0 3px 14px rgba(15, 23, 42, 0.025);
+}
+
+.data-table th,
+.table th {
+  background: #f8fafc !important;
+  color: #667085 !important;
+  font-size: 0.69rem;
+  letter-spacing: 0.055em;
+}
+
+.data-table td,
+.table td {
+  color: #344054 !important;
+  border-bottom-color: #eef1f5 !important;
+}
+
+.data-table tbody tr:hover,
+.data-table tr:hover td,
+.table tr:hover td {
+  background: #f8fbff !important;
+}
+
+.badge,
+.status-badge,
+.appt-status-badge {
+  min-height: 24px;
+  padding-inline: 0.625rem;
+}
+
+.alert,
+.message,
+.messages li {
+  border-radius: 10px !important;
+  box-shadow: none !important;
+}
+
+.public-header {
+  min-height: 72px;
+  background: rgba(255, 255, 255, 0.96) !important;
+  border-bottom-color: #e8edf3 !important;
+  padding-inline: clamp(1rem, 4vw, 3rem);
+}
+
+.public-brand {
+  color: #172033 !important;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+}
+
+.public-footer {
+  background: #ffffff !important;
+  border-top-color: #e8edf3 !important;
+}
+
+.auth-wrap {
+  min-height: calc(100vh - 72px);
+  padding: clamp(2rem, 6vw, 5rem) 1rem;
+}
+
+.auth-card {
+  background: #ffffff !important;
+  padding: clamp(1.25rem, 4vw, 2rem) !important;
+}
+
+.auth-brand-name {
+  color: #172033 !important;
+  letter-spacing: -0.02em;
+}
+
+@media (max-width: 768px) {
+  .app-layout[data-role] .app-main,
+  .app-layout[data-role] .app-sidebar.collapsed + .app-main {
+    margin-left: 0 !important;
+  }
+
+  .app-content {
+    padding: 1.125rem 1rem 2rem;
+  }
+
+  .app-topbar {
+    min-height: 60px;
+    padding-inline: 1rem;
+  }
+
+  .topbar-right .role-pill {
+    display: none;
+  }
+
+  .page-header-content {
+    align-items: flex-start;
+  }
+
+  .student-welcome-card {
+    padding: 1.25rem !important;
+  }
+
+  .student-welcome-content {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .student-welcome-actions {
+    grid-column: 1 / -1;
+    justify-content: stretch;
+  }
+
+  .student-welcome-actions .btn {
+    flex: 1 1 180px;
+  }
+
+  .card,
+  .stat-card,
+  .appt-card-item,
+  .fd-card,
+  .bk-card,
+  .dash-card {
+    border-radius: 13px !important;
+  }
+}
