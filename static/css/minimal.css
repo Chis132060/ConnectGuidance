@@ -242,30 +242,38 @@ body {
 }
 
 .sidebar-brand-icon {
-  width: 32px;
-  height: 32px;
-  background: #2563eb !important;
+  width: 34px;
+  height: 34px;
+  background: transparent !important;
   border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ffffff !important;
-  font-size: 1rem;
-  font-weight: 700;
-  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.3);
+  flex-shrink: 0;
+  box-shadow: none !important;
 }
 
-.app-layout[data-role="counselor"] .sidebar-brand-icon {
-  background: var(--role-counselor) !important;
-  box-shadow: 0 2px 4px rgba(13, 148, 136, 0.3);
+.sidebar-brand-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
 }
-.app-layout[data-role="receptionist"] .sidebar-brand-icon {
-  background: var(--role-receptionist) !important;
-  box-shadow: 0 2px 4px rgba(217, 119, 6, 0.3);
+
+.public-brand-img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  display: inline-block;
+  flex-shrink: 0;
+  vertical-align: middle;
 }
+
+.app-layout[data-role="counselor"] .sidebar-brand-icon,
+.app-layout[data-role="receptionist"] .sidebar-brand-icon,
 .app-layout[data-role="admin"] .sidebar-brand-icon {
-  background: var(--role-admin) !important;
-  box-shadow: 0 2px 4px rgba(124, 58, 237, 0.3);
+  background: transparent !important;
+  box-shadow: none !important;
 }
 
 .sidebar-brand-text {
@@ -1568,9 +1576,13 @@ body {
 }
 
 .public-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
   color: #172033 !important;
   font-weight: 750;
   letter-spacing: -0.02em;
+  text-decoration: none;
 }
 
 .public-footer {

@@ -1,535 +1,1012 @@
 {% extends "common/base.html" %}
-{% block page_title %}Book a Session{% endblock %}
+{% load static %}
 
+{% block page_title %}Book a Session{% endblock %}
 {% block title %}Book Counseling Session — ConnectGuidance{% endblock %}
-{% block meta_description %}Select a counselor and choose an available date and time slot for your guidance appointment.{% endblock %}
+{% block meta_description %}Select your counselor and pick an available date and time slot for your guidance appointment.{% endblock %}
 
 {% block content %}
 
 <style>
-/* ═══════════════════════════════════════════════════════
-   BOOK APPOINTMENT — Premium Redesign (Amethyst · Violet · Dark)
-   ═══════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════════════
+   STUDENT BOOK APPOINTMENT — Refined Student Sapphire Blue Design System
+   ══════════════════════════════════════════════════════════════════ */
 
-.bk-shell {
-    min-height: 100%;
-    background: linear-gradient(140deg, #020817 0%, #0a1628 40%, #061022 70%, #0d1f3c 100%);
-    padding: 2rem 1.5rem 4rem;
-    position: relative;
-    overflow: hidden;
-}
-
-/* Ambient blobs */
-.bk-blob {
-    position: fixed;
-    border-radius: 50%;
-    filter: blur(90px);
-    opacity: 0.35;
-    pointer-events: none;
-    animation: bkBlobDrift 14s ease-in-out infinite alternate;
-}
-.bk-blob-1 { width: 480px; height: 480px; background: radial-gradient(circle, rgba(37,99,235,0.4), transparent 70%); top: -150px; left: -100px; }
-.bk-blob-2 { width: 340px; height: 340px; background: radial-gradient(circle, rgba(6,182,212,0.3), transparent 70%); bottom: -80px; right: -60px; animation-delay: -5s; }
-.bk-blob-3 { width: 240px; height: 240px; background: radial-gradient(circle, rgba(99,102,241,0.3), transparent 70%); top: 40%; left: 60%; animation-delay: -9s; }
-@keyframes bkBlobDrift {
-    from { transform: translate(0, 0) scale(1); }
-    to   { transform: translate(30px, 20px) scale(1.06); }
-}
-
-/* ── Page wrapper ── */
-.bk-wrap {
-    position: relative;
-    z-index: 10;
-    max-width: 720px;
+.bk-container {
+    max-width: 1160px;
     margin: 0 auto;
-    animation: bkFadeIn 0.5s cubic-bezier(0.22,1,0.36,1) both;
-}
-@keyframes bkFadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to   { opacity: 1; transform: translateY(0); }
+    padding: 1.5rem 1rem 3rem;
 }
 
-/* ── Header row ── */
-.bk-header {
+/* ── Top Navigation & Page Header ── */
+.bk-header-bar {
     display: flex;
+    justify-content: space-between;
     align-items: flex-start;
+    flex-wrap: wrap;
     gap: 1rem;
-    margin-bottom: 2rem;
+    margin-bottom: 1.75rem;
 }
-.bk-back {
-    color: rgba(196,181,253,0.6);
-    text-decoration: none;
-    font-size: 0.82rem;
+
+.bk-header-left {
     display: flex;
-    align-items: center;
+    flex-direction: column;
     gap: 0.35rem;
-    margin-top: 0.35rem;
-    transition: color 0.2s;
-    white-space: nowrap;
 }
-.bk-back:hover { color: #c4b5fd; }
-.bk-title-block h1 {
-    margin: 0;
-    font-size: 1.6rem;
+
+.bk-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #2563eb;
+    text-decoration: none;
+    margin-bottom: 0.25rem;
+    transition: all 0.18s ease;
+    width: fit-content;
+}
+
+.bk-back-link:hover {
+    color: #1d4ed8;
+    transform: translateX(-2px);
+}
+
+.bk-header-title {
+    font-size: 1.625rem;
     font-weight: 800;
-    color: #fff;
-    line-height: 1.2;
+    color: #0f172a;
+    letter-spacing: -0.025em;
+    margin: 0;
+    line-height: 1.25;
 }
-.bk-title-block p {
-    margin: 0.35rem 0 0;
-    font-size: 0.85rem;
-    color: rgba(196,181,253,0.6);
+
+.bk-header-subtitle {
+    font-size: 0.875rem;
+    color: #64748b;
+    margin: 0;
     line-height: 1.5;
 }
 
-/* ── Step Progress Bar ── */
-.bk-steps {
+.bk-header-badges {
     display: flex;
     align-items: center;
-    gap: 0;
-    margin-bottom: 2rem;
+    gap: 0.625rem;
+    flex-wrap: wrap;
 }
-.bk-step {
-    display: flex;
+
+.bk-badge {
+    display: inline-flex;
     align-items: center;
-    gap: 0.45rem;
-    flex: 1;
-    position: relative;
-}
-.bk-step:not(:last-child)::after {
-    content: '';
-    flex: 1;
-    height: 2px;
-    background: rgba(255,255,255,0.1);
-    margin: 0 0.4rem;
-    border-radius: 2px;
-    transition: background 0.4s;
-}
-.bk-step.done::after { background: rgba(139,92,246,0.55); }
-.bk-step-num {
-    width: 30px; height: 30px;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 0.78rem;
-    font-weight: 700;
-    flex-shrink: 0;
-    border: 2px solid rgba(255,255,255,0.12);
-    color: rgba(255,255,255,0.35);
-    background: rgba(255,255,255,0.05);
-    transition: all 0.3s;
-}
-.bk-step.active .bk-step-num {
-    background: linear-gradient(135deg, #8b5cf6, #6d28d9);
-    border-color: transparent;
-    color: #fff;
-    box-shadow: 0 0 14px rgba(139,92,246,0.6);
-}
-.bk-step.done .bk-step-num {
-    background: rgba(139,92,246,0.25);
-    border-color: rgba(139,92,246,0.5);
-    color: #c4b5fd;
-}
-.bk-step-label {
-    font-size: 0.75rem;
+    gap: 0.4rem;
+    padding: 0.35rem 0.75rem;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 9999px;
+    font-size: 0.775rem;
     font-weight: 600;
-    color: rgba(255,255,255,0.3);
-    white-space: nowrap;
-    transition: color 0.3s;
-}
-.bk-step.active .bk-step-label { color: #c4b5fd; }
-.bk-step.done  .bk-step-label  { color: rgba(196,181,253,0.55); }
-
-/* ── Glass Card ── */
-.bk-card {
-    background: rgba(255,255,255,0.055);
-    border: 1px solid rgba(255,255,255,0.11);
-    backdrop-filter: blur(20px);
-    border-radius: 20px;
-    padding: 2rem;
-    box-shadow: 0 8px 40px rgba(0,0,0,0.35);
+    color: #334155;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
 }
 
-/* ── Section Labels ── */
-.bk-section {
+.bk-badge i, .bk-badge svg {
+    color: #2563eb;
+}
+
+/* ── Stepper Navigation ── */
+.bk-stepper-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 1.125rem 1.5rem;
     margin-bottom: 1.75rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
 }
-.bk-section:last-of-type { margin-bottom: 0; }
 
-.bk-label {
+.bk-stepper {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    font-size: 0.82rem;
-    font-weight: 700;
-    color: rgba(196,181,253,0.75);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin-bottom: 0.65rem;
-}
-.bk-label-num {
-    width: 22px; height: 22px;
-    background: linear-gradient(135deg, #8b5cf6, #6d28d9);
-    border-radius: 6px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 0.7rem;
-    font-weight: 700;
-    color: #fff;
-    flex-shrink: 0;
-}
-
-/* ── Inputs ── */
-.bk-select,
-.bk-date-input,
-.bk-textarea,
-.bk-concern-select {
-    width: 100%;
-    background: rgba(255,255,255,0.07);
-    border: 1px solid rgba(255,255,255,0.13);
-    border-radius: 12px;
-    padding: 0.75rem 1rem;
-    color: #f1f5f9;
-    font-size: 0.92rem;
-    font-family: inherit;
-    outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
-    box-sizing: border-box;
-    appearance: none;
-    -webkit-appearance: none;
-}
-.bk-select:focus,
-.bk-date-input:focus,
-.bk-textarea:focus,
-.bk-concern-select:focus {
-    border-color: rgba(139,92,246,0.55);
-    box-shadow: 0 0 0 3px rgba(139,92,246,0.15);
-    background: rgba(139,92,246,0.08);
-}
-.bk-select option,
-.bk-concern-select option {
-    background: #1e1a3c;
-    color: #f1f5f9;
-}
-.bk-select:invalid,
-.bk-select option[value=""] { color: rgba(148,163,184,0.55); }
-
-/* Date input — style the calendar icon */
-.bk-date-input::-webkit-calendar-picker-indicator {
-    filter: invert(0.6) sepia(1) hue-rotate(240deg) saturate(2);
-    cursor: pointer;
-}
-
-.bk-textarea {
-    resize: vertical;
-    min-height: 90px;
-    line-height: 1.55;
-}
-
-/* Counselor select wrapper with icon */
-.bk-select-wrap {
+    justify-content: space-between;
     position: relative;
 }
-.bk-select-wrap::after {
+
+.bk-step-item {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    position: relative;
+    z-index: 2;
+    flex: 1;
+}
+
+.bk-step-item:not(:last-child)::after {
     content: '';
     position: absolute;
-    right: 14px;
+    left: calc(34px + 0.65rem);
+    right: 0.75rem;
+    top: 17px;
+    height: 2px;
+    background: #e2e8f0;
+    z-index: -1;
+    transition: background 0.3s ease;
+}
+
+.bk-step-item.done::after {
+    background: #93c5fd;
+}
+
+.bk-step-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    background: #f1f5f9;
+    color: #64748b;
+    border: 2px solid #e2e8f0;
+    transition: all 0.25s ease;
+    flex-shrink: 0;
+}
+
+.bk-step-item.active .bk-step-icon {
+    background: #2563eb;
+    color: #ffffff;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.18);
+}
+
+.bk-step-item.done .bk-step-icon {
+    background: #eff6ff;
+    color: #2563eb;
+    border-color: #93c5fd;
+}
+
+.bk-step-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.bk-step-num-label {
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: #94a3b8;
+    line-height: 1;
+    margin-bottom: 2px;
+}
+
+.bk-step-name {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #475569;
+    white-space: nowrap;
+}
+
+.bk-step-item.active .bk-step-name {
+    color: #1e293b;
+    font-weight: 700;
+}
+
+.bk-step-item.done .bk-step-name {
+    color: #2563eb;
+}
+
+@media (max-width: 768px) {
+    .bk-step-text { display: none; }
+    .bk-step-item:not(:last-child)::after {
+        left: 34px;
+        right: 0;
+    }
+}
+
+/* ── Two Column Booking Layout ── */
+.bk-layout-grid {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 1.75rem;
+    align-items: start;
+}
+
+@media (max-width: 980px) {
+    .bk-layout-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ── Main Form Card ── */
+.bk-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 18px;
+    padding: 2rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 6px 18px rgba(37,99,235,0.03);
+}
+
+.bk-section {
+    margin-bottom: 2rem;
+}
+
+.bk-section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 0.85rem;
+}
+
+.bk-section-badge {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    background: #eff6ff;
+    color: #2563eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.bk-section-title {
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+    letter-spacing: -0.01em;
+}
+
+.bk-section-hint {
+    font-size: 0.775rem;
+    color: #64748b;
+    margin-left: auto;
+}
+
+/* ── Form Controls (Student Theme) ── */
+.bk-field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+}
+
+.bk-select-wrapper {
+    position: relative;
+}
+
+.bk-select-icon {
+    position: absolute;
+    left: 1rem;
     top: 50%;
     transform: translateY(-50%);
-    width: 10px; height: 10px;
-    border-right: 2px solid rgba(196,181,253,0.5);
-    border-bottom: 2px solid rgba(196,181,253,0.5);
-    transform: translateY(-65%) rotate(45deg);
+    color: #64748b;
     pointer-events: none;
 }
 
-/* Two-column row for counselor + date */
+.bk-select-caret {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    pointer-events: none;
+}
+
+.bk-control,
+#booking-concern-type,
+#booking-notes {
+    width: 100%;
+    background: #ffffff;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+    font-size: 0.9375rem;
+    color: #0f172a;
+    font-family: inherit;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+
+.bk-control-with-icon {
+    padding-left: 2.75rem;
+    padding-right: 2.5rem;
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+.bk-control:focus,
+#booking-concern-type:focus,
+#booking-notes:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.bk-control:hover:not(:focus),
+#booking-concern-type:hover:not(:focus),
+#booking-notes:hover:not(:focus) {
+    border-color: #94a3b8;
+}
+
 .bk-two-col {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 1.25rem;
 }
-@media (max-width: 580px) {
-    .bk-two-col { grid-template-columns: 1fr; }
+
+@media (max-width: 600px) {
+    .bk-two-col {
+        grid-template-columns: 1fr;
+    }
 }
 
-/* ── Time Slots ── */
-#bkSlotsSection {
-    display: none;
-    animation: bkFadeIn 0.35s ease both;
+/* ── Time Slots Grid ── */
+.bk-slots-container {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 1.25rem;
+    margin-top: 0.5rem;
 }
-.bk-slots-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-    gap: 0.6rem;
+
+.bk-slots-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #e2e8f0;
 }
-.bk-slot-btn {
-    padding: 0.6rem 0.5rem;
-    border-radius: 10px;
-    font-size: 0.83rem;
-    font-weight: 600;
-    cursor: pointer;
-    text-align: center;
-    border: 1px solid rgba(255,255,255,0.14);
-    background: rgba(255,255,255,0.06);
-    color: #e2e8f0;
-    transition: all 0.2s;
-}
-.bk-slot-btn:hover:not(:disabled) {
-    background: rgba(139,92,246,0.2);
-    border-color: rgba(139,92,246,0.45);
-    transform: translateY(-1px);
-}
-.bk-slot-btn.selected {
-    background: linear-gradient(135deg, #8b5cf6, #6d28d9) !important;
-    border-color: transparent !important;
-    color: #fff !important;
-    box-shadow: 0 4px 14px rgba(109,40,217,0.45);
-    transform: translateY(-1px);
-}
-.bk-slot-btn:disabled {
-    background: rgba(255,255,255,0.03);
-    border-color: rgba(255,255,255,0.06);
-    color: rgba(148,163,184,0.35);
-    cursor: not-allowed;
-    text-decoration: line-through;
-}
-.bk-slots-loading {
+
+.bk-slots-heading-title {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: #334155;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    color: rgba(196,181,253,0.6);
-    font-size: 0.85rem;
-    padding: 0.5rem 0;
+    gap: 0.4rem;
 }
-.bk-slots-dot {
-    width: 6px; height: 6px;
-    background: #a78bfa;
+
+.bk-slots-legend {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    font-size: 0.75rem;
+    color: #64748b;
+}
+
+.bk-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.bk-legend-dot {
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
-    animation: dotBounce 1.1s ease-in-out infinite;
 }
-.bk-slots-dot:nth-child(2) { animation-delay: 0.18s; }
-.bk-slots-dot:nth-child(3) { animation-delay: 0.36s; }
-@keyframes dotBounce {
-    0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
-    40%            { transform: translateY(-5px); opacity: 1; }
+.bk-legend-dot.avail { background: #2563eb; }
+.bk-legend-dot.taken { background: #cbd5e1; }
+
+.bk-slots-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(115px, 1fr));
+    gap: 0.65rem;
 }
 
-/* Divider */
-.bk-divider {
-    border: none;
-    border-top: 1px solid rgba(255,255,255,0.08);
-    margin: 1.75rem 0;
-}
-
-/* ── Submit Button ── */
-.bk-submit {
-    width: 100%;
-    padding: 0.9rem;
-    background: linear-gradient(135deg, #8b5cf6, #6d28d9);
-    color: #fff;
-    border: none;
-    border-radius: 14px;
-    font-size: 1rem;
-    font-weight: 700;
+.bk-slot-btn {
+    padding: 0.7rem 0.5rem;
+    background: #ffffff;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #1e293b;
     cursor: pointer;
-    box-shadow: 0 6px 20px rgba(109,40,217,0.45);
-    transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+    text-align: center;
+    transition: all 0.18s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+}
+
+.bk-slot-btn:hover:not(:disabled) {
+    background: #eff6ff;
+    border-color: #3b82f6;
+    color: #1d4ed8;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(37,99,235,0.08);
+}
+
+.bk-slot-btn.selected {
+    background: #2563eb !important;
+    border-color: #2563eb !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(37,99,235,0.3);
+    transform: translateY(-1px);
+}
+
+.bk-slot-btn:disabled {
+    background: #f1f5f9;
+    border-color: #e2e8f0;
+    color: #94a3b8;
+    cursor: not-allowed;
+    text-decoration: line-through;
+    opacity: 0.7;
+}
+
+.bk-slots-empty {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: #64748b;
+    font-size: 0.875rem;
+}
+
+.bk-slots-empty i {
+    width: 28px;
+    height: 28px;
+    color: #94a3b8;
+    margin-bottom: 0.5rem;
+    display: block;
+    margin-inline: auto;
+}
+
+.bk-slots-loading {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    letter-spacing: 0.01em;
+    padding: 2rem 1rem;
+    color: #2563eb;
+    font-size: 0.875rem;
+    font-weight: 500;
 }
-.bk-submit:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(109,40,217,0.55); }
-.bk-submit:active { transform: translateY(0); }
-.bk-submit svg { width: 18px; height: 18px; }
 
-/* Override Django form widget styles */
-#id_concern_type,
-#id_notes {
+.bk-spinner {
+    width: 18px;
+    height: 18px;
+    border: 2px solid #bfdbfe;
+    border-top-color: #2563eb;
+    border-radius: 50%;
+    animation: bkSpin 0.7s linear infinite;
+}
+@keyframes bkSpin {
+    to { transform: rotate(360deg); }
+}
+
+/* ── Divider ── */
+.bk-divider {
+    border: none;
+    border-top: 1px solid #f1f5f9;
+    margin: 2rem 0;
+}
+
+/* ── Primary Submit Button ── */
+.bk-submit-btn {
     width: 100%;
-    background: rgba(255,255,255,0.07) !important;
-    border: 1px solid rgba(255,255,255,0.13) !important;
-    border-radius: 12px !important;
-    padding: 0.75rem 1rem !important;
-    color: #f1f5f9 !important;
-    font-size: 0.92rem !important;
-    font-family: inherit !important;
-    outline: none !important;
-    transition: border-color 0.2s, box-shadow 0.2s !important;
-    box-sizing: border-box !important;
-    appearance: none !important;
-    -webkit-appearance: none !important;
+    background: #2563eb;
+    color: #ffffff;
+    border: none;
+    border-radius: 12px;
+    padding: 0.95rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    box-shadow: 0 4px 14px rgba(37,99,235,0.28);
+    transition: all 0.2s ease;
 }
-#id_concern_type:focus,
-#id_notes:focus {
-    border-color: rgba(139,92,246,0.55) !important;
-    box-shadow: 0 0 0 3px rgba(139,92,246,0.15) !important;
-    background: rgba(139,92,246,0.08) !important;
-}
-#id_concern_type option { background: #1e1a3c; color: #f1f5f9; }
-#id_notes { resize: vertical; min-height: 90px; line-height: 1.55; }
 
-/* ── Messages / alerts ── */
-.bk-alerts { margin-bottom: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem; }
-.bk-alert {
-    padding: 0.7rem 1rem;
-    border-radius: 10px;
-    font-size: 0.85rem;
-    display: flex; align-items: center; gap: 0.5rem;
+.bk-submit-btn:hover:not(:disabled) {
+    background: #1d4ed8;
+    box-shadow: 0 6px 20px rgba(37,99,235,0.38);
+    transform: translateY(-1px);
 }
-.bk-alert-success { background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.28); color: #6ee7b7; }
-.bk-alert-error   { background: rgba(239,68,68,0.12);  border: 1px solid rgba(239,68,68,0.28);  color: #fca5a5; }
-.bk-alert-info    { background: rgba(139,92,246,0.12); border: 1px solid rgba(139,92,246,0.28); color: #c4b5fd; }
+
+.bk-submit-btn:disabled {
+    background: #94a3b8;
+    cursor: not-allowed;
+    box-shadow: none;
+    opacity: 0.8;
+}
+
+.bk-submit-helper {
+    font-size: 0.8rem;
+    color: #64748b;
+    text-align: center;
+    margin-top: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+}
+
+/* ── Sidebar Cards ── */
+.bk-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.bk-summary-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 18px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+
+.bk-summary-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.bk-summary-title {
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin: 0;
+}
+
+.bk-summary-status {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.2rem 0.55rem;
+    border-radius: 9999px;
+    background: #eff6ff;
+    color: #2563eb;
+    border: 1px solid #bfdbfe;
+}
+
+.bk-summary-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.bk-summary-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+}
+
+.bk-summary-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #2563eb;
+    flex-shrink: 0;
+}
+
+.bk-summary-meta {
+    flex: 1;
+}
+
+.bk-summary-label {
+    font-size: 0.725rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #64748b;
+    margin-bottom: 2px;
+}
+
+.bk-summary-val {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #0f172a;
+    line-height: 1.35;
+}
+
+.bk-summary-val.empty {
+    color: #94a3b8;
+    font-weight: 400;
+    font-style: italic;
+}
+
+/* ── Trust / Info Card ── */
+.bk-info-card {
+    background: linear-gradient(145deg, #f0f7ff 0%, #ffffff 100%);
+    border: 1px solid #bfdbfe;
+    border-radius: 18px;
+    padding: 1.25rem 1.5rem;
+}
+
+.bk-info-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.65rem;
+    margin-bottom: 0.85rem;
+    font-size: 0.8125rem;
+    color: #334155;
+    line-height: 1.45;
+}
+.bk-info-item:last-child { margin-bottom: 0; }
+
+.bk-info-item i, .bk-info-item svg {
+    color: #2563eb;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+/* ── Crisis Alert Box ── */
+.bk-crisis-card {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 14px;
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.65rem;
+    font-size: 0.8rem;
+    color: #991b1b;
+    line-height: 1.4;
+}
+.bk-crisis-card i, .bk-crisis-card svg {
+    color: #dc2626;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+/* ── Django Alert Messages ── */
+.bk-alerts-stack {
+    margin-bottom: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+}
+
+.bk-alert {
+    padding: 0.85rem 1.15rem;
+    border-radius: 12px;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    font-weight: 500;
+}
+.bk-alert-success { background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46; }
+.bk-alert-error   { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+.bk-alert-info    { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
+.bk-alert-warning { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
+
 </style>
 
-<div class="bk-shell">
-    <!-- Ambient blobs -->
-    <div class="bk-blob bk-blob-1"></div>
-    <div class="bk-blob bk-blob-2"></div>
-    <div class="bk-blob bk-blob-3"></div>
+<div class="bk-container">
 
-    <div class="bk-wrap">
-
-        <!-- Header -->
-        <div class="bk-header">
-            <a href="{% url 'student_appointments' %}" class="bk-back">
-                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
-                Appointments
+    <!-- Header Navigation -->
+    <div class="bk-header-bar">
+        <div class="bk-header-left">
+            <a href="{% url 'student_appointments' %}" class="bk-back-link">
+                <i data-lucide="arrow-left" style="width:14px;height:14px;"></i>
+                Back to My Appointments
             </a>
-            <div class="bk-title-block">
-                <h1>Book a Guidance Session</h1>
-                <p>Select your preferred counselor, pick a date &amp; time slot, and share your concern.</p>
+            <h1 class="bk-header-title">Book a Guidance Consultation</h1>
+            <p class="bk-header-subtitle">
+                Select your preferred university counselor, choose an open date and time slot, and tell us how we can help.
+            </p>
+        </div>
+        <div class="bk-header-badges">
+            <span class="bk-badge">
+                <i data-lucide="shield-check" style="width:14px;height:14px;"></i>
+                100% Confidential
+            </span>
+            <span class="bk-badge">
+                <i data-lucide="clock" style="width:14px;height:14px;"></i>
+                45-Min Session
+            </span>
+            <span class="bk-badge">
+                <i data-lucide="sparkles" style="width:14px;height:14px;"></i>
+                Free for FSUU Students
+            </span>
+        </div>
+    </div>
+
+    <!-- Interactive Stepper -->
+    <div class="bk-stepper-card">
+        <div class="bk-stepper" id="bkStepper">
+            <div class="bk-step-item active" id="step1">
+                <div class="bk-step-icon">1</div>
+                <div class="bk-step-text">
+                    <span class="bk-step-num-label">Step 1</span>
+                    <span class="bk-step-name">Counselor</span>
+                </div>
+            </div>
+            <div class="bk-step-item" id="step2">
+                <div class="bk-step-icon">2</div>
+                <div class="bk-step-text">
+                    <span class="bk-step-num-label">Step 2</span>
+                    <span class="bk-step-name">Date &amp; Time</span>
+                </div>
+            </div>
+            <div class="bk-step-item" id="step3">
+                <div class="bk-step-icon">3</div>
+                <div class="bk-step-text">
+                    <span class="bk-step-num-label">Step 3</span>
+                    <span class="bk-step-name">Session Details</span>
+                </div>
+            </div>
+            <div class="bk-step-item" id="step4">
+                <div class="bk-step-icon">4</div>
+                <div class="bk-step-text">
+                    <span class="bk-step-num-label">Step 4</span>
+                    <span class="bk-step-name">Confirm</span>
+                </div>
             </div>
         </div>
+    </div>
 
-        <!-- Step progress -->
-        <div class="bk-steps" id="bkSteps">
-            <div class="bk-step active" id="step1">
-                <div class="bk-step-num">1</div>
-                <div class="bk-step-label">Counselor</div>
-            </div>
-            <div class="bk-step" id="step2">
-                <div class="bk-step-num">2</div>
-                <div class="bk-step-label">Date &amp; Time</div>
-            </div>
-            <div class="bk-step" id="step3">
-                <div class="bk-step-num">3</div>
-                <div class="bk-step-label">Details</div>
-            </div>
-            <div class="bk-step" id="step4">
-                <div class="bk-step-num">4</div>
-                <div class="bk-step-label">Confirm</div>
-            </div>
+    <!-- Alert Messages (if any) -->
+    {% if messages %}
+    <div class="bk-alerts-stack">
+        {% for message in messages %}
+        <div class="bk-alert bk-alert-{{ message.tags|default:'info' }}">
+            {% if message.tags == 'success' %}
+                <i data-lucide="check-circle" style="width:18px;height:18px;flex-shrink:0;"></i>
+            {% elif message.tags == 'error' %}
+                <i data-lucide="alert-circle" style="width:18px;height:18px;flex-shrink:0;"></i>
+            {% else %}
+                <i data-lucide="info" style="width:18px;height:18px;flex-shrink:0;"></i>
+            {% endif %}
+            <span>{{ message }}</span>
         </div>
+        {% endfor %}
+    </div>
+    {% endif %}
 
-        {% if messages %}
-        <div class="bk-alerts">
-            {% for message in messages %}
-            <div class="bk-alert bk-alert-{{ message.tags|default:'info' }}">
-                {% if message.tags == 'success' %}
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                {% elif message.tags == 'error' %}
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
-                {% else %}
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-                {% endif %}
-                {{ message }}
-            </div>
-            {% endfor %}
-        </div>
-        {% endif %}
+    <!-- Booking Layout -->
+    <div class="bk-layout-grid">
 
-        <!-- Glass card -->
+        <!-- Form Card (Left) -->
         <div class="bk-card">
-            <form method="POST" action="{% url 'student_book_appointment' %}" id="bookingForm">
+            <form method="POST" action="{% url 'student_book_appointment' %}" id="bookingForm" novalidate>
                 {% csrf_token %}
 
-                <!-- Row: Counselor + Date -->
+                <!-- Section 1 & 2: Counselor and Date in 2 columns -->
                 <div class="bk-two-col">
-                    <!-- 1. Counselor -->
-                    <div class="bk-section">
-                        <div class="bk-label">
-                            <div class="bk-label-num">1</div>
-                            Select Counselor
+
+                    <!-- Counselor Selection -->
+                    <div class="bk-section" style="margin-bottom:1.25rem;">
+                        <div class="bk-section-header">
+                            <span class="bk-section-badge">1</span>
+                            <h2 class="bk-section-title">Select Counselor</h2>
                         </div>
-                        <div class="bk-select-wrap">
-                            <select id="counselorSelect" class="bk-select" required>
-                                <option value="" disabled selected>Choose a counselor…</option>
-                                {% for c in counselors %}
-                                <option value="{{ c.id }}">{{ c.full_name }}{% if c.department %} · {{ c.department }}{% endif %}</option>
-                                {% endfor %}
-                            </select>
+                        <div class="bk-field-group">
+                            <div class="bk-select-wrapper">
+                                <i data-lucide="user-check" class="bk-select-icon" style="width:16px;height:16px;"></i>
+                                <select id="counselorSelect" class="bk-control bk-control-with-icon" required>
+                                    <option value="" disabled selected>Choose a counselor…</option>
+                                    {% for c in counselors %}
+                                    <option value="{{ c.id }}" data-name="{{ c.full_name }}" data-dept="{{ c.department|default:'Guidance Office' }}">
+                                        {{ c.full_name }}{% if c.department %} · {{ c.department }}{% endif %}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                                <i data-lucide="chevron-down" class="bk-select-caret" style="width:16px;height:16px;"></i>
+                            </div>
+                            <input type="hidden" name="counselor_id" id="bkCounselorId">
                         </div>
-                        <input type="hidden" name="counselor_id" id="bkCounselorId">
                     </div>
 
-                    <!-- 2. Date -->
-                    <div class="bk-section">
-                        <div class="bk-label">
-                            <div class="bk-label-num">2</div>
-                            Pick a Date
+                    <!-- Date Selection -->
+                    <div class="bk-section" style="margin-bottom:1.25rem;">
+                        <div class="bk-section-header">
+                            <span class="bk-section-badge">2</span>
+                            <h2 class="bk-section-title">Pick a Date</h2>
                         </div>
-                        <input type="date" id="dateSelect" class="bk-date-input" required>
+                        <div class="bk-field-group">
+                            <div class="bk-select-wrapper">
+                                <i data-lucide="calendar" class="bk-select-icon" style="width:16px;height:16px;"></i>
+                                <input type="date" id="dateSelect" class="bk-control bk-control-with-icon" required>
+                            </div>
+                        </div>
                     </div>
-                </div>
 
-                <!-- 3. Time Slots -->
-                <div class="bk-section" id="bkSlotsSection">
-                    <div class="bk-label">
-                        <div class="bk-label-num">3</div>
-                        Available Time Slots
-                        <span style="font-size:0.7rem; color: rgba(148,163,184,0.5); font-weight:400; text-transform:none; letter-spacing:0;">09:00 AM – 04:00 PM</span>
+                </div><!-- /bk-two-col -->
+
+                <!-- Section 3: Time Slots (Expands when Counselor + Date are chosen) -->
+                <div class="bk-section" id="bkSlotsSection" style="display:none;">
+                    <div class="bk-section-header">
+                        <span class="bk-section-badge">3</span>
+                        <h2 class="bk-section-title">Available Time Slots</h2>
+                        <span class="bk-section-hint">Office Hours: 09:00 AM – 04:00 PM</span>
                     </div>
-                    <div id="bkSlotsContainer" class="bk-slots-grid"></div>
+
+                    <div class="bk-slots-container">
+                        <div class="bk-slots-heading">
+                            <span class="bk-slots-heading-title">
+                                <i data-lucide="clock" style="width:14px;height:14px;color:#2563eb;"></i>
+                                Select a 45-Minute Slot
+                            </span>
+                            <div class="bk-slots-legend">
+                                <span class="bk-legend-item"><span class="bk-legend-dot avail"></span> Available</span>
+                                <span class="bk-legend-item"><span class="bk-legend-dot taken"></span> Unavailable</span>
+                            </div>
+                        </div>
+                        <div id="bkSlotsContainer" class="bk-slots-grid"></div>
+                    </div>
                     <input type="hidden" name="scheduled_at" id="bkScheduledAt">
                 </div>
 
                 <hr class="bk-divider">
 
-                <!-- 4. Concern Type -->
+                <!-- Section 4: Primary Concern -->
                 <div class="bk-section">
-                    <div class="bk-label">
-                        <div class="bk-label-num">4</div>
-                        Primary Concern
+                    <div class="bk-section-header">
+                        <span class="bk-section-badge">4</span>
+                        <h2 class="bk-section-title">Primary Concern</h2>
                     </div>
-                    {{ form.concern_type }}
+                    <div class="bk-field-group">
+                        {{ form.concern_type }}
+                        {% if form.concern_type.errors %}
+                        <small style="color:#dc2626;font-size:0.8rem;">{{ form.concern_type.errors.0 }}</small>
+                        {% endif %}
+                    </div>
                 </div>
 
-                <!-- 5. Notes -->
+                <!-- Section 5: Notes / Expectations -->
                 <div class="bk-section">
-                    <div class="bk-label">
-                        <div class="bk-label-num">5</div>
-                        Notes or Expectations
-                        <span style="font-size:0.7rem; color: rgba(148,163,184,0.4); font-weight:400; text-transform:none; letter-spacing:0;">Optional</span>
+                    <div class="bk-section-header">
+                        <span class="bk-section-badge">5</span>
+                        <h2 class="bk-section-title">Notes or Expectations</h2>
+                        <span class="bk-section-hint">Optional · Max 2000 chars</span>
                     </div>
-                    {{ form.notes }}
+                    <div class="bk-field-group">
+                        {{ form.notes }}
+                        {% if form.notes.errors %}
+                        <small style="color:#dc2626;font-size:0.8rem;">{{ form.notes.errors.0 }}</small>
+                        {% endif %}
+                    </div>
                 </div>
 
                 <hr class="bk-divider">
 
-                <!-- Submit -->
-                <button type="submit" id="submitBtn" class="bk-submit">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5"/></svg>
+                <!-- Submit Button -->
+                <button type="submit" id="submitBtn" class="bk-submit-btn">
+                    <i data-lucide="calendar-check" style="width:18px;height:18px;"></i>
                     Confirm &amp; Request Session
                 </button>
+                <div class="bk-submit-helper" id="submitHint">
+                    <i data-lucide="info" style="width:14px;height:14px;"></i>
+                    Select your counselor, date, and available time slot to submit.
+                </div>
+
             </form>
         </div>
 
-    </div><!-- /bk-wrap -->
-</div><!-- /bk-shell -->
+        <!-- Sidebar Summary & Help (Right) -->
+        <aside class="bk-sidebar">
+
+            <!-- Real-time Booking Summary Card -->
+            <div class="bk-summary-card">
+                <div class="bk-summary-header">
+                    <h3 class="bk-summary-title">
+                        <i data-lucide="clipboard-list" style="width:16px;height:16px;color:#2563eb;"></i>
+                        Session Summary
+                    </h3>
+                    <span class="bk-summary-status" id="summaryStatus">Selecting</span>
+                </div>
+
+                <div class="bk-summary-list">
+                    <div class="bk-summary-item">
+                        <div class="bk-summary-icon">
+                            <i data-lucide="user" style="width:16px;height:16px;"></i>
+                        </div>
+                        <div class="bk-summary-meta">
+                            <div class="bk-summary-label">Counselor</div>
+                            <div class="bk-summary-val empty" id="summaryCounselor">Not chosen yet</div>
+                        </div>
+                    </div>
+
+                    <div class="bk-summary-item">
+                        <div class="bk-summary-icon">
+                            <i data-lucide="calendar" style="width:16px;height:16px;"></i>
+                        </div>
+                        <div class="bk-summary-meta">
+                            <div class="bk-summary-label">Date</div>
+                            <div class="bk-summary-val empty" id="summaryDate">Not chosen yet</div>
+                        </div>
+                    </div>
+
+                    <div class="bk-summary-item">
+                        <div class="bk-summary-icon">
+                            <i data-lucide="clock" style="width:16px;height:16px;"></i>
+                        </div>
+                        <div class="bk-summary-meta">
+                            <div class="bk-summary-label">Time Slot</div>
+                            <div class="bk-summary-val empty" id="summaryTime">Not chosen yet</div>
+                        </div>
+                    </div>
+
+                    <div class="bk-summary-item">
+                        <div class="bk-summary-icon">
+                            <i data-lucide="bookmark" style="width:16px;height:16px;"></i>
+                        </div>
+                        <div class="bk-summary-meta">
+                            <div class="bk-summary-label">Concern</div>
+                            <div class="bk-summary-val" id="summaryConcern">Academic</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- What to Expect / Confidentiality Card -->
+            <div class="bk-info-card">
+                <div class="bk-info-item">
+                    <i data-lucide="lock" style="width:16px;height:16px;"></i>
+                    <span><strong>100% Confidential:</strong> Consultations and case notes are strictly protected under clinical privacy standards.</span>
+                </div>
+                <div class="bk-info-item">
+                    <i data-lucide="clock-4" style="width:16px;height:16px;"></i>
+                    <span><strong>Flexible Rescheduling:</strong> You can cancel or change your session anytime prior to appointment start.</span>
+                </div>
+                <div class="bk-info-item">
+                    <i data-lucide="heart-handshake" style="width:16px;height:16px;"></i>
+                    <span><strong>Warm &amp; Supportive:</strong> FSUU counselors are licensed professionals dedicated to your student wellbeing.</span>
+                </div>
+            </div>
+
+            <!-- Urgent Crisis Notice -->
+            <div class="bk-crisis-card">
+                <i data-lucide="alert-triangle" style="width:16px;height:16px;"></i>
+                <div>
+                    <strong>Immediate Crisis?</strong><br>
+                    If you are experiencing severe distress, call or text <strong>988</strong> (24/7 Lifeline) or visit the Guidance Office immediately.
+                </div>
+            </div>
+
+        </aside>
+
+    </div><!-- /bk-layout-grid -->
+
+</div><!-- /bk-container -->
 
 <script>
 (function () {
     'use strict';
 
-    const counselorEl  = document.getElementById('counselorSelect');
-    const dateEl       = document.getElementById('dateSelect');
-    const slotsSection = document.getElementById('bkSlotsSection');
-    const slotsGrid    = document.getElementById('bkSlotsContainer');
+    const counselorEl     = document.getElementById('counselorSelect');
+    const dateEl          = document.getElementById('dateSelect');
+    const slotsSection    = document.getElementById('bkSlotsSection');
+    const slotsGrid       = document.getElementById('bkSlotsContainer');
     const hiddenCounselor = document.getElementById('bkCounselorId');
-    const hiddenTime   = document.getElementById('bkScheduledAt');
+    const hiddenTime      = document.getElementById('bkScheduledAt');
+    const concernEl       = document.getElementById('booking-concern-type');
+    const bookingForm     = document.getElementById('bookingForm');
+    const submitBtn       = document.getElementById('submitBtn');
+    const submitHint      = document.getElementById('submitHint');
 
-    // Step indicators
+    // Sidebar summary elements
+    const summaryCounselor = document.getElementById('summaryCounselor');
+    const summaryDate      = document.getElementById('summaryDate');
+    const summaryTime      = document.getElementById('summaryTime');
+    const summaryConcern   = document.getElementById('summaryConcern');
+    const summaryStatus    = document.getElementById('summaryStatus');
+
+    // Stepper
     const steps = {
         1: document.getElementById('step1'),
         2: document.getElementById('step2'),
@@ -539,21 +1016,82 @@
 
     function markStep(n) {
         for (let i = 1; i <= 4; i++) {
+            if (!steps[i]) continue;
             steps[i].classList.remove('active', 'done');
             if (i < n)  steps[i].classList.add('done');
             if (i === n) steps[i].classList.add('active');
         }
     }
 
-    // Min date = tomorrow
+    // Set minimum date to tomorrow
     const tmr = new Date();
     tmr.setDate(tmr.getDate() + 1);
     dateEl.min = tmr.toISOString().split('T')[0];
+
+    // Helper: format ISO date to readable string
+    function formatReadableDate(dateString) {
+        if (!dateString) return 'Not chosen yet';
+        const parts = dateString.split('-');
+        if (parts.length !== 3) return dateString;
+        const d = new Date(parts[0], parts[1] - 1, parts[2]);
+        return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+    }
+
+    // Update Sidebar live summary
+    function updateSummary() {
+        // Counselor
+        const opt = counselorEl.options[counselorEl.selectedIndex];
+        if (counselorEl.value && opt) {
+            const name = opt.getAttribute('data-name') || opt.text;
+            summaryCounselor.textContent = name;
+            summaryCounselor.classList.remove('empty');
+        } else {
+            summaryCounselor.textContent = 'Not chosen yet';
+            summaryCounselor.classList.add('empty');
+        }
+
+        // Date
+        if (dateEl.value) {
+            summaryDate.textContent = formatReadableDate(dateEl.value);
+            summaryDate.classList.remove('empty');
+        } else {
+            summaryDate.textContent = 'Not chosen yet';
+            summaryDate.classList.add('empty');
+        }
+
+        // Time slot
+        if (hiddenTime.value) {
+            const selectedBtn = document.querySelector('.bk-slot-btn.selected');
+            const timeStr = selectedBtn ? selectedBtn.textContent.trim() : hiddenTime.value.split('T')[1] || hiddenTime.value;
+            summaryTime.textContent = timeStr;
+            summaryTime.classList.remove('empty');
+            summaryStatus.textContent = 'Ready';
+            summaryStatus.style.background = '#ecfdf5';
+            summaryStatus.style.borderColor = '#a7f3d0';
+            summaryStatus.style.color = '#065f46';
+        } else {
+            summaryTime.textContent = 'Not chosen yet';
+            summaryTime.classList.add('empty');
+            summaryStatus.textContent = 'Selecting';
+            summaryStatus.style.background = '#eff6ff';
+            summaryStatus.style.borderColor = '#bfdbfe';
+            summaryStatus.style.color = '#2563eb';
+        }
+
+        // Concern
+        if (concernEl && concernEl.value) {
+            const selectedText = concernEl.options[concernEl.selectedIndex].text;
+            summaryConcern.textContent = selectedText;
+        }
+    }
 
     async function fetchSlots() {
         const cid  = counselorEl.value;
         const date = dateEl.value;
         hiddenCounselor.value = cid;
+        hiddenTime.value = ''; // Reset chosen slot on criteria change
+
+        updateSummary();
 
         if (!cid || !date) {
             slotsSection.style.display = 'none';
@@ -562,13 +1100,11 @@
         }
 
         slotsSection.style.display = 'block';
-        markStep(3);
+        markStep(2);
         slotsGrid.innerHTML = `
             <div class="bk-slots-loading">
-                <div class="bk-slots-dot"></div>
-                <div class="bk-slots-dot"></div>
-                <div class="bk-slots-dot"></div>
-                <span>Loading available slots…</span>
+                <div class="bk-spinner"></div>
+                <span>Checking available counselor slots…</span>
             </div>`;
 
         try {
@@ -576,23 +1112,31 @@
             const data = await resp.json();
 
             if (!resp.ok) {
-                slotsGrid.innerHTML = `<p style="color:#f87171; font-size:0.85rem;">${data.error || 'Failed to load slots.'}</p>`;
+                slotsGrid.innerHTML = `
+                    <div class="bk-slots-empty">
+                        <i data-lucide="alert-circle"></i>
+                        <span>${data.error || 'Failed to load availability.'}</span>
+                    </div>`;
+                if (window.lucide) lucide.createIcons();
                 return;
             }
 
             slotsGrid.innerHTML = '';
             if (!data.slots || data.slots.length === 0) {
-                slotsGrid.innerHTML = '<p style="color:rgba(196,181,253,0.5); font-size:0.85rem;">No slots available for this date. Try another day.</p>';
+                slotsGrid.innerHTML = `
+                    <div class="bk-slots-empty">
+                        <i data-lucide="calendar-x"></i>
+                        <span>No open slots for this date. Please pick another weekday.</span>
+                    </div>`;
+                if (window.lucide) lucide.createIcons();
                 return;
             }
 
-            data.slots.forEach((slot, idx) => {
+            data.slots.forEach((slot) => {
                 const btn = document.createElement('button');
                 btn.type = 'button';
                 btn.className = 'bk-slot-btn';
                 btn.textContent = slot.formatted_time;
-                btn.style.animationDelay = (idx * 0.04) + 's';
-                btn.style.animation = 'bkFadeIn 0.3s ease both';
 
                 if (slot.is_available) {
                     btn.dataset.available = 'true';
@@ -602,6 +1146,7 @@
                         btn.classList.add('selected');
                         hiddenTime.value = slot.iso.slice(0, 16);
                         markStep(4);
+                        updateSummary();
                     };
                 } else {
                     btn.disabled = true;
@@ -611,16 +1156,54 @@
                 slotsGrid.appendChild(btn);
             });
 
+            markStep(3);
+
         } catch (err) {
-            slotsGrid.innerHTML = '<p style="color:#f87171; font-size:0.85rem;">Error fetching availability. Please try again.</p>';
+            slotsGrid.innerHTML = `
+                <div class="bk-slots-empty">
+                    <i data-lucide="wifi-off"></i>
+                    <span>Network error loading slots. Please try again.</span>
+                </div>`;
+            if (window.lucide) lucide.createIcons();
         }
     }
 
     counselorEl.addEventListener('change', fetchSlots);
     dateEl.addEventListener('change', fetchSlots);
+    if (concernEl) concernEl.addEventListener('change', updateSummary);
 
-    // Initial step state
+    // Form submission validation
+    bookingForm.addEventListener('submit', function (e) {
+        if (!counselorEl.value) {
+            e.preventDefault();
+            alert('Please select a counselor.');
+            counselorEl.focus();
+            return;
+        }
+        if (!dateEl.value) {
+            e.preventDefault();
+            alert('Please pick an appointment date.');
+            dateEl.focus();
+            return;
+        }
+        if (!hiddenTime.value) {
+            e.preventDefault();
+            alert('Please select an available time slot before submitting.');
+            if (slotsSection) {
+                slotsSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            return;
+        }
+    });
+
+    // Initial state
     markStep(1);
+    updateSummary();
+
+    // Lucide initialization
+    if (window.lucide) {
+        lucide.createIcons();
+    }
 })();
 </script>
 

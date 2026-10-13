@@ -13,7 +13,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Favicon -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✦</text></svg>">
+    <link rel="icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'images/favicon-32x32.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'images/favicon-16x16.png' %}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/apple-touch-icon.png' %}">
 
     <!-- Design System -->
     <link rel="stylesheet" href="{% static 'css/minimal.css' %}?v=20261012-3">
@@ -32,7 +35,9 @@
             <!-- Header: brand + toggle -->
             <div class="sidebar-header">
                 <a href="{% url 'role_home' %}" class="sidebar-brand">
-                    <span class="sidebar-brand-icon">✦</span>
+                    <span class="sidebar-brand-icon">
+                        <img src="{% static 'images/logo.png' %}" alt="ConnectGuidance Logo" class="sidebar-brand-img">
+                    </span>
                     <span class="sidebar-brand-text">ConnectGuidance</span>
                 </a>
                 <button class="sidebar-toggle" id="sidebarToggle" title="Toggle sidebar" aria-label="Toggle sidebar">
@@ -91,8 +96,8 @@
     <div class="public-layout">
         <header class="public-header">
             <a href="{% url 'landing' %}" class="public-brand">
-                <span class="public-brand-dot">✦</span>
-                ConnectGuidance
+                <img src="{% static 'images/logo.png' %}" alt="ConnectGuidance Logo" class="public-brand-img">
+                <span class="public-brand-text">ConnectGuidance</span>
             </a>
             <div style="display:flex;gap:.75rem;">
                 <a href="{% url 'login' %}" class="btn btn-secondary btn-sm">Sign In</a>

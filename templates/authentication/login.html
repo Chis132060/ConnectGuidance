@@ -1,4 +1,5 @@
 {% extends "common/base.html" %}
+{% load static %}
 
 {% block title %}Sign In — ConnectGuidance | Father Saturnino Urios University{% endblock %}
 {% block meta_description %}Sign in to ConnectGuidance with your Father Saturnino Urios University (FSUU) account.{% endblock %}
@@ -32,14 +33,11 @@
   text-decoration: none;
 }
 
-.auth-brand-icon {
-  width: 36px; height: 36px;
-  border-radius: 9px;
-  background: #2563eb;
-  display: flex; align-items: center; justify-content: center;
-  color: #fff;
-  font-size: 1.125rem;
-  font-weight: 800;
+.auth-brand-img {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  display: block;
 }
 
 .auth-brand-name {
@@ -179,7 +177,7 @@
 
   <!-- Brand -->
   <a href="{% url 'landing' %}" class="auth-brand" id="auth-brand-link">
-    <div class="auth-brand-icon">✦</div>
+    <img src="{% static 'images/logo.png' %}" alt="ConnectGuidance Logo" class="auth-brand-img">
     <span class="auth-brand-name">ConnectGuidance</span>
   </a>
 
