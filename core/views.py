@@ -877,6 +877,14 @@ def admin_overview_view(request):
     metrics = get_admin_metrics()
     recent_activity = AuditLog.objects.select_related('user').order_by('-created_at')[:10]
 
+    weekly_series = metrics.get('weekly_series', [])
+    concern_breakdown = metrics.get('concern_breakdown', [])
+
+    weekly_labels = [item['label'] for item in weekly_series]
+    weekly_data = [item['count'] for item in weekly_series]
+    concern_labels = [item['label'] for item in concern_breakdown]
+    concern_data = [item['count'] for item in concern_breakdown]
+
     context = {
         'profile': admin_profile,
         'kpis': {
@@ -884,6 +892,7 @@ def admin_overview_view(request):
             'total_counselors': metrics['total_counselors'],
             'monthly_appointments': metrics['monthly_appointments'],
             'completion_rate': metrics['completion_rate'],
+            'total_appointments': metrics.get('total_appointments', sum(weekly_data)),
         },
         'status_counts': {
             'pending': metrics['pending_count'],
@@ -891,8 +900,18 @@ def admin_overview_view(request):
             'completed': metrics['completed_count'],
             'cancelled': metrics['cancelled_count'],
         },
-        'weekly_series_json': json.dumps(metrics['weekly_series']),
-        'concern_breakdown_json': json.dumps(metrics['concern_breakdown']),
+        'weekly_labels': weekly_labels,
+        'weekly_data': weekly_data,
+        'concern_labels': concern_labels,
+        'concern_data': concern_data,
+        'weekly_labels_json': json.dumps(weekly_labels),
+        'weekly_data_json': json.dumps(weekly_data),
+        'concern_labels_json': json.dumps(concern_labels),
+        'concern_data_json': json.dumps(concern_data),
+        'weekly_series': weekly_series,
+        'concern_breakdown': concern_breakdown,
+        'weekly_series_json': json.dumps(weekly_series),
+        'concern_breakdown_json': json.dumps(concern_breakdown),
         'recent_activity': recent_activity,
     }
     return render(request, 'analytics/overview.html', context)

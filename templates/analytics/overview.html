@@ -1,149 +1,835 @@
 {% extends "common/base.html" %}
-{% block page_title %}Overview{% endblock %}
+{% load static %}
 
+{% block page_title %}Executive Overview{% endblock %}
 {% block title %}Executive Overview — ConnectGuidance Admin{% endblock %}
-{% block meta_description %}Executive administrative overview with KPIs, appointment trends, and audit activity.{% endblock %}
+{% block meta_description %}Executive administrative overview with KPIs, appointment volume trends, concern breakdown, and system audit logs.{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ══════════════════════════════════════════════════════════════════
+   ADMIN EXECUTIVE OVERVIEW — Clean Light Royal Purple Palette
+   Preserves clean white surfaces, subtle borders, and Admin (#7c3aed)
+   ══════════════════════════════════════════════════════════════════ */
+
+.ao-container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding-bottom: 2.5rem;
+}
+
+/* ── 1. Top Hero Banner Card ── */
+.ao-hero-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 1.5rem 1.75rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+    margin-bottom: 1.5rem;
+}
+
+.ao-hero-content {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+@media (max-width: 840px) {
+    .ao-hero-content {
+        grid-template-columns: 1fr;
+    }
+}
+
+.ao-hero-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #7c3aed 0%, #6366f1 100%);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.35rem;
+    font-weight: 800;
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.22);
+    flex-shrink: 0;
+}
+
+.ao-hero-eyebrow {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #7c3aed;
+    margin: 0 0 0.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.ao-hero-title {
+    font-size: clamp(1.25rem, 2.2vw, 1.625rem);
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.025em;
+    margin: 0 0 0.4rem;
+    line-height: 1.2;
+}
+
+.ao-hero-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    font-size: 0.8125rem;
+    color: #64748b;
+    align-items: center;
+}
+
+.ao-hero-meta strong {
+    color: #334155;
+}
+
+.ao-status-pulse {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: #059669;
+    font-weight: 600;
+}
+.ao-status-pulse::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #10b981;
+    display: inline-block;
+}
+
+.ao-hero-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    flex-wrap: wrap;
+}
+
+.ao-btn-purple {
+    background: #7c3aed !important;
+    border: 1px solid #7c3aed !important;
+    color: #ffffff !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.6rem 1.15rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-decoration: none;
+    transition: all 0.15s ease;
+    box-shadow: 0 1px 2px rgba(124, 58, 237, 0.2);
+}
+.ao-btn-purple:hover {
+    background: #6d28d9 !important;
+    border-color: #6d28d9 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25);
+}
+
+.ao-btn-secondary {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    color: #334155;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.6rem 1.1rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-decoration: none;
+    transition: all 0.15s ease;
+}
+.ao-btn-secondary:hover {
+    background: #f8fafc;
+    border-color: #94a3b8;
+    color: #0f172a;
+}
+
+/* ── 2. Metric KPI Grid (4-Card Row) ── */
+.ao-metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+@media (max-width: 1024px) {
+    .ao-metrics-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 580px) {
+    .ao-metrics-grid { grid-template-columns: 1fr; }
+}
+
+.ao-metric-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1.25rem 1.4rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.2s ease;
+}
+.ao-metric-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    border-color: #cbd5e1;
+}
+
+.ao-metric-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.65rem;
+}
+
+.ao-metric-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #64748b;
+}
+
+.ao-metric-value {
+    font-size: 2.15rem;
+    font-weight: 800;
+    line-height: 1.15;
+    margin-bottom: 0.25rem;
+    letter-spacing: -0.02em;
+}
+
+.ao-metric-desc {
+    font-size: 0.8125rem;
+    color: #64748b;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.ao-progress-track {
+    width: 100%;
+    background: #e2e8f0;
+    height: 6px;
+    border-radius: 9999px;
+    margin-top: 0.5rem;
+    overflow: hidden;
+}
+.ao-progress-bar {
+    height: 100%;
+    background: #16a34a;
+    border-radius: 9999px;
+    transition: width 0.6s ease;
+}
+
+/* ── 3. Charts Grid (Split Layout) ── */
+.ao-charts-grid {
+    display: grid;
+    grid-template-columns: 1.65fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+@media (max-width: 960px) {
+    .ao-charts-grid { grid-template-columns: 1fr; }
+}
+
+.ao-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+    overflow: hidden;
+}
+
+.ao-card-header {
+    padding: 1.15rem 1.4rem;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.ao-card-title-group {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+}
+
+.ao-card-icon-box {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: #f5f3ff;
+    border: 1px solid #ddd6fe;
+    color: #7c3aed;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.ao-card-title {
+    font-size: 1.05rem;
+    font-weight: 750;
+    color: #0f172a;
+    margin: 0;
+    letter-spacing: -0.015em;
+}
+
+.ao-card-subtitle {
+    font-size: 0.775rem;
+    color: #64748b;
+    margin: 0;
+}
+
+.ao-card-badge {
+    background: #f5f3ff;
+    color: #7c3aed;
+    border: 1px solid #ddd6fe;
+    padding: 0.2rem 0.55rem;
+    border-radius: 9999px;
+    font-size: 0.725rem;
+    font-weight: 700;
+}
+
+.ao-card-body {
+    padding: 1.25rem 1.4rem;
+}
+
+.ao-chart-wrapper {
+    position: relative;
+    height: 270px;
+    width: 100%;
+}
+
+/* ── 4. Main Bottom Split Section (Table + Quick Actions) ── */
+.ao-bottom-layout {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 1.5rem;
+    align-items: start;
+}
+
+@media (max-width: 1040px) {
+    .ao-bottom-layout { grid-template-columns: 1fr; }
+}
+
+/* ── Modern Table Styles ── */
+.ao-table-container {
+    overflow-x: auto;
+}
+
+.ao-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+.ao-table th {
+    padding: 0.75rem 1rem;
+    font-size: 0.725rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #64748b;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    text-align: left;
+}
+
+.ao-table td {
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
+    vertical-align: middle;
+}
+
+.ao-table tr:hover td {
+    background: #f8fafc;
+}
+
+.ao-badge-action {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.15rem 0.5rem;
+    border-radius: 6px;
+    font-size: 0.725rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+.ao-badge-action.create { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+.ao-badge-action.update { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+.ao-badge-action.delete { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+.ao-badge-action.auth   { background: #f5f3ff; color: #6b21a8; border: 1px solid #ddd6fe; }
+
+/* ── Option Tiles (Sidebar) ── */
+.ao-tiles-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+}
+
+.ao-tile-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.85rem 1rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    text-decoration: none;
+    color: #1e293b;
+    transition: all 0.18s ease;
+}
+.ao-tile-item:hover {
+    background: #ffffff;
+    border-color: #7c3aed;
+    transform: translateX(3px);
+    box-shadow: 0 2px 8px rgba(124, 58, 237, 0.12);
+}
+
+.ao-tile-icon-box {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: #f5f3ff;
+    border: 1px solid #ddd6fe;
+    color: #7c3aed;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.18s ease;
+}
+.ao-tile-item:hover .ao-tile-icon-box {
+    background: #7c3aed;
+    color: #ffffff;
+}
+
+.ao-tile-title {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 2px;
+}
+
+.ao-tile-desc {
+    font-size: 0.75rem;
+    color: #64748b;
+    margin: 0;
+}
+
+.ao-tile-chevron {
+    margin-left: auto;
+    color: #94a3b8;
+    transition: transform 0.15s ease, color 0.15s ease;
+}
+.ao-tile-item:hover .ao-tile-chevron {
+    color: #7c3aed;
+    transform: translateX(2px);
+}
+
+/* ── Empty State ── */
+.ao-empty-box {
+    text-align: center;
+    padding: 2.5rem 1.5rem;
+    color: #64748b;
+}
+.ao-empty-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #f5f3ff;
+    color: #7c3aed;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 0.65rem;
+}
+.ao-empty-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 0.25rem;
+}
+.ao-empty-subtitle {
+    font-size: 0.825rem;
+    color: #64748b;
+    margin: 0;
+}
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="admin-overview" style="max-width: 1300px; margin: 0 auto;">
-    <div style="margin-bottom: 2rem;">
-        <h1 style="font-size: 1.75rem; font-weight: 700; color: #1e293b; margin: 0;">System Executive Overview</h1>
-        <p style="color: #64748b; font-size: 0.95rem; margin-top: 0.25rem;">Real-time service metrics, appointment volume trends, and recent system actions.</p>
-    </div>
+<div class="ao-container">
 
-    <!-- 4 KPI Cards -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
-        <div class="card" style="margin: 0;">
-            <span style="font-size: 0.85rem; text-transform: uppercase; color: #64748b; font-weight: 600;">Total Active Students</span>
-            <div style="font-size: 2rem; font-weight: 700; color: #2563eb; margin: 0.5rem 0 0.25rem 0;">{{ kpis.total_students }}</div>
-            <span style="font-size: 0.8rem; color: #16a34a;">&bull; Enrolled and registered</span>
-        </div>
-        <div class="card" style="margin: 0;">
-            <span style="font-size: 0.85rem; text-transform: uppercase; color: #64748b; font-weight: 600;">Licensed Counselors</span>
-            <div style="font-size: 2rem; font-weight: 700; color: #0d9488; margin: 0.5rem 0 0.25rem 0;">{{ kpis.total_counselors }}</div>
-            <span style="font-size: 0.8rem; color: #16a34a;">&bull; Active clinical workspace</span>
-        </div>
-        <div class="card" style="margin: 0;">
-            <span style="font-size: 0.85rem; text-transform: uppercase; color: #64748b; font-weight: 600;">Monthly Sessions</span>
-            <div style="font-size: 2rem; font-weight: 700; color: #7c3aed; margin: 0.5rem 0 0.25rem 0;">{{ kpis.monthly_appointments }}</div>
-            <span style="font-size: 0.8rem; color: #64748b;">Past 30 days</span>
-        </div>
-        <div class="card" style="margin: 0;">
-            <span style="font-size: 0.85rem; text-transform: uppercase; color: #64748b; font-weight: 600;">Completion Rate</span>
-            <div style="font-size: 2rem; font-weight: 700; color: #16a34a; margin: 0.5rem 0 0.25rem 0;">{{ kpis.completion_rate }}%</div>
-            <div style="width: 100%; background: #e2e8f0; height: 6px; border-radius: 3px; margin-top: 0.5rem; overflow: hidden;">
-                <div style="width: {{ kpis.completion_rate }}%; background: #16a34a; height: 100%;"></div>
+    <!-- 1. Top Hero Banner Card -->
+    <div class="ao-hero-card">
+        <div class="ao-hero-content">
+            <div class="ao-hero-avatar">
+                {{ profile.full_name|slice:":1"|upper|default:"A" }}
+            </div>
+
+            <div class="ao-hero-copy">
+                <div class="ao-hero-eyebrow">
+                    <i data-lucide="shield-check" style="width: 14px; height: 14px;"></i>
+                    Executive Governance &amp; Institutional Oversight
+                </div>
+                <h1 class="ao-hero-title">System Executive Overview</h1>
+                <div class="ao-hero-meta">
+                    <span><strong>Administrator:</strong> {{ profile.full_name }}</span>
+                    <span>&bull;</span>
+                    <span class="ao-status-pulse">Operational Status: All Services Healthy</span>
+                    <span>&bull;</span>
+                    <span><strong>Today:</strong> {{ "now"|date:"l, F j, Y" }}</span>
+                </div>
+            </div>
+
+            <div class="ao-hero-actions">
+                <a href="{% url 'admin_reports' %}" class="ao-btn-purple">
+                    <i data-lucide="file-bar-chart" style="width: 16px; height: 16px;"></i>
+                    Analytics &amp; Reports
+                </a>
+                <a href="{% url 'admin_users' %}" class="ao-btn-secondary">
+                    <i data-lucide="users" style="width: 16px; height: 16px;"></i>
+                    User Management
+                </a>
             </div>
         </div>
     </div>
 
-    <!-- Charts Row -->
-    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
-        <div class="card" style="margin: 0;">
-            <h2 style="font-size: 1.1rem; font-weight: 600; color: #1e293b; margin-bottom: 1rem;">Appointment Volume (Past 8 Weeks)</h2>
-            <div style="height: 260px;">
-                <canvas id="weeklyTrendChart"></canvas>
+    <!-- 2. Metric KPI Grid (4-Card Row) -->
+    <div class="ao-metrics-grid">
+        <!-- Total Active Students -->
+        <div class="ao-metric-card">
+            <div class="ao-metric-card-header">
+                <span class="ao-metric-label">Total Active Students</span>
+                <i data-lucide="users" style="width: 18px; height: 18px; color: #2563eb;"></i>
             </div>
+            <div class="ao-metric-value" style="color: #2563eb;">{{ kpis.total_students }}</div>
+            <p class="ao-metric-desc" style="color: #16a34a;">
+                <span style="font-weight: 700;">&bull;</span> Enrolled and registered
+            </p>
         </div>
-        <div class="card" style="margin: 0;">
-            <h2 style="font-size: 1.1rem; font-weight: 600; color: #1e293b; margin-bottom: 1rem;">Concern Distribution</h2>
-            <div style="height: 260px;">
-                <canvas id="concernDonutChart"></canvas>
+
+        <!-- Licensed Counselors -->
+        <div class="ao-metric-card">
+            <div class="ao-metric-card-header">
+                <span class="ao-metric-label">Licensed Counselors</span>
+                <i data-lucide="user-check" style="width: 18px; height: 18px; color: #0d9488;"></i>
+            </div>
+            <div class="ao-metric-value" style="color: #0d9488;">{{ kpis.total_counselors }}</div>
+            <p class="ao-metric-desc" style="color: #16a34a;">
+                <span style="font-weight: 700;">&bull;</span> Active clinical workspace
+            </p>
+        </div>
+
+        <!-- Monthly Sessions -->
+        <div class="ao-metric-card">
+            <div class="ao-metric-card-header">
+                <span class="ao-metric-label">Monthly Sessions</span>
+                <i data-lucide="calendar" style="width: 18px; height: 18px; color: #7c3aed;"></i>
+            </div>
+            <div class="ao-metric-value" style="color: #7c3aed;">{{ kpis.monthly_appointments }}</div>
+            <p class="ao-metric-desc">Past 30 days consultations</p>
+        </div>
+
+        <!-- Completion Rate -->
+        <div class="ao-metric-card">
+            <div class="ao-metric-card-header">
+                <span class="ao-metric-label">Completion Rate</span>
+                <i data-lucide="check-circle-2" style="width: 18px; height: 18px; color: #16a34a;"></i>
+            </div>
+            <div class="ao-metric-value" style="color: #16a34a;">{{ kpis.completion_rate }}%</div>
+            <div>
+                <div class="ao-progress-track">
+                    <div class="ao-progress-bar" style="width: {{ kpis.completion_rate }}%;"></div>
+                </div>
+                <p class="ao-metric-desc" style="margin-top: 0.4rem;">Finalized guidance sessions</p>
             </div>
         </div>
     </div>
 
-    <!-- Recent Audit Activity -->
-    <div class="card">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-            <h2 style="font-size: 1.1rem; font-weight: 600; color: #1e293b; margin: 0;">Recent System Audit Activity</h2>
-            <a href="{% url 'admin_audit' %}" class="btn btn-secondary btn-sm">View All Logs</a>
+    <!-- 3. Charts Grid (Appointment Volume Trends & Concern Distribution) -->
+    <div class="ao-charts-grid">
+        <!-- 8-Week Trend Chart -->
+        <div class="ao-card">
+            <div class="ao-card-header">
+                <div class="ao-card-title-group">
+                    <div class="ao-card-icon-box">
+                        <i data-lucide="trending-up" style="width: 16px; height: 16px;"></i>
+                    </div>
+                    <div>
+                        <h2 class="ao-card-title">Appointment Volume (Past 8 Weeks)</h2>
+                        <p class="ao-card-subtitle">Weekly trend of scheduled student counseling sessions</p>
+                    </div>
+                </div>
+                <span class="ao-card-badge">{{ kpis.total_appointments }} Consultations</span>
+            </div>
+            <div class="ao-card-body">
+                <div class="ao-chart-wrapper">
+                    <canvas id="weeklyTrendChart"></canvas>
+                </div>
+            </div>
         </div>
-        <div class="table-responsive">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Timestamp</th>
-                        <th>User</th>
-                        <th>Action</th>
-                        <th>Resource</th>
-                        <th>Record #</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for row in recent_activity %}
-                    <tr>
-                        <td>{{ row.created_at|date:"M d, Y @ g:i:s A" }}</td>
-                        <td>{{ row.user.full_name|default:"System" }}</td>
-                        <td>
-                            <span class="badge badge-counselor">{{ row.action }}</span>
-                        </td>
-                        <td>{{ row.table_name }}</td>
-                        <td>{{ row.record_id|default:"—" }}</td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="5" class="empty-state">No audit activities recorded.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+
+        <!-- Concern Distribution Doughnut Chart -->
+        <div class="ao-card">
+            <div class="ao-card-header">
+                <div class="ao-card-title-group">
+                    <div class="ao-card-icon-box">
+                        <i data-lucide="pie-chart" style="width: 16px; height: 16px;"></i>
+                    </div>
+                    <div>
+                        <h2 class="ao-card-title">Concern Distribution</h2>
+                        <p class="ao-card-subtitle">Categorical intake triage breakdown</p>
+                    </div>
+                </div>
+                <span class="ao-card-badge">Clinical Categories</span>
+            </div>
+            <div class="ao-card-body">
+                <div class="ao-chart-wrapper">
+                    <canvas id="concernDonutChart"></canvas>
+                </div>
+            </div>
         </div>
     </div>
+
+    <!-- 4. Main Bottom Split Section (Recent Audit Activity + Administrative Workflows) -->
+    <div class="ao-bottom-layout">
+
+        <!-- Left: Recent System Audit Activity -->
+        <div class="ao-card">
+            <div class="ao-card-header">
+                <div class="ao-card-title-group">
+                    <div style="width: 10px; height: 10px; border-radius: 50%; background: #7c3aed; flex-shrink: 0;"></div>
+                    <div>
+                        <h2 class="ao-card-title">Recent System Audit Activity</h2>
+                        <p class="ao-card-subtitle">Real-time immutable administrative and user event stream</p>
+                    </div>
+                </div>
+                <a href="{% url 'admin_audit' %}" class="btn btn-secondary btn-sm" style="display: inline-flex; align-items: center; gap: 0.35rem;">
+                    <i data-lucide="list" style="width: 14px; height: 14px;"></i>
+                    View All Logs
+                </a>
+            </div>
+
+            <div class="ao-card-body" style="padding: 0;">
+                {% if recent_activity %}
+                <div class="ao-table-container">
+                    <table class="ao-table">
+                        <thead>
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>User</th>
+                                <th>Action</th>
+                                <th>Resource</th>
+                                <th>Record #</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in recent_activity %}
+                            <tr>
+                                <td>
+                                    <div style="font-weight: 600; color: #0f172a;">{{ row.created_at|date:"M d, Y" }}</div>
+                                    <div style="font-size: 0.75rem; color: #64748b;">{{ row.created_at|date:"g:i:s A" }}</div>
+                                </td>
+                                <td>
+                                    <div style="font-weight: 600; color: #0f172a;">{{ row.user.full_name|default:"System" }}</div>
+                                    {% if row.user.email %}
+                                    <div style="font-size: 0.725rem; color: #64748b;">{{ row.user.email }}</div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if 'create' in row.action|lower or 'insert' in row.action|lower or 'book' in row.action|lower %}
+                                    <span class="ao-badge-action create">{{ row.action }}</span>
+                                    {% elif 'delete' in row.action|lower or 'cancel' in row.action|lower %}
+                                    <span class="ao-badge-action delete">{{ row.action }}</span>
+                                    {% elif 'login' in row.action|lower or 'auth' in row.action|lower %}
+                                    <span class="ao-badge-action auth">{{ row.action }}</span>
+                                    {% else %}
+                                    <span class="ao-badge-action update">{{ row.action }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span style="font-family: monospace; font-size: 0.8125rem; background: #f1f5f9; padding: 0.15rem 0.45rem; border-radius: 4px; color: #334155;">
+                                        {{ row.table_name }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span style="font-family: monospace; font-size: 0.8125rem; color: #64748b;">
+                                        {{ row.record_id|default:"—" }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="ao-empty-box">
+                    <div class="ao-empty-icon">
+                        <i data-lucide="shield-check" style="width: 22px; height: 22px;"></i>
+                    </div>
+                    <h4 class="ao-empty-title">No Audit Activities Recorded</h4>
+                    <p class="ao-empty-subtitle">System actions and user transactions will appear here in real-time.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Right: Administrative Workflows & Navigation -->
+        <div>
+            <div class="ao-card">
+                <div class="ao-card-header">
+                    <div class="ao-card-title-group">
+                        <div class="ao-card-icon-box">
+                            <i data-lucide="compass" style="width: 16px; height: 16px;"></i>
+                        </div>
+                        <div>
+                            <h2 class="ao-card-title">Administrative Workflows</h2>
+                            <p class="ao-card-subtitle">Fast portal management shortcuts</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ao-card-body">
+                    <div class="ao-tiles-stack">
+                        <!-- Analytics & Reports -->
+                        <a href="{% url 'admin_reports' %}" class="ao-tile-item">
+                            <div class="ao-tile-icon-box">
+                                <i data-lucide="file-bar-chart" style="width: 18px; height: 18px;"></i>
+                            </div>
+                            <div>
+                                <h4 class="ao-tile-title">Analytics &amp; Reports</h4>
+                                <p class="ao-tile-desc">Filter &amp; export PDF / CSV</p>
+                            </div>
+                            <i data-lucide="chevron-right" class="ao-tile-chevron" style="width: 16px; height: 16px;"></i>
+                        </a>
+
+                        <!-- User Management -->
+                        <a href="{% url 'admin_users' %}" class="ao-tile-item">
+                            <div class="ao-tile-icon-box">
+                                <i data-lucide="users" style="width: 18px; height: 18px;"></i>
+                            </div>
+                            <div>
+                                <h4 class="ao-tile-title">User Management</h4>
+                                <p class="ao-tile-desc">Accounts, roles &amp; active status</p>
+                            </div>
+                            <i data-lucide="chevron-right" class="ao-tile-chevron" style="width: 16px; height: 16px;"></i>
+                        </a>
+
+                        <!-- Audit Security Logs -->
+                        <a href="{% url 'admin_audit' %}" class="ao-tile-item">
+                            <div class="ao-tile-icon-box">
+                                <i data-lucide="shield-alert" style="width: 18px; height: 18px;"></i>
+                            </div>
+                            <div>
+                                <h4 class="ao-tile-title">Audit Security Logs</h4>
+                                <p class="ao-tile-desc">Immutable compliance record</p>
+                            </div>
+                            <i data-lucide="chevron-right" class="ao-tile-chevron" style="width: 16px; height: 16px;"></i>
+                        </a>
+
+                        <!-- Appointments Registry -->
+                        <a href="{% url 'admin_appointments' %}" class="ao-tile-item">
+                            <div class="ao-tile-icon-box">
+                                <i data-lucide="calendar-search" style="width: 18px; height: 18px;"></i>
+                            </div>
+                            <div>
+                                <h4 class="ao-tile-title">Appointments Registry</h4>
+                                <p class="ao-tile-desc">Master consultation records</p>
+                            </div>
+                            <i data-lucide="chevron-right" class="ao-tile-chevron" style="width: 16px; height: 16px;"></i>
+                        </a>
+
+                        <!-- Profile Settings -->
+                        <a href="{% url 'admin_profile' %}" class="ao-tile-item">
+                            <div class="ao-tile-icon-box">
+                                <i data-lucide="settings" style="width: 18px; height: 18px;"></i>
+                            </div>
+                            <div>
+                                <h4 class="ao-tile-title">Administrator Profile</h4>
+                                <p class="ao-tile-desc">Credentials &amp; security</p>
+                            </div>
+                            <i data-lucide="chevron-right" class="ao-tile-chevron" style="width: 16px; height: 16px;"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
 </div>
+
+<!-- Safe Chart Data JSON Element -->
+{{ weekly_labels|json_script:"cg-weekly-labels" }}
+{{ weekly_data|json_script:"cg-weekly-data" }}
+{{ concern_labels|json_script:"cg-concern-labels" }}
+{{ concern_data|json_script:"cg-concern-data" }}
+
 {% endblock %}
 
 {% block extra_js %}
 <!-- Chart.js CDN -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<!-- Admin Charts Script -->
+<script src="{% static 'js/admin-charts.js' %}"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const weeklyLabels = {{ weekly_labels|safe }};
-    const weeklyData = {{ weekly_data|safe }};
-    const concernLabels = {{ concern_labels|safe }};
-    const concernData = {{ concern_data|safe }};
+document.addEventListener("DOMContentLoaded", function () {
+    // 1. Initialize Lucide Icons
+    if (window.lucide) {
+        lucide.createIcons();
+    }
 
-    // 8-Week Bar Chart
-    const trendCtx = document.getElementById('weeklyTrendChart').getContext('2d');
-    new Chart(trendCtx, {
-        type: 'bar',
-        data: {
-            labels: weeklyLabels,
-            datasets: [{
-                label: 'Sessions Booked',
-                data: weeklyData,
-                backgroundColor: '#2563eb',
-                borderRadius: 6
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: { beginAtZero: true, ticks: { precision: 0 } }
+    // 2. Parse Chart Data safely from JSON elements
+    try {
+        const weeklyLabelsEl = document.getElementById("cg-weekly-labels");
+        const weeklyDataEl = document.getElementById("cg-weekly-data");
+        const concernLabelsEl = document.getElementById("cg-concern-labels");
+        const concernDataEl = document.getElementById("cg-concern-data");
+
+        function parseJsonSafely(el) {
+            if (!el) return [];
+            try {
+                let parsed = JSON.parse(el.textContent);
+                if (typeof parsed === 'string') {
+                    parsed = JSON.parse(parsed);
+                }
+                return Array.isArray(parsed) ? parsed : [];
+            } catch (e) {
+                console.warn("Could not parse element:", el, e);
+                return [];
             }
         }
-    });
 
-    // Concern Donut Chart
-    const donutCtx = document.getElementById('concernDonutChart').getContext('2d');
-    new Chart(donutCtx, {
-        type: 'doughnut',
-        data: {
-            labels: concernLabels,
-            datasets: [{
-                data: concernData,
-                backgroundColor: ['#2563eb', '#7c3aed', '#ea580c', '#db2777', '#64748b']
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { position: 'bottom' }
-            }
+        let weeklyLabels = parseJsonSafely(weeklyLabelsEl);
+        let weeklyData = parseJsonSafely(weeklyDataEl);
+        let concernLabels = parseJsonSafely(concernLabelsEl);
+        let concernData = parseJsonSafely(concernDataEl);
+
+        if (typeof initAdminOverviewCharts === "function") {
+            initAdminOverviewCharts(weeklyLabels, weeklyData, concernLabels, concernData);
         }
-    });
+    } catch (err) {
+        console.error("Failed to parse admin chart data:", err);
+    }
 });
 </script>
 {% endblock %}
