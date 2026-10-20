@@ -1,708 +1,522 @@
-{% extends "common/base.html" %}
 {% load static %}
+<!DOCTYPE html>
+<html class="scroll-smooth" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>ConnectGuidance | Father Saturnino Urios University</title>
+  <meta name="description" content="ConnectGuidance: The official Guidance & Counseling platform of Father Saturnino Urios University (FSUU). Book appointments, connect with certified counselors, and access 24/7 wellness support."/>
 
-{% block title %}ConnectGuidance — Father Saturnino Urios University Guidance & Counseling{% endblock %}
-{% block meta_description %}ConnectGuidance: The official Guidance & Counseling platform of Father Saturnino Urios University (FSUU). Book appointments, connect with certified counselors, and access 24/7 AI wellness support.{% endblock %}
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}"/>
+  <link rel="icon" type="image/png" sizes="32x32" href="{% static 'images/favicon-32x32.png' %}"/>
+  <link rel="icon" type="image/png" sizes="16x16" href="{% static 'images/favicon-16x16.png' %}"/>
+  <link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/apple-touch-icon.png' %}"/>
 
-{% block extra_css %}
-<style>
-/* ── Reset public layout for full-bleed landing ── */
-.public-main { padding: 0 !important; overflow-x: hidden; }
+  <!-- Google Fonts: Inter & Newsreader for editorial aesthetic -->
+  <link href="https://fonts.googleapis.com" rel="preconnect"/>
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=Newsreader:ital,opsz,wght@1,6..72,400;1,6..72,500&amp;display=swap" rel="stylesheet"/>
 
-/* ── Hero (Clean Solid Background) ── */
-.lp-hero {
-  position: relative;
-  min-height: 88vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #0f172a;
-  overflow: hidden;
-  padding: 6rem 2rem 5rem;
-}
+  <!-- Tailwind CSS v3 with forms & container queries -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              canvas: '#FBFBFA',
+              stone: '#F4F3F0',
+              border: '#E7E6E1',
+              darkBorder: '#1E2B26',
+              primary: '#1D4ED8',
+              primaryHover: '#1E40AF',
+              darkBg: '#0F1714',
+              darkCard: '#131E1A',
+              muted: '#6B7280',
+              charcoal: '#111827',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+            serif: ['Newsreader', 'Georgia', 'serif'],
+          }
+        }
+      }
+    }
+  </script>
 
-.lp-hero-inner {
-  position: relative;
-  z-index: 2;
-  text-align: center;
-  max-width: 860px;
-  margin: 0 auto;
-}
+  <!-- BEGIN: Custom Styles -->
+  <style data-purpose="typography">
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #FBFBFA;
+      color: #111827;
+      -webkit-font-smoothing: antialiased;
+    }
+    .font-editorial-italic {
+      font-family: 'Newsreader', serif;
+      font-style: italic;
+      font-weight: 400;
+    }
+  </style>
+  <style data-purpose="decorations">
+    /* Subtle hairline border standard across layout */
+    .border-hairline {
+      border-color: #E7E6E1;
+    }
+    .border-dark-hairline {
+      border-color: #1E2A25;
+    }
+    /* Smooth transitions for interactive elements */
+    .transition-subtle {
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+  </style>
+  <!-- END: Custom Styles -->
+</head>
+<body class="bg-brand-canvas text-brand-charcoal min-h-screen selection:bg-brand-primary selection:text-white">
 
-/* Minimal Badge */
-.lp-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.375rem 1rem;
-  background: #1e293b;
-  border: 1px solid #334155;
-  border-radius: 9999px;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: #94a3b8;
-  letter-spacing: 0.02em;
-  margin-bottom: 2rem;
-}
+<!-- Feedback Messages -->
+{% if messages %}
+<div class="fixed top-24 right-6 z-50 flex flex-col gap-2 max-w-md w-full pointer-events-none">
+  {% for message in messages %}
+  <div class="pointer-events-auto flex items-center justify-between p-4 rounded-none border text-sm shadow-md transition-all {% if message.tags == 'error' %}bg-rose-50 border-rose-200 text-rose-800{% elif message.tags == 'success' %}bg-emerald-50 border-emerald-200 text-emerald-800{% else %}bg-blue-50 border-blue-200 text-blue-800{% endif %}" role="alert">
+    <span>{{ message }}</span>
+    <button type="button" onclick="this.parentElement.remove()" class="ml-4 text-gray-400 hover:text-gray-700 leading-none text-base" aria-label="Close">&times;</button>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
 
-.lp-badge-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #2563eb;
-}
+<!-- BEGIN: Navigation -->
+<header class="sticky top-0 z-50 bg-brand-canvas/90 backdrop-blur-md border-b border-hairline" data-purpose="main-navigation">
+  <div class="max-w-7xl mx-auto px-6 lg:px-12 h-20 flex items-center justify-between">
+    <!-- Brand Logo -->
+    <a class="flex items-center gap-3 group" data-purpose="brand-logo" href="{% url 'landing' %}">
+      <img src="{% static 'images/logo.png' %}" alt="ConnectGuidance Logo" class="w-8 h-8 object-contain rounded transition-transform group-hover:scale-105"/>
+      <span class="font-medium text-lg tracking-tight text-gray-900 group-hover:text-brand-primary transition-colors">
+        ConnectGuidance
+      </span>
+    </a>
 
-/* Titles & Text */
-.lp-hero-title {
-  font-size: clamp(2.5rem, 5.5vw, 4.5rem);
-  font-weight: 800;
-  line-height: 1.15;
-  color: #ffffff;
-  letter-spacing: -0.03em;
-  margin: 0 0 1.5rem;
-}
+    <!-- Center Links -->
+    <nav class="hidden md:flex items-center space-x-10 text-[15px] font-normal text-gray-600">
+      <a class="hover:text-gray-900 transition-colors" href="#roles">For every role</a>
+      <a class="hover:text-gray-900 transition-colors" href="#capabilities">Capabilities</a>
+    </nav>
 
-.lp-hero-title .lp-accent-text {
-  color: #3b82f6;
-}
-
-.lp-hero-subtitle {
-  font-size: clamp(1rem, 2vw, 1.25rem);
-  color: #94a3b8;
-  line-height: 1.75;
-  max-width: 640px;
-  margin: 0 auto 2.5rem;
-  font-weight: 400;
-}
-
-/* CTA Buttons (Solid Modern Colors) */
-.lp-hero-ctas {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  flex-wrap: wrap;
-  margin-bottom: 3.5rem;
-}
-
-.lp-btn-primary {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.8125rem 1.875rem;
-  background: #2563eb;
-  color: #ffffff;
-  font-weight: 700;
-  font-size: 0.9375rem;
-  border-radius: 8px;
-  text-decoration: none;
-  transition: background 0.15s ease, transform 0.1s ease;
-  border: none;
-}
-.lp-btn-primary:hover {
-  background: #1d4ed8;
-  color: #ffffff;
-  transform: translateY(-1px);
-}
-
-.lp-btn-ghost {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.8125rem 1.875rem;
-  background: #1e293b;
-  color: #e2e8f0;
-  font-weight: 600;
-  font-size: 0.9375rem;
-  border-radius: 8px;
-  text-decoration: none;
-  border: 1px solid #334155;
-  transition: all 0.15s ease;
-}
-.lp-btn-ghost:hover {
-  background: #334155;
-  border-color: #475569;
-  color: #ffffff;
-  transform: translateY(-1px);
-}
-
-/* Stats Row */
-.lp-stats {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 3rem;
-  flex-wrap: wrap;
-  border-top: 1px solid #1e293b;
-  padding-top: 2.5rem;
-}
-
-.lp-stat-item {
-  text-align: center;
-}
-
-.lp-stat-num {
-  font-size: 1.875rem;
-  font-weight: 800;
-  color: #ffffff;
-  letter-spacing: -0.02em;
-  line-height: 1;
-}
-
-.lp-stat-label {
-  font-size: 0.8125rem;
-  color: #64748b;
-  margin-top: 0.375rem;
-  font-weight: 500;
-}
-
-/* ── Roles Section ────────────────────────────────── */
-.lp-section {
-  padding: 5rem 2rem;
-  background: #f8fafc;
-}
-
-.lp-section-dark {
-  background: #0f172a;
-  padding: 5rem 2rem;
-  border-top: 1px solid #1e293b;
-}
-
-.lp-container {
-  max-width: 1180px;
-  margin: 0 auto;
-}
-
-.lp-section-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: #2563eb;
-  margin-bottom: 0.75rem;
-}
-
-.lp-section-title {
-  font-size: clamp(1.75rem, 3.5vw, 2.5rem);
-  font-weight: 800;
-  color: #0f172a;
-  letter-spacing: -0.025em;
-  line-height: 1.2;
-  margin: 0 0 1rem;
-}
-
-.lp-section-title.light { color: #ffffff; }
-
-.lp-section-desc {
-  font-size: 1.0625rem;
-  color: #64748b;
-  line-height: 1.7;
-  max-width: 540px;
-}
-
-.lp-section-desc.light { color: #94a3b8; }
-
-/* Audience role cards */
-.lp-roles-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 1.5rem;
-  margin-top: 3rem;
-}
-
-.lp-role-card {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 2rem;
-  transition: all 0.2s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-.lp-role-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 3px;
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-
-.lp-role-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 24px rgba(0,0,0,0.06);
-}
-
-.lp-role-card:hover::before { opacity: 1; }
-
-.lp-role-card.student::before      { background: #2563eb; }
-.lp-role-card.counselor::before    { background: #0d9488; }
-.lp-role-card.receptionist::before { background: #d97706; }
-.lp-role-card.admin::before        { background: #7c3aed; }
-
-.lp-role-icon {
-  width: 50px;
-  height: 50px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 1.25rem;
-}
-
-.lp-role-card.student .lp-role-icon      { background: #eff6ff; color: #2563eb; }
-.lp-role-card.counselor .lp-role-icon    { background: #f0fdf4; color: #0d9488; }
-.lp-role-card.receptionist .lp-role-icon { background: #fefce8; color: #d97706; }
-.lp-role-card.admin .lp-role-icon        { background: #faf5ff; color: #7c3aed; }
-
-.lp-role-tag {
-  display: inline-block;
-  font-size: 0.6875rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  padding: 0.2rem 0.6rem;
-  border-radius: 9999px;
-  margin-bottom: 0.875rem;
-}
-.lp-role-card.student .lp-role-tag      { background: #eff6ff; color: #1d4ed8; }
-.lp-role-card.counselor .lp-role-tag    { background: #f0fdf4; color: #047857; }
-.lp-role-card.receptionist .lp-role-tag { background: #fefce8; color: #a16207; }
-.lp-role-card.admin .lp-role-tag        { background: #faf5ff; color: #6b21a8; }
-
-.lp-role-title {
-  font-size: 1.125rem;
-  font-weight: 700;
-  color: #0f172a;
-  margin: 0 0 0.625rem;
-}
-
-.lp-role-desc {
-  font-size: 0.875rem;
-  color: #64748b;
-  line-height: 1.6;
-  margin: 0 0 1.25rem;
-}
-
-.lp-role-features {
-  list-style: none;
-  padding: 0; margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.lp-role-features li {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.875rem;
-  color: #374151;
-  font-weight: 500;
-}
-
-.lp-feat-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-.lp-role-card.student .lp-feat-dot      { background: #2563eb; }
-.lp-role-card.counselor .lp-feat-dot    { background: #0d9488; }
-.lp-role-card.receptionist .lp-feat-dot { background: #d97706; }
-.lp-role-card.admin .lp-feat-dot        { background: #7c3aed; }
-
-/* ── Feature Highlights (Clean Grid, Solid Colors) ── */
-.lp-features-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1.25rem;
-}
-
-@media (max-width: 640px) {
-  .lp-features-grid { grid-template-columns: 1fr; }
-}
-
-.lp-feature-card {
-  background: #1e293b;
-  border: 1px solid #334155;
-  border-radius: 12px;
-  padding: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.875rem;
-}
-
-.lp-feature-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 8px;
-  background: #0f172a;
-  color: #38bdf8;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  border: 1px solid #334155;
-}
-
-.lp-feature-text h4 {
-  font-size: 0.9375rem;
-  font-weight: 700;
-  color: #ffffff;
-  margin: 0 0 0.35rem;
-}
-
-.lp-feature-text p {
-  font-size: 0.8125rem;
-  color: #94a3b8;
-  line-height: 1.55;
-  margin: 0;
-}
-
-/* ── CTA Section (Solid Background) ───────────────── */
-.lp-cta-section {
-  padding: 5rem 2rem;
-  background: #0f172a;
-  border-top: 1px solid #1e293b;
-  text-align: center;
-  position: relative;
-}
-
-.lp-cta-section .lp-container {
-  position: relative;
-  z-index: 1;
-}
-
-.lp-cta-title {
-  font-size: clamp(1.875rem, 3.5vw, 2.75rem);
-  font-weight: 800;
-  color: #ffffff;
-  letter-spacing: -0.025em;
-  margin: 0 0 1rem;
-}
-
-.lp-cta-desc {
-  font-size: 1rem;
-  color: #94a3b8;
-  max-width: 480px;
-  margin: 0 auto 2.25rem;
-  line-height: 1.65;
-}
-
-/* Trust Bar */
-.lp-trust {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 2rem;
-  flex-wrap: wrap;
-  margin-top: 3rem;
-  padding-top: 2rem;
-  border-top: 1px solid #1e293b;
-}
-
-.lp-trust-item {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.8125rem;
-  color: #94a3b8;
-  font-weight: 500;
-}
-
-.lp-trust-item i { color: #38bdf8; }
-
-/* ── Footer ───────────────────────────────────────── */
-.lp-footer {
-  background: #0b0f19;
-  padding: 1.75rem 2rem;
-  text-align: center;
-  font-size: 0.8125rem;
-  color: #64748b;
-  border-top: 1px solid #1e293b;
-}
-
-.lp-footer a { color: #3b82f6; text-decoration: none; }
-.lp-footer a:hover { text-decoration: underline; }
-</style>
-{% endblock %}
-
-{% block content %}
-<!-- ══════════════════════════════════════════════════════
-     HERO SECTION (Clean, Solid, Minimal)
-══════════════════════════════════════════════════════ -->
-<section class="lp-hero" id="hero-section">
-  <div class="lp-hero-inner">
-    <!-- Eyebrow badge -->
-    <div class="lp-badge">
-      <span class="lp-badge-dot"></span>
-      Father Saturnino Urios University &bull; Guidance &amp; Counseling
-    </div>
-
-    <!-- Headline -->
-    <h1 class="lp-hero-title">
-      Your Mental Health,<br>
-      <span class="lp-accent-text">Supported Every Step</span>
-    </h1>
-
-    <!-- Subtitle -->
-    <p class="lp-hero-subtitle">
-      ConnectGuidance brings FSUU students, counselors, and administrators together in one streamlined platform — making access to mental health and academic guidance effortless.
-    </p>
-
-    <!-- CTA Buttons -->
-    <div class="lp-hero-ctas">
-      <a href="{% url 'login' %}" class="lp-btn-primary" id="hero-signin-btn">
-        <i data-lucide="log-in" style="width:18px;height:18px;"></i>
-        Sign In to Your Portal
+    <!-- Right Action Items -->
+    <div class="flex items-center space-x-7">
+      <a class="text-[15px] font-medium text-gray-700 hover:text-gray-950 transition-colors" href="{% url 'login' %}" id="nav-signin-link">
+        Sign in
       </a>
-      <a href="{% url 'register' %}" class="lp-btn-ghost" id="hero-register-btn">
-        <i data-lucide="user-plus" style="width:18px;height:18px;"></i>
-        Register as Student
+      <a class="inline-flex items-center justify-center px-5 py-2.5 rounded-none bg-brand-primary hover:bg-brand-primaryHover text-white text-[15px] font-medium transition-subtle shadow-sm" href="{% url 'register' %}" id="nav-getstarted-btn">
+        Get started
       </a>
     </div>
-
-    <!-- Stats -->
-    <div class="lp-stats">
-      <div class="lp-stat-item">
-        <div class="lp-stat-num">4</div>
-        <div class="lp-stat-label">Role-Based Portals</div>
-      </div>
-      <div class="lp-stat-item">
-        <div class="lp-stat-num">24/7</div>
-        <div class="lp-stat-label">AI Wellness Support</div>
-      </div>
-      <div class="lp-stat-item">
-        <div class="lp-stat-num">AES</div>
-        <div class="lp-stat-label">Encrypted Case Notes</div>
-      </div>
-      <div class="lp-stat-item">
-        <div class="lp-stat-num">100%</div>
-        <div class="lp-stat-label">Confidential Sessions</div>
-      </div>
-    </div>
   </div>
-</section>
+</header>
+<!-- END: Navigation -->
 
-<!-- ══════════════════════════════════════════════════════
-     WHO IT'S FOR — ROLE CARDS
-══════════════════════════════════════════════════════ -->
-<section class="lp-section" id="roles-section">
-  <div class="lp-container">
-    <div style="text-align:center; margin-bottom:0.5rem;">
-      <div class="lp-section-label">
-        <i data-lucide="users" style="width:14px;height:14px;"></i>
-        Built for Every Role
-      </div>
-      <h2 class="lp-section-title" style="margin:0 auto 1rem;">One Platform, Four Portals</h2>
-      <p class="lp-section-desc" style="margin:0 auto;">
-        Whether you're a student seeking support, a counselor managing sessions, or an admin overseeing the system — ConnectGuidance has your dedicated space.
-      </p>
-    </div>
-
-    <div class="lp-roles-grid">
-      <!-- Student -->
-      <div class="lp-role-card student" id="card-student">
-        <div class="lp-role-icon">
-          <i data-lucide="graduation-cap" style="width:26px;height:26px;"></i>
-        </div>
-        <span class="lp-role-tag">Student</span>
-        <h3 class="lp-role-title">Your Wellness Journey</h3>
-        <p class="lp-role-desc">Book confidential counseling sessions, track appointments, and access 24/7 AI-powered mental health support.</p>
-        <ul class="lp-role-features">
-          <li><span class="lp-feat-dot"></span>Book &amp; manage appointments</li>
-          <li><span class="lp-feat-dot"></span>AI wellness chatbot</li>
-          <li><span class="lp-feat-dot"></span>Daily mood check-ins</li>
-          <li><span class="lp-feat-dot"></span>Front desk walk-in intake</li>
-        </ul>
-      </div>
-
-      <!-- Counselor -->
-      <div class="lp-role-card counselor" id="card-counselor">
-        <div class="lp-role-icon">
-          <i data-lucide="heart-handshake" style="width:26px;height:26px;"></i>
-        </div>
-        <span class="lp-role-tag">Counselor</span>
-        <h3 class="lp-role-title">Clinical Workspace</h3>
-        <p class="lp-role-desc">Manage appointment schedules, write AES-encrypted clinical case notes, and review student wellness metrics.</p>
-        <ul class="lp-role-features">
-          <li><span class="lp-feat-dot"></span>Interactive calendar &amp; slots</li>
-          <li><span class="lp-feat-dot"></span>Encrypted clinical case notes</li>
-          <li><span class="lp-feat-dot"></span>Student mood trends</li>
-          <li><span class="lp-feat-dot"></span>Session status workflow</li>
-        </ul>
-      </div>
-
-      <!-- Receptionist -->
-      <div class="lp-role-card receptionist" id="card-receptionist">
-        <div class="lp-role-icon">
-          <i data-lucide="clipboard-list" style="width:26px;height:26px;"></i>
-        </div>
-        <span class="lp-role-tag">Receptionist</span>
-        <h3 class="lp-role-title">Front Desk Operations</h3>
-        <p class="lp-role-desc">Handle in-person walk-ins, schedule appointments directly, and coordinate counselor availability in real time.</p>
-        <ul class="lp-role-features">
-          <li><span class="lp-feat-dot"></span>Rapid walk-in intake</li>
-          <li><span class="lp-feat-dot"></span>Live appointment queue</li>
-          <li><span class="lp-feat-dot"></span>Counselor availability lookup</li>
-          <li><span class="lp-feat-dot"></span>Front desk information hub</li>
-        </ul>
-      </div>
-
-      <!-- Admin -->
-      <div class="lp-role-card admin" id="card-admin">
-        <div class="lp-role-icon">
-          <i data-lucide="shield" style="width:26px;height:26px;"></i>
-        </div>
-        <span class="lp-role-tag">Administrator</span>
-        <h3 class="lp-role-title">Institutional Oversight</h3>
-        <p class="lp-role-desc">Oversee user accounts, review immutable security audit logs, monitor appointments, and generate institutional reports.</p>
-        <ul class="lp-role-features">
-          <li><span class="lp-feat-dot"></span>User role &amp; access control</li>
-          <li><span class="lp-feat-dot"></span>Immutable audit logging</li>
-          <li><span class="lp-feat-dot"></span>System-wide appointments</li>
-          <li><span class="lp-feat-dot"></span>Analytics &amp; CSV reporting</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ══════════════════════════════════════════════════════
-     CAPABILITIES SECTION (Solid Dark Theme)
-══════════════════════════════════════════════════════ -->
-<section class="lp-section-dark" id="features-section">
-  <div class="lp-container">
-    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:3.5rem; align-items:center;">
-      <div>
-        <div class="lp-section-label" style="color:#38bdf8;">
-          <i data-lucide="zap" style="width:14px;height:14px;"></i>
-          Platform Capabilities
-        </div>
-        <h2 class="lp-section-title light">Everything you need, nothing you don't.</h2>
-        <p class="lp-section-desc light">
-          ConnectGuidance is purpose-built for the Father Saturnino Urios University guidance center — balancing powerful features with an interface that's clean and accessible for all students and personnel.
+<main>
+  <!-- BEGIN: Hero Section -->
+  <section class="max-w-7xl mx-auto px-6 lg:px-12 pt-20 pb-20 lg:pt-28 lg:pb-28" data-purpose="hero-section">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
+      <!-- Left Hero Content -->
+      <div class="lg:col-span-7">
+        <p class="text-xs uppercase tracking-[0.2em] font-semibold text-blue-600 mb-8" data-purpose="hero-eyebrow">
+          FSUU GUIDANCE &amp; COUNSELING
         </p>
-        <div class="lp-trust" style="border-top:none; padding-top:1.5rem; justify-content:flex-start; gap:1.5rem;">
-          <div class="lp-trust-item">
-            <i data-lucide="check-circle-2" style="width:16px;height:16px;"></i>
-            Secure &amp; Encrypted
-          </div>
-          <div class="lp-trust-item">
-            <i data-lucide="check-circle-2" style="width:16px;height:16px;"></i>
-            WCAG Accessible
-          </div>
-          <div class="lp-trust-item">
-            <i data-lucide="check-circle-2" style="width:16px;height:16px;"></i>
-            Role Isolated
-          </div>
+        <h1 class="text-5xl sm:text-6xl lg:text-7xl tracking-[-0.03em] font-normal text-gray-950 leading-[1.08] mb-10">
+          Support should feel <span class="font-editorial-italic text-blue-600 font-normal">simple.</span>
+        </h1>
+        <p class="text-lg lg:text-xl text-gray-600 leading-relaxed max-w-xl mb-12 font-normal">
+          One private, well-organized place for students to ask for help—and for the people supporting them to respond.
+        </p>
+        <div class="flex flex-wrap items-center gap-6 pt-2">
+          <a class="inline-flex items-center gap-3 px-6 py-3.5 bg-brand-primary hover:bg-brand-primaryHover text-white text-[15px] font-medium transition-subtle" href="{% url 'login' %}" id="hero-signin-btn">
+            <span>Sign in to your portal</span>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+              <path d="M14 5l7 7m0 0l-7 7m7-7H3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+            </svg>
+          </a>
+          <a class="text-[15px] text-gray-900 font-normal underline underline-offset-8 decoration-gray-300 hover:decoration-gray-900 transition-all" href="{% url 'register' %}" id="hero-register-btn">
+            Create a student account
+          </a>
         </div>
       </div>
 
-      <!-- Feature grid with solid cards -->
-      <div class="lp-features-grid">
-        <div class="lp-feature-card">
-          <div class="lp-feature-icon">
-            <i data-lucide="brain-circuit" style="width:20px;height:20px;"></i>
+      <!-- Right Hero Information Card -->
+      <div class="lg:col-span-5 lg:pl-10 lg:pt-8" data-purpose="hero-aside">
+        <div class="border-t border-hairline pt-8">
+          <div class="flex items-center gap-2.5 mb-8">
+            <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span class="text-sm font-normal text-gray-600">Guidance center online</span>
           </div>
-          <div class="lp-feature-text">
-            <h4>AI Wellness Chat</h4>
-            <p>24/7 AI assistant for mental health support and guidance between sessions.</p>
-          </div>
-        </div>
-        <div class="lp-feature-card">
-          <div class="lp-feature-icon" style="color:#38bdf8;">
-            <i data-lucide="calendar-clock" style="width:20px;height:20px;"></i>
-          </div>
-          <div class="lp-feature-text">
-            <h4>Smart Scheduling</h4>
-            <p>Intelligent slot matching to reduce appointment conflicts and wait times.</p>
-          </div>
-        </div>
-        <div class="lp-feature-card">
-          <div class="lp-feature-icon" style="color:#a78bfa;">
-            <i data-lucide="lock-keyhole" style="width:20px;height:20px;"></i>
-          </div>
-          <div class="lp-feature-text">
-            <h4>Encrypted Notes</h4>
-            <p>Clinical case notes protected with AES encryption for full confidentiality.</p>
-          </div>
-        </div>
-        <div class="lp-feature-card">
-          <div class="lp-feature-icon" style="color:#34d399;">
-            <i data-lucide="bar-chart-3" style="width:20px;height:20px;"></i>
-          </div>
-          <div class="lp-feature-text">
-            <h4>Live Analytics</h4>
-            <p>Real-time reports and exportable data for institutional decision-making.</p>
+          <h2 class="text-2xl sm:text-3xl font-normal tracking-tight text-gray-950 mb-10 leading-snug">
+            Confidential care,<br/>clearer coordination.
+          </h2>
+          <div class="text-sm text-gray-500 space-y-1">
+            <p>Father Saturnino Urios University</p>
+            <p>Butuan City</p>
           </div>
         </div>
       </div>
+    </div>
+  </section>
+  <!-- END: Hero Section -->
+
+  <!-- BEGIN: Metrics Strip -->
+  <section class="border-y border-hairline bg-brand-canvas" data-purpose="metrics-strip">
+    <div class="max-w-7xl mx-auto px-6 lg:px-12">
+      <div class="grid grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-hairline">
+        <div class="py-8 md:py-10 pr-6">
+          <div class="text-3xl sm:text-4xl font-normal tracking-tight text-gray-950 mb-1">4</div>
+          <div class="text-xs sm:text-sm text-gray-500">role–based portals</div>
+        </div>
+        <div class="py-8 md:py-10 px-0 md:px-8">
+          <div class="text-3xl sm:text-4xl font-normal tracking-tight text-gray-950 mb-1">24/7</div>
+          <div class="text-xs sm:text-sm text-gray-500">wellness support</div>
+        </div>
+        <div class="py-8 md:py-10 px-0 md:px-8">
+          <div class="text-3xl sm:text-4xl font-normal tracking-tight text-gray-950 mb-1">AES</div>
+          <div class="text-xs sm:text-sm text-gray-500">encrypted records</div>
+        </div>
+        <div class="py-8 md:py-10 pl-0 md:pl-8">
+          <div class="text-3xl sm:text-4xl font-normal tracking-tight text-gray-950 mb-1">100%</div>
+          <div class="text-xs sm:text-sm text-gray-500">confidential sessions</div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- END: Metrics Strip -->
+
+  <!-- BEGIN: Built Around Your Work Section -->
+  <section class="max-w-7xl mx-auto px-6 lg:px-12 py-24 lg:py-32" data-purpose="roles-section" id="roles">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16">
+      <!-- Section Sticky Left Column -->
+      <div class="lg:col-span-5 lg:sticky lg:top-32 self-start">
+        <p class="text-xs uppercase tracking-[0.2em] font-semibold text-blue-600 mb-6">
+          BUILT AROUND YOUR WORK
+        </p>
+        <h2 class="text-4xl sm:text-5xl lg:text-6xl font-normal tracking-tight text-gray-950 leading-[1.1] mb-6">
+          One system.<br/>Four clear<br class="hidden sm:inline"/>spaces.
+        </h2>
+        <p class="text-base text-gray-600 max-w-sm font-normal">
+          Each person sees what matters to them—nothing more, nothing less.
+        </p>
+      </div>
+
+      <!-- Section Right Interactive Panels List -->
+      <div class="lg:col-span-7 divide-y divide-hairline border-t border-hairline lg:border-t-0" data-purpose="spaces-accordion-list">
+        <!-- Role 01: Student -->
+        <article class="py-12 first:pt-0" data-purpose="role-item" id="role-student">
+          <div class="grid grid-cols-1 sm:grid-cols-12 gap-6 items-start">
+            <div class="sm:col-span-4">
+              <span class="block text-xs font-mono text-gray-400 mb-2">01</span>
+              <span class="text-xs uppercase tracking-wider font-semibold text-blue-600">STUDENT</span>
+            </div>
+            <div class="sm:col-span-8">
+              <h3 class="text-2xl font-normal tracking-tight text-gray-950 mb-3">
+                Your wellness, in one place.
+              </h3>
+              <p class="text-sm text-gray-600 mb-6 leading-relaxed">
+                Book confidential sessions, manage appointments, and find support when you need it.
+              </p>
+              <ul class="space-y-2 text-sm text-gray-700">
+                <li class="flex items-center gap-3">
+                  <svg class="w-4 h-4 text-blue-600 shrink-0" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                    <path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                  </svg>
+                  <span>Private appointment booking</span>
+                </li>
+                <li class="flex items-center gap-3">
+                  <svg class="w-4 h-4 text-blue-600 shrink-0" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                    <path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                  </svg>
+                  <span>24/7 wellness support</span>
+                </li>
+                <li class="flex items-center gap-3">
+                  <svg class="w-4 h-4 text-blue-600 shrink-0" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                    <path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                  </svg>
+                  <span>Mood check-ins</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </article>
+
+        <!-- Role 02: Counselor -->
+        <article class="py-12" data-purpose="role-item" id="role-counselor">
+          <div class="grid grid-cols-1 sm:grid-cols-12 gap-6 items-start">
+            <div class="sm:col-span-4">
+              <span class="block text-xs font-mono text-gray-400 mb-2">02</span>
+              <span class="text-xs uppercase tracking-wider font-semibold text-blue-600">COUNSELOR</span>
+            </div>
+            <div class="sm:col-span-8">
+              <h3 class="text-2xl font-normal tracking-tight text-gray-950 mb-3">
+                A focused clinical workspace.
+              </h3>
+              <p class="text-sm text-gray-600 mb-6 leading-relaxed">
+                Manage your schedule, document sessions securely, and follow each student's progress.
+              </p>
+              <ul class="space-y-2 text-sm text-gray-700">
+                <li class="flex items-center gap-3">
+                  <svg class="w-4 h-4 text-blue-600 shrink-0" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                    <path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                  </svg>
+                  <span>Live schedule and availability</span>
+                </li>
+                <li class="flex items-center gap-3">
+                  <svg class="w-4 h-4 text-blue-600 shrink-0" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                    <path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                  </svg>
+                  <span>Encrypted case notes</span>
+                </li>
+                <li class="flex items-center gap-3">
+                  <svg class="w-4 h-4 text-blue-600 shrink-0" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                    <path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                  </svg>
+                  <span>Student wellness trends</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </article>
+
+        <!-- Role 03: Reception -->
+        <article class="py-12" data-purpose="role-item" id="role-reception">
+          <div class="grid grid-cols-1 sm:grid-cols-12 gap-6 items-start">
+            <div class="sm:col-span-4">
+              <span class="block text-xs font-mono text-gray-400 mb-2">03</span>
+              <span class="text-xs uppercase tracking-wider font-semibold text-blue-600">RECEPTION</span>
+            </div>
+            <div class="sm:col-span-8">
+              <h3 class="text-2xl font-normal tracking-tight text-gray-950 mb-3">
+                A calmer front desk.
+              </h3>
+              <p class="text-sm text-gray-600 mb-6 leading-relaxed">
+                Coordinate walk-ins and appointments with a clear view of counselor availability.
+              </p>
+              <ul class="space-y-2 text-sm text-gray-700">
+                <li class="flex items-center gap-3">
+                  <svg class="w-4 h-4 text-blue-600 shrink-0" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                    <path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                  </svg>
+                  <span>Rapid walk-in intake</span>
+                </li>
+                <li class="flex items-center gap-3">
+                  <svg class="w-4 h-4 text-blue-600 shrink-0" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                    <path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                  </svg>
+                  <span>Live appointment queue</span>
+                </li>
+                <li class="flex items-center gap-3">
+                  <svg class="w-4 h-4 text-blue-600 shrink-0" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                    <path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                  </svg>
+                  <span>Availability lookup</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </article>
+
+        <!-- Role 04: Administration -->
+        <article class="py-12 pb-2" data-purpose="role-item" id="role-admin">
+          <div class="grid grid-cols-1 sm:grid-cols-12 gap-6 items-start">
+            <div class="sm:col-span-4">
+              <span class="block text-xs font-mono text-gray-400 mb-2">04</span>
+              <span class="text-xs uppercase tracking-wider font-semibold text-blue-600">ADMINISTRATION</span>
+            </div>
+            <div class="sm:col-span-8">
+              <h3 class="text-2xl font-normal tracking-tight text-gray-950 mb-3">
+                Oversight without the noise.
+              </h3>
+              <p class="text-sm text-gray-600 mb-6 leading-relaxed">
+                Keep the guidance center accountable with access controls, reporting, and audit history.
+              </p>
+              <ul class="space-y-2 text-sm text-gray-700">
+                <li class="flex items-center gap-3">
+                  <svg class="w-4 h-4 text-blue-600 shrink-0" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                    <path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                  </svg>
+                  <span>Role-based permissions</span>
+                </li>
+                <li class="flex items-center gap-3">
+                  <svg class="w-4 h-4 text-blue-600 shrink-0" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                    <path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                  </svg>
+                  <span>Institutional reporting</span>
+                </li>
+                <li class="flex items-center gap-3">
+                  <svg class="w-4 h-4 text-blue-600 shrink-0" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                    <path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                  </svg>
+                  <span>Complete audit trail</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+  <!-- END: Built Around Your Work Section -->
+
+  <!-- BEGIN: Capabilities Section (Dark Mode) -->
+  <section class="bg-brand-darkBg text-white py-24 lg:py-32" data-purpose="capabilities-section" id="capabilities">
+    <div class="max-w-7xl mx-auto px-6 lg:px-12">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
+        <!-- Left Capabilities Introduction -->
+        <div class="lg:col-span-5">
+          <p class="text-xs uppercase tracking-[0.2em] font-semibold text-blue-400 mb-6">
+            QUIETLY CAPABLE
+          </p>
+          <h2 class="text-4xl sm:text-5xl lg:text-6xl font-normal tracking-tight text-white leading-[1.1] mb-8">
+            Everything the center needs. No unnecessary complexity.
+          </h2>
+          <p class="text-base text-gray-400 font-normal leading-relaxed max-w-md">
+            Designed for the daily realities of a university guidance office: sensitive work, busy schedules, and people who need answers quickly.
+          </p>
+        </div>
+
+        <!-- Right Capabilities 2x2 Grid -->
+        <div class="lg:col-span-7">
+          <div class="grid grid-cols-1 sm:grid-cols-2 border border-brand-darkBorder divide-y sm:divide-y-0 sm:divide-x divide-brand-darkBorder">
+            <!-- Column 1 -->
+            <div class="divide-y divide-brand-darkBorder">
+              <!-- Tile 01 -->
+              <div class="p-8 sm:p-10 relative">
+                <span class="absolute top-6 right-8 text-xs font-mono text-gray-500">01</span>
+                <!-- Chat Icon -->
+                <div class="w-9 h-9 mb-8 flex items-center justify-center text-blue-400">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                    <path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6"></path>
+                  </svg>
+                </div>
+                <h3 class="text-xl font-normal text-white mb-3">Always-on support</h3>
+                <p class="text-sm text-gray-400 leading-relaxed font-normal">
+                  Guidance and wellness resources available between counseling sessions.
+                </p>
+              </div>
+
+              <!-- Tile 03 -->
+              <div class="p-8 sm:p-10 relative">
+                <span class="absolute top-6 right-8 text-xs font-mono text-gray-500">03</span>
+                <!-- Lock Icon -->
+                <div class="w-9 h-9 mb-8 flex items-center justify-center text-blue-400">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                    <path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6"></path>
+                  </svg>
+                </div>
+                <h3 class="text-xl font-normal text-white mb-3">Private by default</h3>
+                <p class="text-sm text-gray-400 leading-relaxed font-normal">
+                  AES-encrypted clinical notes and carefully scoped access.
+                </p>
+              </div>
+            </div>
+
+            <!-- Column 2 -->
+            <div class="divide-y divide-brand-darkBorder">
+              <!-- Tile 02 -->
+              <div class="p-8 sm:p-10 relative">
+                <span class="absolute top-6 right-8 text-xs font-mono text-gray-500">02</span>
+                <!-- Calendar Icon -->
+                <div class="w-9 h-9 mb-8 flex items-center justify-center text-blue-400">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                    <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6"></path>
+                  </svg>
+                </div>
+                <h3 class="text-xl font-normal text-white mb-3">Thoughtful scheduling</h3>
+                <p class="text-sm text-gray-400 leading-relaxed font-normal">
+                  Clear availability and fewer conflicts for students and staff.
+                </p>
+              </div>
+
+              <!-- Tile 04 -->
+              <div class="p-8 sm:p-10 relative">
+                <span class="absolute top-6 right-8 text-xs font-mono text-gray-500">04</span>
+                <!-- Bar Chart Icon -->
+                <div class="w-9 h-9 mb-8 flex items-center justify-center text-blue-400">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                    <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6"></path>
+                  </svg>
+                </div>
+                <h3 class="text-xl font-normal text-white mb-3">Useful reporting</h3>
+                <p class="text-sm text-gray-400 leading-relaxed font-normal">
+                  Institutional insight without compromising student confidentiality.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- END: Capabilities Section -->
+
+  <!-- BEGIN: Final Call to Action -->
+  <section class="max-w-7xl mx-auto px-6 lg:px-12 py-24 lg:py-32" data-purpose="cta-section">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
+      <!-- Left Statement -->
+      <div class="lg:col-span-7">
+        <p class="text-xs uppercase tracking-[0.2em] font-semibold text-blue-600 mb-6">
+          A BETTER WAY TO CONNECT
+        </p>
+        <h2 class="text-4xl sm:text-5xl lg:text-6xl font-normal tracking-tight text-gray-950">
+          Ready when you are.
+        </h2>
+      </div>
+
+      <!-- Right Action Block -->
+      <div class="lg:col-span-5 lg:pl-10">
+        <div class="border-t border-hairline pt-8">
+          <p class="text-base sm:text-lg text-gray-700 font-normal leading-relaxed mb-8 max-w-sm">
+            Access guidance and counseling support made for the FSUU community.
+          </p>
+          <div class="flex flex-wrap items-center gap-6">
+            <a class="inline-flex items-center gap-3 px-6 py-3.5 bg-brand-primary hover:bg-brand-primaryHover text-white text-[15px] font-medium transition-subtle" href="{% url 'login' %}" id="cta-signin-btn">
+              <span>Sign in</span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                <path d="M14 5l7 7m0 0l-7 7m7-7H3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+              </svg>
+            </a>
+            <a class="text-[15px] text-gray-900 font-normal underline underline-offset-8 decoration-gray-300 hover:decoration-gray-900 transition-all" href="{% url 'register' %}" id="cta-register-btn">
+              Create an account
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- END: Final Call to Action -->
+</main>
+
+<!-- BEGIN: Main Footer -->
+<footer class="border-t border-hairline bg-brand-canvas" data-purpose="main-footer">
+  <div class="max-w-7xl mx-auto px-6 lg:px-12 py-10 flex flex-col md:flex-row items-center justify-between gap-6 text-xs sm:text-sm text-gray-500">
+    <!-- Logo in Footer -->
+    <a class="flex items-center gap-2.5 text-gray-900 font-medium hover:text-brand-primary transition-colors" href="{% url 'landing' %}">
+      <img src="{% static 'images/logo.png' %}" alt="ConnectGuidance Logo" class="w-6 h-6 object-contain rounded"/>
+      <span>ConnectGuidance</span>
+    </a>
+
+    <!-- Campus Tagline -->
+    <div class="text-center font-normal text-gray-600">
+      Father Saturnino Urios University &middot; Guidance &amp; Counseling Office
+    </div>
+
+    <!-- Legal / Year Notice -->
+    <div class="flex items-center space-x-6 text-gray-500">
+      <span>&copy; 2026 FSUU</span>
     </div>
   </div>
-</section>
-
-<!-- ══════════════════════════════════════════════════════
-     CTA SECTION (Solid Background)
-══════════════════════════════════════════════════════ -->
-<section class="lp-cta-section" id="cta-section">
-  <div class="lp-container">
-    <div class="lp-badge" style="margin:0 auto 1.5rem;">
-      <span class="lp-badge-dot"></span>
-      Get Started Today
-    </div>
-    <h2 class="lp-cta-title">Ready to connect?</h2>
-    <p class="lp-cta-desc">
-      Join ConnectGuidance and experience guidance and counseling support designed for Father Saturnino Urios University.
-    </p>
-    <div class="lp-hero-ctas">
-      <a href="{% url 'login' %}" class="lp-btn-primary" id="cta-signin-btn">
-        <i data-lucide="log-in" style="width:18px;height:18px;"></i>
-        Sign In
-      </a>
-      <a href="{% url 'register' %}" class="lp-btn-ghost" id="cta-register-btn">
-        <i data-lucide="user-plus" style="width:18px;height:18px;"></i>
-        Create Student Account
-      </a>
-    </div>
-
-    <div class="lp-trust">
-      <div class="lp-trust-item">
-        <i data-lucide="shield-check" style="width:15px;height:15px;"></i>
-        Confidential &amp; Secure
-      </div>
-      <div class="lp-trust-item">
-        <i data-lucide="lock" style="width:15px;height:15px;"></i>
-        Encrypted Data Storage
-      </div>
-      <div class="lp-trust-item">
-        <i data-lucide="users" style="width:15px;height:15px;"></i>
-        Role-Based Access Control
-      </div>
-      <div class="lp-trust-item">
-        <i data-lucide="activity" style="width:15px;height:15px;"></i>
-        Full Audit Trail
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ══════════════════════════════════════════════════════
-     FOOTER
-══════════════════════════════════════════════════════ -->
-<footer class="lp-footer" id="lp-footer">
-  &copy; 2026 <span style="display:inline-flex;align-items:center;gap:0.35rem;vertical-align:middle;font-weight:700;"><img src="{% static 'images/logo.png' %}" alt="Logo" style="width:18px;height:18px;object-fit:contain;">ConnectGuidance</span>
-  &nbsp;&bull;&nbsp;
-  Father Saturnino Urios University &mdash; Guidance &amp; Counseling Office
-  &nbsp;&bull;&nbsp;
-  <a href="{% url 'login' %}">Sign In</a>
-  &nbsp;&middot;&nbsp;
-  <a href="{% url 'register' %}">Register</a>
 </footer>
+<!-- END: Main Footer -->
 
-{% endblock %}
+</body>
+</html>
