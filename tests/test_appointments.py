@@ -247,6 +247,24 @@ class AppointmentsTestCase(TestCase):
         ).order_by('-created_at').first()
         self.assertIsNotNone(audit)
 
+    def test_receptionist_booking_normalizes_naive_datetime(self):
+        """HTML datetime-local values are naive but must be accepted safely."""
+        naive_future_time = datetime.datetime.combine(
+            timezone.localdate() + datetime.timedelta(days=5),
+            datetime.time(11, 0),
+        )
+
+        appt = book_receptionist_appointment(
+            receptionist=self.receptionist,
+            student=self.student,
+            scheduled_at=naive_future_time,
+            concern_type=ConcernTypeChoices.ACADEMIC,
+            counselor=self.counselor,
+        )
+
+        self.assertTrue(timezone.is_aware(appt.scheduled_at))
+        self.assertEqual(appt.scheduled_at.hour, 11)
+
     def test_wrong_role_redirects_to_role_home(self):
         """Student attempting to view /counselor/ or /receptionist/ is redirected to /student/."""
         self.client.force_login(self.student_user)

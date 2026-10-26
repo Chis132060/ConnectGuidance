@@ -74,6 +74,120 @@
       transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
   </style>
+  <style data-purpose="responsive-layout">
+    /* Keep the existing landing-page design intact while allowing every section
+       to shrink cleanly on narrow viewports. */
+    html,
+    body {
+      max-width: 100%;
+      overflow-x: hidden;
+    }
+
+    @media (max-width: 767px) {
+      [data-purpose="main-navigation"] > div,
+      [data-purpose="hero-section"],
+      [data-purpose="roles-section"] > div,
+      [data-purpose="capabilities-section"] > div,
+      [data-purpose="cta-section"] > div,
+      [data-purpose="main-footer"] > div {
+        max-width: 100%;
+      }
+
+      [data-purpose="main-navigation"] > div {
+        min-height: 4.5rem;
+        height: auto;
+        padding-left: 1rem;
+        padding-right: 1rem;
+        gap: .75rem;
+      }
+
+      [data-purpose="main-navigation"] .group {
+        min-width: 0;
+        flex-shrink: 1;
+      }
+
+      [data-purpose="main-navigation"] .group span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      [data-purpose="main-navigation"] > div > div:last-child {
+        flex-shrink: 0;
+        gap: .625rem;
+      }
+
+      [data-purpose="main-navigation"] > div > div:last-child a {
+        white-space: nowrap;
+      }
+
+      [data-purpose="hero-section"] {
+        padding: 4.5rem 1rem 4.5rem;
+      }
+
+      [data-purpose="hero-section"] h1 {
+        font-size: clamp(2.25rem, 11vw, 3.75rem);
+        overflow-wrap: anywhere;
+      }
+
+      [data-purpose="hero-section"] [data-purpose="hero-aside"] {
+        padding-left: 0;
+        padding-top: 0;
+      }
+
+      [data-purpose="hero-section"] [data-purpose="hero-aside"] h2 {
+        font-size: clamp(1.75rem, 8vw, 2.25rem);
+      }
+
+      [data-purpose="roles-section"],
+      [data-purpose="capabilities-section"],
+      [data-purpose="cta-section"] {
+        padding-left: 1rem;
+        padding-right: 1rem;
+      }
+
+      [data-purpose="metrics-strip"] > div {
+        padding-left: 1rem;
+        padding-right: 1rem;
+      }
+
+      [data-purpose="main-footer"] > div {
+        padding-left: 1rem;
+        padding-right: 1rem;
+      }
+    }
+
+    @media (min-width: 1024px) {
+      [data-purpose="roles-intro"] {
+        position: sticky;
+        top: 8rem;
+        align-self: start;
+      }
+    }
+
+    @media (max-width: 420px) {
+      [data-purpose="main-navigation"] > div {
+        flex-wrap: wrap;
+        padding-top: .75rem;
+        padding-bottom: .75rem;
+      }
+
+      [data-purpose="main-navigation"] > div > div:last-child {
+        width: 100%;
+        justify-content: flex-end;
+      }
+
+      [data-purpose="hero-section"] .flex.flex-wrap.items-center {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      [data-purpose="hero-section"] .flex.flex-wrap.items-center > a {
+        justify-content: center;
+        width: 100%;
+      }
+    }
+  </style>
   <!-- END: Custom Styles -->
 </head>
 <body class="bg-brand-canvas text-brand-charcoal min-h-screen selection:bg-brand-primary selection:text-white">
@@ -103,7 +217,7 @@
 
     <!-- Center Links -->
     <nav class="hidden md:flex items-center space-x-10 text-[15px] font-normal text-gray-600">
-      <a class="hover:text-gray-900 transition-colors" href="#roles">For every role</a>
+      <a class="hover:text-gray-900 transition-colors" href="#roles">Roles</a>
       <a class="hover:text-gray-900 transition-colors" href="#capabilities">Capabilities</a>
     </nav>
 
@@ -197,7 +311,7 @@
   <section class="max-w-7xl mx-auto px-6 lg:px-12 py-24 lg:py-32" data-purpose="roles-section" id="roles">
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16">
       <!-- Section Sticky Left Column -->
-      <div class="lg:col-span-5 lg:sticky lg:top-32 self-start">
+      <div class="lg:col-span-5 lg:sticky lg:top-32 self-start" data-purpose="roles-intro">
         <p class="text-xs uppercase tracking-[0.2em] font-semibold text-blue-600 mb-6">
           BUILT AROUND YOUR WORK
         </p>

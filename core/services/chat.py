@@ -1,7 +1,7 @@
 """
 core/services/chat.py — AI Chatbot Service for GuidanceConnect Django replica.
 
-Handles Groq / Anthropic LLM integrations, Server-Sent Events (SSE) streaming,
+Handles Groq / Anthropic / Gemini LLM integrations, Server-Sent Events (SSE) streaming,
 crisis escalation protocols, rate limiting (GET 60/15min, POST 24/15min),
 history constraints (36 messages, 24000 characters), and session persistence.
 """
@@ -151,10 +151,23 @@ def is_crisis_text(text: str) -> bool:
 
 
 def has_llm_api_key() -> bool:
-    """Check if Groq or Anthropic API key is configured."""
+    """Check if at least one supported LLM API key is configured."""
     groq_key = getattr(settings, 'GROQ_API_KEY', '') or os.getenv('GROQ_API_KEY', '')
     anthropic_key = getattr(settings, 'ANTHROPIC_API_KEY', '') or os.getenv('ANTHROPIC_API_KEY', '')
-    return bool(groq_key or anthropic_key)
+    gemini_key = getattr(settings, 'GEMINI_API_KEY', '') or os.getenv('GEMINI_API_KEY', '')
+    return bool(groq_key or anthropic_key or gemini_key)
+
+
+def _stream_local_fallback() -> Generator[str, None, None]:
+    """Return a fast local response when an external provider is unavailable."""
+    fallback_text = (
+        "Thank you for sharing your thoughts with me. While navigating university coursework and personal development, "
+        "it helps to break large goals into small steps. If you would like to discuss this further, "
+        "our guidance counselors are always here to support you."
+    )
+    for word in fallback_text.split(" "):
+        yield word + " "
+        time.sleep(0.01)
 
 
 def stream_chat_response(messages: List[Dict[str, str]]) -> Generator[str, None, None]:
@@ -182,7 +195,9 @@ def stream_chat_response(messages: List[Dict[str, str]]) -> Generator[str, None,
 
     groq_api_key = getattr(settings, 'GROQ_API_KEY', '') or os.getenv('GROQ_API_KEY', '')
     anthropic_api_key = getattr(settings, 'ANTHROPIC_API_KEY', '') or os.getenv('ANTHROPIC_API_KEY', '')
-    model = getattr(settings, 'GROQ_MODEL', 'llama-3.3-70b-versatile')
+    gemini_api_key = getattr(settings, 'GEMINI_API_KEY', '') or os.getenv('GEMINI_API_KEY', '')
+    model = getattr(settings, 'GROQ_MODEL', 'openai/gpt-oss-120b')
+    provider_timeout = getattr(settings, 'CHAT_PROVIDER_TIMEOUT_SECONDS', 15)
 
     if groq_api_key:
         headers = {
@@ -202,29 +217,31 @@ def stream_chat_response(messages: List[Dict[str, str]]) -> Generator[str, None,
             headers=headers,
             json=payload,
             stream=True,
-            timeout=25
+            timeout=(8, provider_timeout)
         )
         if resp.status_code != 200:
-            raise RuntimeError(f"Groq API returned error status {resp.status_code}: {resp.text}")
-
-        for line in resp.iter_lines():
-            if not line:
-                continue
-            line_str = line.decode('utf-8').strip()
-            if line_str == "data: [DONE]":
-                break
-            if line_str.startswith("data: "):
-                try:
-                    data = json.loads(line_str[6:])
-                    delta = data.get('choices', [{}])[0].get('delta', {})
-                    chunk = delta.get('content', '')
-                    if chunk:
-                        chunk = chunk.replace('*', '')
-                        if chunk:
-                            yield chunk
-                except json.JSONDecodeError:
+            if not (gemini_api_key or anthropic_api_key):
+                raise RuntimeError(f"Groq API returned error status {resp.status_code}: {resp.text}")
+            logger.warning("Groq provider failed with HTTP %s; trying the next configured provider.", resp.status_code)
+        else:
+            for line in resp.iter_lines(chunk_size=1):
+                if not line:
                     continue
-        return
+                line_str = line.decode('utf-8').strip()
+                if line_str == "data: [DONE]":
+                    break
+                if line_str.startswith("data: "):
+                    try:
+                        data = json.loads(line_str[6:])
+                        delta = data.get('choices', [{}])[0].get('delta', {})
+                        chunk = delta.get('content', '')
+                        if chunk:
+                            chunk = chunk.replace('*', '')
+                            if chunk:
+                                yield chunk
+                    except json.JSONDecodeError:
+                        continue
+            return
 
     if anthropic_api_key:
         headers = {
@@ -245,37 +262,103 @@ def stream_chat_response(messages: List[Dict[str, str]]) -> Generator[str, None,
             headers=headers,
             json=payload,
             stream=True,
-            timeout=25
+            timeout=(8, provider_timeout)
         )
         if resp.status_code != 200:
-            raise RuntimeError(f"Anthropic API returned error status {resp.status_code}")
-
-        for line in resp.iter_lines():
-            if not line:
-                continue
-            line_str = line.decode('utf-8').strip()
-            if line_str.startswith("data: "):
-                try:
-                    event = json.loads(line_str[6:])
-                    if event.get('type') == 'content_block_delta':
-                        chunk = event.get('delta', {}).get('text', '')
-                        if chunk:
-                            chunk = chunk.replace('*', '')
-                            if chunk:
-                                yield chunk
-                except json.JSONDecodeError:
+            if not gemini_api_key:
+                raise RuntimeError(f"Anthropic API returned error status {resp.status_code}")
+            logger.warning("Anthropic provider failed with HTTP %s; trying Gemini fallback.", resp.status_code)
+        else:
+            for line in resp.iter_lines(chunk_size=1):
+                if not line:
                     continue
+                line_str = line.decode('utf-8').strip()
+                if line_str.startswith("data: "):
+                    try:
+                        event = json.loads(line_str[6:])
+                        if event.get('type') == 'content_block_delta':
+                            chunk = event.get('delta', {}).get('text', '')
+                            if chunk:
+                                chunk = chunk.replace('*', '')
+                                if chunk:
+                                    yield chunk
+                    except json.JSONDecodeError:
+                        continue
+            return
+
+    if gemini_api_key:
+        gemini_model = getattr(settings, 'GEMINI_MODEL', 'gemini-3.8-flash')
+        contents = []
+        for message in messages[-36:]:
+            role = 'model' if message.get('role') == 'assistant' else 'user'
+            contents.append({
+                'role': role,
+                'parts': [{'text': str(message.get('content', ''))}],
+            })
+
+        payload = {
+            'system_instruction': {
+                'parts': [{'text': grounded_system_prompt}],
+            },
+            'contents': contents,
+            'generationConfig': {
+                'temperature': 0.2,
+                'maxOutputTokens': 800,
+            },
+        }
+        resp = None
+        for attempt in range(3):
+            try:
+                resp = requests.post(
+                    f'https://generativelanguage.googleapis.com/v1beta/models/{gemini_model}:streamGenerateContent?alt=sse',
+                    headers={
+                        'x-goog-api-key': gemini_api_key,
+                        'Content-Type': 'application/json',
+                    },
+                    json=payload,
+                    stream=True,
+                    timeout=(8, provider_timeout),
+                )
+            except requests.exceptions.RequestException as exc:
+                logger.warning("Gemini provider timed out or was unavailable: %s", exc)
+                if attempt == 2:
+                    yield from _stream_local_fallback()
+                    return
+                time.sleep(1 << attempt)
+                continue
+
+            if resp.status_code not in (429, 503) or attempt == 2:
+                break
+
+            logger.warning("Gemini provider returned HTTP %s; retrying.", resp.status_code)
+            time.sleep(1 << attempt)
+
+        if resp.status_code != 200:
+            raise RuntimeError(f'Gemini API returned error status {resp.status_code}: {resp.text}')
+
+        try:
+            for line in resp.iter_lines(chunk_size=1):
+                if not line:
+                    continue
+                line_str = line.decode('utf-8').strip()
+                if line_str.startswith('data: '):
+                    try:
+                        data = json.loads(line_str[6:])
+                        candidates = data.get('candidates', [])
+                        parts = candidates[0].get('content', {}).get('parts', []) if candidates else []
+                        chunk = ''.join(str(part.get('text', '')) for part in parts if part.get('text'))
+                        chunk = chunk.replace('*', '')
+                        if chunk:
+                            yield chunk
+                    except (json.JSONDecodeError, IndexError, TypeError):
+                        continue
+        except requests.exceptions.RequestException as exc:
+            logger.warning("Gemini stream timed out or was interrupted: %s", exc)
+            yield from _stream_local_fallback()
         return
 
     # Fallback simulation if no API keys are set (e.g. testing)
-    fallback_text = (
-        "Thank you for sharing your thoughts with me. While navigating university coursework and personal development, "
-        "it helps to break large goals into small steps. If you would like to discuss this further, "
-        "our guidance counselors are always here to support you."
-    )
-    for word in fallback_text.split(" "):
-        yield word + " "
-        time.sleep(0.01)
+    yield from _stream_local_fallback()
 
 
 def generate_chat_response(messages: List[Dict[str, str]]) -> str:

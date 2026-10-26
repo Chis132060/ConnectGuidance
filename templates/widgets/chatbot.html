@@ -162,14 +162,16 @@ document.addEventListener('DOMContentLoaded', function() {
             assistantBubble.textContent = '';
             const reader = resp.body.getReader();
             const decoder = new TextDecoder();
+            let sseBuffer = '';
             let done = false;
 
             while (!done) {
                 const { value, done: rDone } = await reader.read();
                 done = rDone;
                 if (value) {
-                    const chunk = decoder.decode(value);
-                    const lines = chunk.split('\n');
+                    sseBuffer += decoder.decode(value, { stream: true });
+                    const lines = sseBuffer.split('\n');
+                    sseBuffer = lines.pop() || '';
                     for (const line of lines) {
                         if (line.startsWith('data: ')) {
                             try {

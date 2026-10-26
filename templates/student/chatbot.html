@@ -710,13 +710,16 @@
 
             const reader  = resp.body.getReader();
             const decoder = new TextDecoder();
+            let sseBuffer = '';
             let done = false;
 
             while (!done) {
                 const { value, done: readerDone } = await reader.read();
                 done = readerDone;
                 if (value) {
-                    const lines = decoder.decode(value).split('\n');
+                    sseBuffer += decoder.decode(value, { stream: true });
+                    const lines = sseBuffer.split('\n');
+                    sseBuffer = lines.pop() || '';
                     for (const line of lines) {
                         if (!line.startsWith('data: ')) continue;
                         try {

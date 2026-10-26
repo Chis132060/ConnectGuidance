@@ -82,6 +82,7 @@ from core.services.receptionist import (
     search_students,
     list_reception_counselors,
     book_receptionist_appointment,
+    ensure_timezone_aware,
 )
 from core.services.metrics import get_admin_metrics
 from core.services.reports import (
@@ -836,6 +837,7 @@ def receptionist_book_view(request):
         except (ValueError, TypeError):
             messages.error(request, "Invalid appointment date/time format.")
             return redirect('receptionist_walk_ins')
+    scheduled_at = ensure_timezone_aware(scheduled_at)
 
     counselor = None
     if counselor_id and str(counselor_id) != '0' and str(counselor_id) != '':

@@ -21,6 +21,13 @@ from core.services.slots import (
 from core.services.appointments import book_appointment
 
 
+def ensure_timezone_aware(value: datetime.datetime) -> datetime.datetime:
+    """Normalize appointment datetimes before comparing or persisting them."""
+    if timezone.is_naive(value):
+        return timezone.make_aware(value, timezone.get_current_timezone())
+    return value
+
+
 def search_students(query: str, limit: int = 25) -> List[Profile]:
     """
     Search active students by full_name or student_id (case-insensitive).
@@ -69,6 +76,7 @@ def book_receptionist_appointment(
     - Enforces future datetime, active student, and active counselors exist.
     - Logs audit action: APPOINTMENT_CREATED_RECEPTION
     """
+    scheduled_at = ensure_timezone_aware(scheduled_at)
     now = timezone.now()
     if scheduled_at <= now:
         raise ValidationError("Appointment must be scheduled for a future date and time.")

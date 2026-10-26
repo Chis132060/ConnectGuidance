@@ -9,7 +9,7 @@ cd "c:\School works\4yr_firstsem\connectguidance_django"
 
 ### 2. Activate Virtual Environment
 ```powershell
-.venv\Scripts\Activate.ps1
+![alt text](image.png)
 ```
 
 If you get execution policy error:
@@ -130,7 +130,8 @@ python manage.py runserver 8080
 ### Virtual Environment Not Activating
 Try:
 ```powershell
-.venv\Scripts\python.exe manage.py runserver
+.\.venv\Scripts\Activate.ps1
+ python manage.py runserver
 ```
 
 ### CSS Not Loading
