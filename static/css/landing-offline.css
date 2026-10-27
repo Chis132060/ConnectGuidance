@@ -1,12 +1,12 @@
 /* Offline landing-page utilities. This replaces the Tailwind CDN for presentations. */
 :root {
-  --brand-canvas: #fbfbfa;
-  --brand-border: #e7e6e1;
-  --brand-dark-border: #1e2b26;
-  --brand-primary: #1d4ed8;
-  --brand-primary-hover: #1e40af;
-  --brand-dark-bg: #0f1714;
-  --brand-charcoal: #111827;
+  --brand-canvas: #f8fafc;
+  --brand-border: #e2e8f0;
+  --brand-dark-border: #1e293b;
+  --brand-primary: #2563eb;
+  --brand-primary-hover: #1d4ed8;
+  --brand-dark-bg: #0f172a;
+  --brand-charcoal: #0f172a;
 }
 
 * { box-sizing: border-box; }

@@ -7,10 +7,7 @@
     <title>{% block title %}ConnectGuidance — FSUU Guidance & Counseling{% endblock %}</title>
     <meta name="description" content="{% block meta_description %}Streamlined university guidance and psychological counseling.{% endblock %}">
 
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- System font stack keeps the application usable without internet access. -->
 
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}">
@@ -23,6 +20,7 @@
     <link rel="stylesheet" href="{% static 'css/layout.css' %}?v=20261012-3">
     <link rel="stylesheet" href="{% static 'css/components.css' %}?v=20261012-3">
     <link rel="stylesheet" href="{% static 'css/minimal.css' %}?v=20261012-3">
+    <link rel="stylesheet" href="{% static 'css/shadcn.css' %}?v=20261028-1">
     {% block extra_css %}{% endblock %}
 </head>
 <body>
