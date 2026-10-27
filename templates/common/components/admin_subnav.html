@@ -18,6 +18,10 @@
     <i data-lucide="calendar-days" class="nav-icon"></i>
     <span class="nav-label">Appointments</span>
 </a>
+<a href="{% url 'admin_case_notes' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_case_notes' %}active{% endif %}" data-tooltip="Case Notes">
+    <i data-lucide="file-text" class="nav-icon"></i>
+    <span class="nav-label">Case Notes</span>
+</a>
 <a href="{% url 'admin_profile' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_profile' %}active{% endif %}" data-tooltip="Profile">
     <i data-lucide="shield-cog" class="nav-icon"></i>
     <span class="nav-label">Profile</span>

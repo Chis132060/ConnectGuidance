@@ -13,39 +13,8 @@
   <link rel="icon" type="image/png" sizes="16x16" href="{% static 'images/favicon-16x16.png' %}"/>
   <link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/apple-touch-icon.png' %}"/>
 
-  <!-- Google Fonts: Inter & Newsreader for editorial aesthetic -->
-  <link href="https://fonts.googleapis.com" rel="preconnect"/>
-  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=Newsreader:ital,opsz,wght@1,6..72,400;1,6..72,500&amp;display=swap" rel="stylesheet"/>
-
-  <!-- Tailwind CSS v3 with forms & container queries -->
-  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            brand: {
-              canvas: '#FBFBFA',
-              stone: '#F4F3F0',
-              border: '#E7E6E1',
-              darkBorder: '#1E2B26',
-              primary: '#1D4ED8',
-              primaryHover: '#1E40AF',
-              darkBg: '#0F1714',
-              darkCard: '#131E1A',
-              muted: '#6B7280',
-              charcoal: '#111827',
-            }
-          },
-          fontFamily: {
-            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
-            serif: ['Newsreader', 'Georgia', 'serif'],
-          }
-        }
-      }
-    }
-  </script>
+  <!-- Local-only stylesheet: the presentation does not require internet access. -->
+  <link rel="stylesheet" href="{% static 'css/landing-offline.css' %}"/>
 
   <!-- BEGIN: Custom Styles -->
   <style data-purpose="typography">

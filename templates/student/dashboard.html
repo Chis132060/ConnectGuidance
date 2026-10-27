@@ -296,6 +296,14 @@
                                 <div style="color: var(--neutral-800); line-height: 1.6; font-size: var(--text-sm);">
                                     {{ note.decrypted_content|linebreaks }}
                                 </div>
+                                 <button type="button" class="student-note-view-btn" onclick="openDashboardCaseNote(this)"
+                                     data-note-content="{{ note.decrypted_content|escapejs }}"
+                                     data-note-counselor="{{ note.author_name|escapejs }}"
+                                     data-note-date="{{ note.scheduled_at|date:'M j, Y @ g:i A'|escapejs }}"
+                                     data-note-concern="{{ note.concern_type|title|escapejs }}">
+                                     <i data-lucide="file-text" style="width: 14px; height: 14px;"></i>
+                                     View Case Note
+                                 </button>
                             </div>
                         {% endfor %}
                     </div>
@@ -308,10 +316,33 @@
                         <p class="empty-state-description">
                             After consultations, non-confidential recommendations from your counselor will appear here.
                         </p>
+                        <a href="{% url 'student_appointments' %}?tab=past#past" class="btn btn-secondary btn-sm" style="margin-top: var(--space-3);">
+                            <i data-lucide="calendar-check" style="width: 14px; height: 14px;"></i>
+                            View Completed Appointments
+                        </a>
                     </div>
                 {% endif %}
             </div>
 
+        </div>
+
+        <div id="dashboard-case-note-modal" class="student-note-modal" role="dialog" aria-modal="true" aria-labelledby="dashboard-case-note-title" hidden>
+            <div class="student-note-modal-backdrop" onclick="closeDashboardCaseNote()"></div>
+            <div class="student-note-modal-card">
+                <div class="student-note-modal-header">
+                    <div>
+                        <p>COUNSELOR SHARED NOTE</p>
+                        <h2 id="dashboard-case-note-title">Case Note</h2>
+                        <span id="dashboard-case-note-meta"></span>
+                    </div>
+                    <button type="button" onclick="closeDashboardCaseNote()" aria-label="Close case note">&times;</button>
+                </div>
+                <div id="dashboard-case-note-content" class="student-note-modal-content"></div>
+                <div class="student-note-modal-footer">
+                    <span><i data-lucide="eye" style="width: 14px; height: 14px;"></i> View only</span>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="closeDashboardCaseNote()">Close</button>
+                </div>
+            </div>
         </div>
 
         <!-- Sidebar Column -->
@@ -470,4 +501,43 @@ a[style*="background: var(--brand-primary)"]:hover {
     }
 }
 </style>
+
+<style>
+.student-note-view-btn { display: inline-flex; align-items: center; gap: .35rem; margin-top: .8rem; padding: .4rem .7rem; border: 1px solid #bfdbfe; border-radius: 6px; background: #eff6ff; color: #1d4ed8; font-size: .75rem; font-weight: 600; cursor: pointer; }
+.student-note-view-btn:hover { background: #dbeafe; }
+.student-note-modal[hidden] { display: none; }
+.student-note-modal { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; padding: 1rem; }
+.student-note-modal-backdrop { position: absolute; inset: 0; background: rgba(15, 23, 42, .55); }
+.student-note-modal-card { position: relative; width: min(620px, 100%); max-height: min(80vh, 680px); overflow: auto; background: #fff; border-radius: 12px; box-shadow: 0 20px 50px rgba(15, 23, 42, .25); }
+.student-note-modal-header { display: flex; justify-content: space-between; gap: 1rem; padding: 1.25rem 1.5rem; border-bottom: 1px solid #e2e8f0; }
+.student-note-modal-header p { margin: 0 0 .25rem; color: #2563eb; font-size: .7rem; font-weight: 700; letter-spacing: .08em; }
+.student-note-modal-header h2 { margin: 0; color: #0f172a; font-size: 1.15rem; }
+.student-note-modal-header span { display: block; margin-top: .35rem; color: #64748b; font-size: .8rem; }
+.student-note-modal-header button { border: 0; background: transparent; color: #64748b; font-size: 1.75rem; line-height: 1; cursor: pointer; }
+.student-note-modal-content { min-height: 180px; padding: 1.5rem; color: #334155; line-height: 1.7; white-space: pre-wrap; }
+.student-note-modal-footer { display: flex; justify-content: space-between; align-items: center; padding: .9rem 1.5rem; border-top: 1px solid #e2e8f0; color: #64748b; font-size: .75rem; }
+.student-note-modal-footer span { display: inline-flex; align-items: center; gap: .35rem; }
+</style>
+
+<script>
+function openDashboardCaseNote(button) {
+    const modal = document.getElementById('dashboard-case-note-modal');
+    document.getElementById('dashboard-case-note-content').textContent = button.dataset.noteContent || '';
+    document.getElementById('dashboard-case-note-meta').textContent = `${button.dataset.noteCounselor || 'Counselor'} • ${button.dataset.noteDate || ''} • ${button.dataset.noteConcern || ''}`;
+    modal.hidden = false;
+    document.body.style.overflow = 'hidden';
+}
+
+function closeDashboardCaseNote() {
+    const modal = document.getElementById('dashboard-case-note-modal');
+    if (!modal) return;
+    modal.hidden = true;
+    document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape') closeDashboardCaseNote();
+});
+</script>
+{% include "widgets/chatbot.html" %}
 {% endblock %}

@@ -2,7 +2,7 @@ from typing import Optional, Dict, Any
 from django.core.exceptions import ValidationError, PermissionDenied
 from django.db import transaction
 from core.models import Appointment, CaseNote, Profile
-from core.choices import RoleChoices
+from core.choices import RoleChoices, AppointmentStatusChoices
 from core.services.encryption import encrypt_text, decrypt_text
 from core.services.audit import log_action
 
@@ -94,3 +94,26 @@ def get_decrypted_case_note(
         }
 
     return None
+
+
+def get_student_shared_case_notes(student: Profile) -> Dict[int, Dict[str, Any]]:
+    """Return shared notes for the student's completed appointments, keyed by appointment ID."""
+    notes = CaseNote.objects.filter(
+        appointment__student=student,
+        appointment__status=AppointmentStatusChoices.COMPLETED,
+        is_confidential=False,
+    ).select_related('appointment', 'counselor')
+
+    shared_notes = {}
+    for case_note in notes:
+        note_data = get_decrypted_case_note(case_note, student)
+        if note_data:
+            note_data.update({
+                'author_name': note_data['counselor_name'],
+                'decrypted_content': note_data['content'],
+                'scheduled_at': case_note.appointment.scheduled_at,
+                'concern_type': case_note.appointment.concern_type,
+            })
+            shared_notes[case_note.appointment_id] = note_data
+
+    return shared_notes

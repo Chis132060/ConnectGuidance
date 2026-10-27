@@ -1,0 +1,18 @@
+{% extends "common/base.html" %}
+{% block page_title %}Case Notes{% endblock %}
+{% block title %}Shared Case Notes — ConnectGuidance Admin{% endblock %}
+{% block meta_description %}Review shared, non-confidential counseling case notes.{% endblock %}
+{% block content %}
+<div style="max-width:1200px;margin:0 auto;">
+    <div style="display:flex;justify-content:space-between;gap:1rem;align-items:end;margin-bottom:1.5rem;">
+        <div><h1 style="margin:0;color:#1e293b;">Shared Case Notes</h1><p style="color:#64748b;margin:.5rem 0 0;">Confidential author-only notes are excluded.</p></div>
+        <form method="get" style="display:flex;gap:.5rem;"><input type="search" name="q" value="{{ search_query }}" placeholder="Search student or counselor" style="padding:.6rem;border:1px solid #cbd5e1;border-radius:6px;"><button type="submit" class="btn btn-primary">Search</button></form>
+    </div>
+    {% for item in note_items %}
+    <article style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:1.25rem;margin-bottom:1rem;">
+        <div style="display:flex;justify-content:space-between;gap:1rem;margin-bottom:.75rem;"><div><strong>{{ item.note.appointment.student.full_name }}</strong><div style="color:#64748b;font-size:.875rem;">Counselor: {{ item.note.counselor.full_name }}</div></div><div style="color:#64748b;font-size:.875rem;text-align:right;">{{ item.note.updated_at|date:"M j, Y @ g:i A" }}<br>{{ item.note.appointment.concern_type|title }}</div></div>
+        <div style="white-space:pre-wrap;line-height:1.6;color:#334155;">{{ item.content }}</div>
+    </article>
+    {% empty %}<div style="padding:3rem;text-align:center;color:#64748b;background:#f8fafc;border-radius:8px;">No shared case notes found.</div>{% endfor %}
+</div>
+{% endblock %}

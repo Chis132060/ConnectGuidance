@@ -83,3 +83,21 @@ class MoodCheckInForm(forms.Form):
             'id': 'mood-note'
         })
     )
+
+
+class CaseNoteForm(forms.Form):
+    content = forms.CharField(
+        max_length=10000,
+        required=True,
+        strip=True,
+        widget=forms.Textarea(attrs={
+            'class': 'form-textarea',
+            'rows': 12,
+            'id': 'note-content',
+            'placeholder': 'Document the clinical assessment and session notes...'
+        })
+    )
+    is_confidential = forms.BooleanField(
+        required=False,
+        widget=forms.CheckboxInput(attrs={'id': 'note-confidential'})
+    )

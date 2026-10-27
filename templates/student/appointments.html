@@ -5,535 +5,995 @@
 {% block meta_description %}Manage and track your upcoming counseling sessions and past guidance history.{% endblock %}
 
 {% block content %}
-<div class="page-header">
-    <div class="page-header-content">
-        <div>
-            <div class="breadcrumb">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                <span>APPOINTMENTS</span>
-            </div>
-            <h1>My Appointments</h1>
-            <p class="page-description">Manage your scheduled guidance consultations and review past sessions.</p>
+<div class="cg-appointments-wrapper">
+    <!-- Clean Minimal Page Header -->
+    <div class="cg-page-header">
+        <div class="cg-header-copy">
+            <h1 class="cg-header-title">My Appointments</h1>
+            <p class="cg-header-subtitle">Manage your scheduled guidance consultations and review past sessions.</p>
         </div>
-        <a href="{% url 'student_book_appointment' %}" class="btn-primary">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-            Book New Session
-        </a>
-    </div>
-</div>
-
-<div class="page-content">
-    <!-- Stats Bar -->
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-            </div>
-            <div class="stat-content">
-                <div class="stat-label">Active Bookings</div>
-                <div class="stat-value">{{ upcoming_appointments|length }}</div>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-            </div>
-            <div class="stat-content">
-                <div class="stat-label">Past Consultations</div>
-                <div class="stat-value">{{ past_appointments|length }}</div>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-            </div>
-            <div class="stat-content">
-                <div class="stat-label">Confidential Service</div>
-                <div class="stat-value">100%</div>
-            </div>
+        <div class="cg-header-actions">
+            <a href="{% url 'student_book_appointment' %}" class="btn btn-primary btn-sm">
+                <i data-lucide="calendar-plus" style="width: 15px; height: 15px;"></i>
+                <span>Book New Session</span>
+            </a>
         </div>
     </div>
 
-    <!-- Upcoming Appointments -->
-    <section class="section">
-        <div class="section-header">
-            <div>
-                <h2>Upcoming Sessions</h2>
-                <p class="section-description">Your scheduled consultations with guidance counselors</p>
+    <!-- Minimal Stats Strip -->
+    <div class="cg-stats-strip">
+        <div class="cg-stat-item">
+            <div class="cg-stat-icon-wrap icon-blue">
+                <i data-lucide="calendar" style="width: 18px; height: 18px;"></i>
             </div>
-            <span class="badge-neutral">{{ upcoming_appointments|length }} Active</span>
+            <div class="cg-stat-meta">
+                <div class="cg-stat-num">{{ upcoming_appointments|length }}</div>
+                <div class="cg-stat-label">Active Bookings</div>
+            </div>
         </div>
 
-        {% if upcoming_appointments %}
-            <div class="appointments-list">
-                {% for appt in upcoming_appointments %}
-                    <div class="appointment-card">
-                        <div class="appointment-date-block">
-                            <div class="date-month">{{ appt.scheduled_at|date:"M"|upper }}</div>
-                            <div class="date-day">{{ appt.scheduled_at|date:"d" }}</div>
-                            <div class="date-time">{{ appt.scheduled_at|date:"g:i A" }}</div>
-                        </div>
+        <div class="cg-stat-item">
+            <div class="cg-stat-icon-wrap icon-green">
+                <i data-lucide="check-circle-2" style="width: 18px; height: 18px;"></i>
+            </div>
+            <div class="cg-stat-meta">
+                <div class="cg-stat-num">{{ past_appointments|length }}</div>
+                <div class="cg-stat-label">Past Consultations</div>
+            </div>
+        </div>
 
-                        <div class="appointment-content">
-                            <div class="appointment-header">
-                                <div class="counselor-info">
-                                    <div class="counselor-avatar">{{ appt.counselor.full_name|slice:":1"|upper }}</div>
-                                    <div>
-                                        <h3 class="counselor-name">{{ appt.counselor.full_name }}</h3>
-                                        <div class="counselor-role">{{ appt.counselor.department|default:"University Guidance & Psychological Services" }}</div>
+        <div class="cg-stat-item">
+            <div class="cg-stat-icon-wrap icon-slate">
+                <i data-lucide="shield-check" style="width: 18px; height: 18px;"></i>
+            </div>
+            <div class="cg-stat-meta">
+                <div class="cg-stat-num">100%</div>
+                <div class="cg-stat-label">Confidential Service</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Appointments Card with Segmented Controls -->
+    <div class="cg-main-card">
+        <div class="cg-tab-bar">
+            <div class="cg-tab-group" role="tablist">
+                <button type="button" class="cg-tab active" id="tab-upcoming-btn" role="tab" aria-selected="true" aria-controls="panel-upcoming" onclick="switchAppointmentTab('upcoming')">
+                    <i data-lucide="calendar-clock" style="width: 15px; height: 15px;"></i>
+                    <span>Upcoming Sessions</span>
+                    <span class="cg-tab-badge">{{ upcoming_appointments|length }}</span>
+                </button>
+                <button type="button" class="cg-tab" id="tab-past-btn" role="tab" aria-selected="false" aria-controls="panel-past" onclick="switchAppointmentTab('past')">
+                    <i data-lucide="history" style="width: 15px; height: 15px;"></i>
+                    <span>Past History</span>
+                    <span class="cg-tab-badge">{{ past_appointments|length }}</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Panel 1: Upcoming Appointments -->
+        <div class="cg-tab-panel" id="panel-upcoming" role="tabpanel">
+            {% if upcoming_appointments %}
+                <div class="cg-appt-list">
+                    {% for appt in upcoming_appointments %}
+                        <div class="cg-appt-card">
+                            <div class="cg-appt-date">
+                                <span class="cg-appt-month">{{ appt.scheduled_at|date:"M"|upper }}</span>
+                                <span class="cg-appt-day">{{ appt.scheduled_at|date:"d" }}</span>
+                                <span class="cg-appt-time">{{ appt.scheduled_at|date:"g:i A" }}</span>
+                            </div>
+
+                            <div class="cg-appt-main">
+                                <div class="cg-counselor-row">
+                                    <div class="cg-avatar">{{ appt.counselor.full_name|slice:":1"|upper }}</div>
+                                    <div class="cg-counselor-info">
+                                        <h3 class="cg-counselor-name">{{ appt.counselor.full_name }}</h3>
+                                        <p class="cg-counselor-dept">{{ appt.counselor.department|default:"Guidance & Psychological Services" }}</p>
                                     </div>
                                 </div>
-                                {% if appt.status == 'confirmed' %}
-                                    <span class="badge-success">Confirmed</span>
-                                {% else %}
-                                    <span class="badge-warning">Pending</span>
+
+                                <div class="cg-appt-meta-chips">
+                                    <span class="cg-chip">
+                                        <i data-lucide="calendar" style="width: 13px; height: 13px;"></i>
+                                        {{ appt.scheduled_at|date:"l, F j, Y" }}
+                                    </span>
+                                    <span class="cg-chip">
+                                        <i data-lucide="map-pin" style="width: 13px; height: 13px;"></i>
+                                        Guidance Room 204
+                                    </span>
+                                    <span class="cg-chip">
+                                        <i data-lucide="tag" style="width: 13px; height: 13px;"></i>
+                                        {{ appt.get_concern_type_display|default:appt.concern_type|title }}
+                                    </span>
+                                </div>
+
+                                {% if appt.notes %}
+                                    <div class="cg-appt-note">
+                                        <i data-lucide="message-square" style="width: 13px; height: 13px; flex-shrink: 0;"></i>
+                                        <span><strong>Your Note:</strong> {{ appt.notes }}</span>
+                                    </div>
                                 {% endif %}
                             </div>
 
-                            <div class="appointment-meta">
-                                <span class="meta-item">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                                    {{ appt.scheduled_at|date:"l, F j, Y" }}
-                                </span>
-                                <span class="meta-item">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                                    Guidance Center Room 204
-                                </span>
-                                <span class="meta-item">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"></path><path d="M7 7h.01"></path></svg>
-                                    {{ appt.get_concern_type_display|default:appt.concern_type|title }}
-                                </span>
-                            </div>
-
-                            {% if appt.notes %}
-                                <div class="appointment-note">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-                                    <span><strong>Your Note:</strong> {{ appt.notes }}</span>
+                            <div class="cg-appt-side">
+                                <div>
+                                    {% if appt.status == 'confirmed' %}
+                                        <span class="cg-status-pill status-confirmed">
+                                            <span class="cg-dot"></span> Confirmed
+                                        </span>
+                                    {% else %}
+                                        <span class="cg-status-pill status-pending">
+                                            <span class="cg-dot"></span> Pending
+                                        </span>
+                                    {% endif %}
                                 </div>
-                            {% endif %}
 
-                            <div class="appointment-footer">
-                                <span class="booking-info">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                                    Booked {{ appt.created_at|date:"M j, Y" }}
-                                </span>
                                 {% if appt.status == 'pending' or appt.status == 'confirmed' %}
                                     <form method="POST" action="{% url 'student_cancel_appointment' appt.id %}" onsubmit="return confirm('Are you sure you want to cancel your session with {{ appt.counselor.full_name }}?');">
                                         {% csrf_token %}
-                                        <button type="submit" class="btn-secondary btn-sm">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
-                                            Cancel Session
+                                        <button type="submit" class="cg-btn-cancel" title="Cancel this consultation">
+                                            <i data-lucide="x" style="width: 13px; height: 13px;"></i>
+                                            <span>Cancel Session</span>
                                         </button>
                                     </form>
                                 {% endif %}
                             </div>
                         </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="cg-empty-state">
+                    <div class="cg-empty-icon icon-blue">
+                        <i data-lucide="calendar" style="width: 24px; height: 24px;"></i>
                     </div>
-                {% endfor %}
-            </div>
-        {% else %}
-            <div class="empty-state">
-                <div class="empty-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    <h3 class="cg-empty-title">No Upcoming Consultations</h3>
+                    <p class="cg-empty-desc">Our licensed counselors are available to support you through academic workload, career directions, stress, and personal wellness.</p>
+                    <a href="{% url 'student_book_appointment' %}" class="btn btn-primary btn-sm">
+                        <i data-lucide="calendar-plus" style="width: 14px; height: 14px;"></i>
+                        <span>Schedule a Session</span>
+                    </a>
                 </div>
-                <h3>No Upcoming Consultations</h3>
-                <p>Our licensed counselors are available to support you through academic workload, career directions, stress, and personal wellness.</p>
-                <a href="{% url 'student_book_appointment' %}" class="btn-primary">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                    Schedule a Session
-                </a>
-            </div>
-        {% endif %}
-    </section>
-
-    <!-- Past Appointments -->
-    <section class="section">
-        <div class="section-header">
-            <div>
-                <h2>Past Consultations</h2>
-                <p class="section-description">Historical records of completed guidance sessions</p>
-            </div>
-            <span class="badge-neutral">{{ past_appointments|length }} Records</span>
+            {% endif %}
         </div>
 
-        {% if past_appointments %}
-            <div class="data-table-wrapper">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Date & Time</th>
-                            <th>Counselor</th>
-                            <th>Concern</th>
-                            <th>Status</th>
-                            <th style="text-align: right;">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for appt in past_appointments %}
+        <!-- Panel 2: Past Appointments -->
+        <div class="cg-tab-panel" id="panel-past" role="tabpanel" style="display: none;">
+            {% if past_appointments %}
+                <div class="cg-table-responsive">
+                    <table class="cg-table">
+                        <thead>
                             <tr>
-                                <td>
-                                    <div class="table-datetime">
-                                        <strong>{{ appt.scheduled_at|date:"M d, Y" }}</strong>
-                                        <span>{{ appt.scheduled_at|date:"g:i A" }}</span>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="table-counselor">
-                                        <div class="table-avatar">{{ appt.counselor.full_name|slice:":1"|upper }}</div>
-                                        <span>{{ appt.counselor.full_name }}</span>
-                                    </div>
-                                </td>
-                                <td>
-                                    <span class="badge-info">{{ appt.get_concern_type_display|default:appt.concern_type|title }}</span>
-                                </td>
-                                <td>
-                                    {% if appt.status == 'completed' %}
-                                        <span class="badge-success">{{ appt.get_status_display|default:appt.status|title }}</span>
-                                    {% elif appt.status == 'cancelled' %}
-                                        <span class="badge-neutral">{{ appt.get_status_display|default:appt.status|title }}</span>
-                                    {% else %}
-                                        <span class="badge-info">{{ appt.get_status_display|default:appt.status|title }}</span>
-                                    {% endif %}
-                                </td>
-                                <td style="text-align: right;">
-                                    <a href="{% url 'student_book_appointment' %}" class="btn-text">
-                                        Book Again
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-                                    </a>
-                                </td>
+                                <th>Date & Time</th>
+                                <th>Counselor</th>
+                                <th>Concern</th>
+                                <th>Status</th>
+                                <th style="text-align: right;">Action</th>
                             </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        {% else %}
-            <div class="empty-state-compact">
-                <div class="empty-icon-sm">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                        </thead>
+                        <tbody>
+                            {% for appt in past_appointments %}
+                                <tr>
+                                    <td>
+                                        <div class="cg-table-datetime">
+                                            <span class="date-main">{{ appt.scheduled_at|date:"M d, Y" }}</span>
+                                            <span class="date-sub">{{ appt.scheduled_at|date:"g:i A" }}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="cg-table-counselor">
+                                            <div class="cg-avatar-sm">{{ appt.counselor.full_name|slice:":1"|upper }}</div>
+                                            <span class="counselor-name">{{ appt.counselor.full_name }}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="cg-chip-subtle">
+                                            {{ appt.get_concern_type_display|default:appt.concern_type|title }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if appt.status == 'completed' %}
+                                            <span class="cg-status-pill status-completed">
+                                                <span class="cg-dot"></span> Completed
+                                            </span>
+                                        {% elif appt.status == 'cancelled' %}
+                                            <span class="cg-status-pill status-cancelled">
+                                                <span class="cg-dot"></span> Cancelled
+                                            </span>
+                                        {% else %}
+                                            <span class="cg-status-pill status-neutral">
+                                                <span class="cg-dot"></span> {{ appt.get_status_display|default:appt.status|title }}
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td style="text-align: right;">
+                                        {% if appt.status == 'completed' %}
+                                            <button type="button" class="cg-view-note-btn" onclick="openStudentCaseNote(this)"
+                                                data-note-content="{{ appt.student_case_note.decrypted_content|escapejs }}"
+                                                data-note-counselor="{{ appt.student_case_note.author_name|escapejs }}"
+                                                data-note-date="{{ appt.scheduled_at|date:'M j, Y @ g:i A'|escapejs }}"
+                                                data-note-concern="{{ appt.get_concern_type_display|default:appt.concern_type|title|escapejs }}"
+                                                data-note-available="{% if appt.student_case_note %}true{% else %}false{% endif %}">
+                                                <i data-lucide="file-text" style="width: 13px; height: 13px;"></i>
+                                                View Case Note
+                                            </button>
+                                        {% endif %}
+                                        <a href="{% url 'student_book_appointment' %}" class="cg-rebook-link">
+                                            <span>Book Again</span>
+                                            <i data-lucide="arrow-right" style="width: 13px; height: 13px;"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
-                <h4>No Past Consultation History</h4>
-                <p>As you complete guidance sessions, your records will appear here.</p>
-            </div>
-        {% endif %}
-    </section>
+            {% else %}
+                <div class="cg-empty-state">
+                    <div class="cg-empty-icon icon-slate">
+                        <i data-lucide="clock" style="width: 24px; height: 24px;"></i>
+                    </div>
+                    <h3 class="cg-empty-title">No Past Consultation History</h3>
+                    <p class="cg-empty-desc">As you complete guidance sessions, your historical records and summaries will appear here.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
 
-    <!-- Info Cards -->
-    <div class="info-grid">
-        <div class="info-card">
-            <div class="info-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-            </div>
-            <div class="info-content">
-                <h3>Confidentiality Assured</h3>
-                <p>All guidance conversations and records are strictly private under University counseling policies.</p>
+    <!-- Minimal Reassurance Footer -->
+    <div class="cg-guidance-strip">
+        <div class="cg-guidance-item">
+            <i data-lucide="lock" style="width: 16px; height: 16px; color: #2563eb;"></i>
+            <div>
+                <strong>Confidentiality Assured</strong>
+                <span>All guidance conversations are strictly private under University policies.</span>
             </div>
         </div>
-        <div class="info-card">
-            <div class="info-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-            </div>
-            <div class="info-content">
-                <h3>Flexible Rescheduling</h3>
-                <p>Need to reschedule? Cancel ahead of time and select another available timeslot.</p>
+        <div class="cg-guidance-item">
+            <i data-lucide="refresh-cw" style="width: 16px; height: 16px; color: #059669;"></i>
+            <div>
+                <strong>Flexible Rescheduling</strong>
+                <span>Need to adjust? Cancel ahead and pick another timeslot with ease.</span>
             </div>
         </div>
-        <div class="info-card">
-            <div class="info-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-            </div>
-            <div class="info-content">
-                <h3>24/7 AI Companion</h3>
-                <p>Have questions between sessions? Chat with our <a href="{% url 'student_chatbot' %}" class="text-link">AI Guidance Assistant</a></p>
+        <div class="cg-guidance-item">
+            <i data-lucide="sparkles" style="width: 16px; height: 16px; color: #7c3aed;"></i>
+            <div>
+                <strong>24/7 AI Companion</strong>
+                <span>Questions between sessions? <a href="{% url 'student_chatbot' %}" class="cg-inline-link">Chat with AI Assistant →</a></span>
             </div>
         </div>
     </div>
 </div>
 
+<div id="student-case-note-modal" class="cg-note-modal" role="dialog" aria-modal="true" aria-labelledby="student-case-note-title" hidden>
+    <div class="cg-note-modal-backdrop" onclick="closeStudentCaseNote()"></div>
+    <div class="cg-note-modal-card">
+        <div class="cg-note-modal-header">
+            <div>
+                <p class="cg-note-modal-eyebrow">Counselor Shared Note</p>
+                <h2 id="student-case-note-title">Case Note</h2>
+                <p id="student-case-note-meta" class="cg-note-modal-meta"></p>
+            </div>
+            <button type="button" class="cg-note-modal-close" onclick="closeStudentCaseNote()" aria-label="Close case note">&times;</button>
+        </div>
+        <div id="student-case-note-content" class="cg-note-modal-content" aria-live="polite"></div>
+        <div class="cg-note-modal-footer">
+            <span><i data-lucide="eye" style="width: 14px; height: 14px;"></i> View only</span>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="closeStudentCaseNote()">Close</button>
+        </div>
+    </div>
+</div>
+
 <style>
-/* Appointments Page Specific Styles */
-.appointments-list {
+/* ══════════════════════════════════════════════════════════════════
+   ConnectGuidance Minimal Appointments Design
+   ══════════════════════════════════════════════════════════════════ */
+.cg-appointments-wrapper {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 0.5rem 0.25rem 2.5rem;
+}
+
+/* Page Header */
+.cg-page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.cg-header-title {
+    font-size: 1.375rem;
+    font-weight: 700;
+    color: #0f172a;
+    letter-spacing: -0.02em;
+    margin: 0 0 0.25rem 0;
+}
+
+.cg-header-subtitle {
+    font-size: 0.875rem;
+    color: #64748b;
+    margin: 0;
+}
+
+/* Stats Strip */
+.cg-stats-strip {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.cg-stat-item {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.cg-stat-item:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+}
+
+.cg-stat-icon-wrap {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.cg-stat-icon-wrap.icon-blue {
+    background: #eff6ff;
+    color: #2563eb;
+}
+
+.cg-stat-icon-wrap.icon-green {
+    background: #ecfdf5;
+    color: #059669;
+}
+
+.cg-stat-icon-wrap.icon-slate {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.cg-stat-meta {
     display: flex;
     flex-direction: column;
-    gap: var(--space-4);
 }
 
-.appointment-card {
+.cg-stat-num {
+    font-size: 1.375rem;
+    font-weight: 700;
+    color: #0f172a;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+}
+
+.cg-stat-label {
+    font-size: 0.8125rem;
+    color: #64748b;
+    font-weight: 500;
+    margin-top: 2px;
+}
+
+/* Main Content Card & Tabs */
+.cg-main-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.cg-tab-bar {
+    padding: 0.875rem 1.25rem;
+    border-bottom: 1px solid #e2e8f0;
+    background: #fcfdfe;
+}
+
+.cg-tab-group {
+    display: inline-flex;
+    background: #f1f5f9;
+    padding: 3px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    gap: 3px;
+}
+
+.cg-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4375rem 0.875rem;
+    border-radius: 6px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: #64748b;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.cg-tab:hover {
+    color: #0f172a;
+}
+
+.cg-tab.active {
+    background: #ffffff;
+    color: #0f172a;
+    font-weight: 600;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.cg-tab-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 9999px;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    background: #e2e8f0;
+    color: #475569;
+}
+
+.cg-tab.active .cg-tab-badge {
+    background: #eff6ff;
+    color: #2563eb;
+}
+
+.cg-tab-panel {
+    padding: 1.25rem;
+}
+
+/* Appointment List & Card */
+.cg-appt-list {
     display: flex;
-    gap: var(--space-6);
-    background: white;
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-lg);
-    padding: var(--space-5);
-    transition: all 0.2s;
+    flex-direction: column;
+    gap: 0.875rem;
 }
 
-.appointment-card:hover {
-    border-color: var(--brand-primary);
-    box-shadow: 0 1px 3px rgba(29, 78, 216, 0.1);
+.cg-appt-card {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    padding: 1.125rem 1.25rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    background: #ffffff;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.appointment-date-block {
+.cg-appt-card:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+}
+
+.cg-appt-date {
+    width: 66px;
+    height: 66px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    width: 88px;
-    height: 88px;
     flex-shrink: 0;
-    background: var(--brand-primary);
-    border-radius: var(--radius-md);
-    color: white;
 }
 
-.date-month {
-    font-size: var(--text-xs);
+.cg-appt-month {
+    font-size: 0.6875rem;
     font-weight: 700;
+    color: #2563eb;
     letter-spacing: 0.05em;
-    opacity: 0.9;
-}
-
-.date-day {
-    font-size: 32px;
-    font-weight: 800;
     line-height: 1;
-    margin: 2px 0;
 }
 
-.date-time {
-    font-size: var(--text-xs);
-    font-weight: 600;
-    opacity: 0.9;
+.cg-appt-day {
+    font-size: 1.375rem;
+    font-weight: 700;
+    color: #0f172a;
+    line-height: 1.1;
+    margin: 2px 0 1px;
 }
 
-.appointment-content {
+.cg-appt-time {
+    font-size: 0.6875rem;
+    font-weight: 500;
+    color: #64748b;
+    line-height: 1;
+}
+
+.cg-appt-main {
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: var(--space-3);
+    gap: 0.45rem;
+    min-width: 0;
 }
 
-.appointment-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: var(--space-4);
-}
-
-.counselor-info {
+.cg-counselor-row {
     display: flex;
     align-items: center;
-    gap: var(--space-3);
+    gap: 0.625rem;
 }
 
-.counselor-avatar {
-    width: 48px;
-    height: 48px;
-    border-radius: var(--radius-md);
-    background: var(--brand-primary);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: var(--text-lg);
-    font-weight: 700;
-    flex-shrink: 0;
-}
-
-.counselor-name {
-    font-size: var(--text-base);
-    font-weight: 700;
-    color: var(--text-primary);
-    margin: 0 0 2px 0;
-}
-
-.counselor-role {
-    font-size: var(--text-sm);
-    color: var(--text-secondary);
-}
-
-.appointment-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-4);
-}
-
-.meta-item {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-    font-size: var(--text-sm);
-    color: var(--text-secondary);
-}
-
-.meta-item svg {
-    color: var(--text-tertiary);
-}
-
-.appointment-note {
-    display: flex;
-    align-items: flex-start;
-    gap: var(--space-2);
-    padding: var(--space-3);
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-sm);
-    font-size: var(--text-sm);
-    color: var(--text-secondary);
-}
-
-.appointment-note svg {
-    flex-shrink: 0;
-    margin-top: 2px;
-    color: var(--brand-primary);
-}
-
-.appointment-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-top: var(--space-3);
-    border-top: 1px solid var(--border-color);
-    margin-top: var(--space-1);
-    gap: var(--space-3);
-}
-
-.booking-info {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-    font-size: var(--text-sm);
-    color: var(--text-tertiary);
-}
-
-.booking-info svg {
-    color: var(--text-tertiary);
-}
-
-/* Table Enhancements */
-.table-datetime {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.table-datetime strong {
-    font-weight: 600;
-    color: var(--text-primary);
-}
-
-.table-datetime span {
-    font-size: var(--text-sm);
-    color: var(--text-tertiary);
-}
-
-.table-counselor {
-    display: flex;
-    align-items: center;
-    gap: var(--space-3);
-}
-
-.table-avatar {
+.cg-avatar {
     width: 32px;
     height: 32px;
-    border-radius: var(--radius-sm);
-    background: var(--brand-primary);
-    color: white;
+    border-radius: 7px;
+    background: #eff6ff;
+    color: #2563eb;
+    font-size: 0.8125rem;
+    font-weight: 700;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: var(--text-sm);
-    font-weight: 700;
+    flex-shrink: 0;
+    border: 1px solid #dbeafe;
+}
+
+.cg-counselor-name {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: #0f172a;
+    margin: 0;
+    line-height: 1.25;
+}
+
+.cg-counselor-dept {
+    font-size: 0.75rem;
+    color: #64748b;
+    margin: 1px 0 0 0;
+    line-height: 1.2;
+}
+
+.cg-appt-meta-chips {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.cg-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.75rem;
+    color: #64748b;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 0.2rem 0.5rem;
+    border-radius: 5px;
+}
+
+.cg-chip svg {
+    color: #94a3b8;
+}
+
+.cg-appt-note {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.75rem;
+    color: #475569;
+    background: #f8fafc;
+    border-left: 2px solid #2563eb;
+    padding: 0.35rem 0.6rem;
+    border-radius: 0 4px 4px 0;
+    margin-top: 2px;
+}
+
+.cg-appt-side {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.75rem;
     flex-shrink: 0;
 }
 
-/* Info Grid */
-.info-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: var(--space-4);
-    margin-top: var(--space-6);
+/* Status Pills */
+.cg-status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.25rem 0.625rem;
+    border-radius: 9999px;
+    letter-spacing: 0.01em;
 }
 
-.info-card {
-    display: flex;
-    gap: var(--space-4);
-    padding: var(--space-5);
-    background: white;
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-lg);
+.cg-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
 }
 
-.info-icon {
+.status-confirmed {
+    background: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+}
+.status-confirmed .cg-dot { background: #10b981; }
+
+.status-pending {
+    background: #fffbeb;
+    color: #92400e;
+    border: 1px solid #fde68a;
+}
+.status-pending .cg-dot { background: #f59e0b; }
+
+.status-completed {
+    background: #f0fdf4;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+}
+.status-completed .cg-dot { background: #16a34a; }
+
+.status-cancelled {
+    background: #f8fafc;
+    color: #64748b;
+    border: 1px solid #e2e8f0;
+}
+.status-cancelled .cg-dot { background: #94a3b8; }
+
+.status-neutral {
+    background: #f1f5f9;
+    color: #334155;
+    border: 1px solid #cbd5e1;
+}
+.status-neutral .cg-dot { background: #64748b; }
+
+/* Cancel Action Button */
+.cg-btn-cancel {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #64748b;
+    background: transparent;
+    border: 1px solid #e2e8f0;
+    padding: 0.3125rem 0.625rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.cg-btn-cancel:hover {
+    color: #dc2626;
+    border-color: #fecaca;
+    background: #fef2f2;
+}
+
+/* Empty State */
+.cg-empty-state {
+    text-align: center;
+    padding: 2.75rem 1.5rem;
+    max-width: 460px;
+    margin: 0 auto;
+}
+
+.cg-empty-icon {
     width: 48px;
     height: 48px;
-    flex-shrink: 0;
-    border-radius: var(--radius-md);
-    background: var(--bg-secondary);
+    border-radius: 50%;
+    margin: 0 auto 1rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cg-empty-icon.icon-blue {
+    background: #eff6ff;
+    color: #2563eb;
+    border: 1px solid #dbeafe;
+}
+
+.cg-empty-icon.icon-slate {
+    background: #f1f5f9;
+    color: #64748b;
+    border: 1px solid #e2e8f0;
+}
+
+.cg-empty-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #0f172a;
+    margin: 0 0 0.375rem 0;
+}
+
+.cg-empty-desc {
+    font-size: 0.8125rem;
+    color: #64748b;
+    line-height: 1.5;
+    margin: 0 0 1.25rem 0;
+}
+
+/* Data Table */
+.cg-table-responsive {
+    overflow-x: auto;
+}
+
+.cg-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8125rem;
+}
+
+.cg-table th {
+    text-align: left;
+    padding: 0.625rem 0.875rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #64748b;
+    border-bottom: 1px solid #e2e8f0;
+    background: #f8fafc;
+}
+
+.cg-table td {
+    padding: 0.75rem 0.875rem;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
+    vertical-align: middle;
+}
+
+.cg-table tr:last-child td {
+    border-bottom: none;
+}
+
+.cg-table tr:hover td {
+    background: #fcfdfe;
+}
+
+.cg-table-datetime {
+    display: flex;
+    flex-direction: column;
+}
+
+.cg-table-datetime .date-main {
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.cg-table-datetime .date-sub {
+    font-size: 0.75rem;
+    color: #64748b;
+}
+
+.cg-table-counselor {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.cg-avatar-sm {
+    width: 24px;
+    height: 24px;
+    border-radius: 5px;
+    background: #f1f5f9;
+    color: #475569;
+    font-size: 0.6875rem;
+    font-weight: 700;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--brand-primary);
 }
 
-.info-content h3 {
-    font-size: var(--text-base);
-    font-weight: 700;
-    color: var(--text-primary);
-    margin: 0 0 var(--space-2) 0;
+.cg-chip-subtle {
+    display: inline-block;
+    padding: 0.2rem 0.5rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 5px;
+    font-size: 0.75rem;
+    color: #475569;
 }
 
-.info-content p {
-    font-size: var(--text-sm);
-    color: var(--text-secondary);
-    margin: 0;
-    line-height: 1.5;
+.cg-rebook-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #2563eb;
+    text-decoration: none;
+    transition: gap 0.15s ease;
 }
 
-.text-link {
-    color: var(--brand-primary);
+.cg-rebook-link:hover {
+    color: #1d4ed8;
+    gap: 0.4rem;
+}
+
+.cg-view-note-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-right: 0.75rem;
+    padding: 0.35rem 0.6rem;
+    border: 1px solid #bfdbfe;
+    border-radius: 6px;
+    background: #eff6ff;
+    color: #1d4ed8;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.cg-view-note-btn:hover { background: #dbeafe; }
+
+.cg-note-modal[hidden] { display: none; }
+.cg-note-modal { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; padding: 1rem; }
+.cg-note-modal-backdrop { position: absolute; inset: 0; background: rgba(15, 23, 42, 0.55); }
+.cg-note-modal-card { position: relative; width: min(620px, 100%); max-height: min(80vh, 680px); overflow: auto; background: #fff; border-radius: 12px; box-shadow: 0 20px 50px rgba(15, 23, 42, 0.25); }
+.cg-note-modal-header { display: flex; justify-content: space-between; gap: 1rem; padding: 1.25rem 1.5rem; border-bottom: 1px solid #e2e8f0; }
+.cg-note-modal-eyebrow { margin: 0 0 0.25rem; color: #2563eb; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+.cg-note-modal-header h2 { margin: 0; color: #0f172a; font-size: 1.15rem; }
+.cg-note-modal-meta { margin: 0.35rem 0 0; color: #64748b; font-size: 0.8rem; }
+.cg-note-modal-close { border: 0; background: transparent; color: #64748b; font-size: 1.75rem; line-height: 1; cursor: pointer; }
+.cg-note-modal-content { min-height: 180px; padding: 1.5rem; color: #334155; line-height: 1.7; white-space: pre-wrap; }
+.cg-note-modal-footer { display: flex; justify-content: space-between; align-items: center; padding: 0.9rem 1.5rem; border-top: 1px solid #e2e8f0; color: #64748b; font-size: 0.75rem; }
+.cg-note-modal-footer span { display: inline-flex; align-items: center; gap: 0.35rem; }
+
+/* Minimal Reassurance Footer Strip */
+.cg-guidance-strip {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+    padding: 1.25rem;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+}
+
+.cg-guidance-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+}
+
+.cg-guidance-item svg {
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+.cg-guidance-item strong {
+    display: block;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #0f172a;
+    margin-bottom: 2px;
+}
+
+.cg-guidance-item span {
+    font-size: 0.75rem;
+    color: #64748b;
+    line-height: 1.4;
+}
+
+.cg-inline-link {
+    color: #2563eb;
     text-decoration: none;
     font-weight: 600;
 }
 
-.text-link:hover {
+.cg-inline-link:hover {
     text-decoration: underline;
 }
 
-/* Responsive */
-@media (max-width: 1024px) {
-    .info-grid {
+/* Responsive adjustments */
+@media (max-width: 900px) {
+    .cg-stats-strip {
+        grid-template-columns: 1fr;
+    }
+    .cg-guidance-strip {
         grid-template-columns: 1fr;
     }
 }
 
 @media (max-width: 768px) {
-    .appointment-card {
+    .cg-appt-card {
         flex-direction: column;
-        gap: var(--space-4);
+        align-items: flex-start;
+        gap: 0.875rem;
     }
-
-    .appointment-date-block {
+    .cg-appt-date {
         width: 100%;
         height: auto;
         flex-direction: row;
-        justify-content: center;
-        padding: var(--space-3) 0;
-        gap: var(--space-3);
+        gap: 0.75rem;
+        padding: 0.5rem;
     }
-
-    .date-day {
-        font-size: 28px;
-    }
-
-    .appointment-header {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .appointment-footer {
-        flex-direction: column;
-        align-items: flex-start;
+    .cg-appt-side {
+        width: 100%;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        border-top: 1px solid #f1f5f9;
+        padding-top: 0.75rem;
     }
 }
 </style>
+
+<script>
+function openStudentCaseNote(button) {
+    const modal = document.getElementById('student-case-note-modal');
+    const content = document.getElementById('student-case-note-content');
+    content.textContent = button.dataset.noteAvailable === 'true'
+        ? (button.dataset.noteContent || '')
+        : 'No shared case note is available for this appointment. The counselor may not have created a note yet, or the note may be confidential.';
+    document.getElementById('student-case-note-meta').textContent = `${button.dataset.noteCounselor || 'Counselor'} • ${button.dataset.noteDate || ''} • ${button.dataset.noteConcern || ''}`;
+    modal.hidden = false;
+    document.body.style.overflow = 'hidden';
+    if (window.lucide) lucide.createIcons();
+}
+
+function closeStudentCaseNote() {
+    const modal = document.getElementById('student-case-note-modal');
+    if (!modal) return;
+    modal.hidden = true;
+    document.body.style.overflow = '';
+}
+
+function switchAppointmentTab(tab) {
+    const upcomingBtn = document.getElementById('tab-upcoming-btn');
+    const pastBtn = document.getElementById('tab-past-btn');
+    const upcomingPanel = document.getElementById('panel-upcoming');
+    const pastPanel = document.getElementById('panel-past');
+
+    if (!upcomingBtn || !pastBtn || !upcomingPanel || !pastPanel) return;
+
+    if (tab === 'past') {
+        upcomingBtn.classList.remove('active');
+        upcomingBtn.setAttribute('aria-selected', 'false');
+        pastBtn.classList.add('active');
+        pastBtn.setAttribute('aria-selected', 'true');
+        upcomingPanel.style.display = 'none';
+        pastPanel.style.display = 'block';
+    } else {
+        pastBtn.classList.remove('active');
+        pastBtn.setAttribute('aria-selected', 'false');
+        upcomingBtn.classList.add('active');
+        upcomingBtn.setAttribute('aria-selected', 'true');
+        pastPanel.style.display = 'none';
+        upcomingPanel.style.display = 'block';
+    }
+
+    if (window.lucide) {
+        lucide.createIcons();
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    if (window.location.hash === '#past' || new URLSearchParams(window.location.search).get('tab') === 'past') {
+        switchAppointmentTab('past');
+    }
+    if (window.lucide) {
+        lucide.createIcons();
+    }
+});
+
+document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape') closeStudentCaseNote();
+});
+</script>
 {% endblock %}

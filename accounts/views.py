@@ -77,6 +77,7 @@ def login_view(request):
                     return redirect('/login/?error=deactivated')
 
                 login(request, user)
+                messages.success(request, "Login successful!")
 
                 if next_url and next_url.startswith('/'):
                     return redirect(next_url)
@@ -93,6 +94,7 @@ def login_view(request):
 def logout_view(request):
     """Sign out the current user session and redirect to landing page."""
     auth_logout(request)
+    messages.success(request, "You have been signed out successfully.")
     return redirect('landing')
 
 

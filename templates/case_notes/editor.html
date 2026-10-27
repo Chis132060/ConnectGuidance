@@ -63,6 +63,10 @@
                 </label>
             </div>
 
+            {% if form.non_field_errors %}
+            <div style="margin-bottom: 1rem; color: #dc2626;">{{ form.non_field_errors.0 }}</div>
+            {% endif %}
+
             <div style="display: flex; justify-content: flex-end; gap: 1rem;">
                 <a href="{% url 'counselor_workspace' %}" style="padding: 0.6rem 1.2rem; border-radius: 6px; border: 1px solid #cbd5e1; color: #475569; text-decoration: none; font-weight: 500;">
                     Cancel

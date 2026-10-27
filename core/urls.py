@@ -32,6 +32,7 @@ from core.views import (
     receptionist_book_view,
     # Admin Portal Views
     admin_overview_view,
+    admin_case_notes_view,
     admin_reports_view,
     admin_users_view,
     admin_audit_logs_view,
@@ -75,6 +76,7 @@ urlpatterns = [
 
     # ── Administrator Panel ───────────────────────────────────────────────
     path('admin-panel/', admin_overview_view, name='admin_overview'),
+    path('admin-panel/case-notes/', admin_case_notes_view, name='admin_case_notes'),
     path('admin-panel/reports/', admin_reports_view, name='admin_reports'),
     path('admin-panel/users/', admin_users_view, name='admin_users'),
     path('admin-panel/audit/', admin_audit_logs_view, name='admin_audit'),

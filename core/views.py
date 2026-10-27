@@ -60,6 +60,7 @@ from core.forms import (
     AppointmentBookingForm,
     ReceptionistBookingForm,
     MoodCheckInForm,
+    CaseNoteForm,
 )
 
 # Core Domain Services
@@ -76,6 +77,7 @@ from core.services.mood import process_mood_checkin
 from core.services.case_notes import (
     save_case_note,
     get_decrypted_case_note,
+    get_student_shared_case_notes,
 )
 from core.services.encryption import encrypt, decrypt
 from core.services.receptionist import (
@@ -123,38 +125,35 @@ def student_dashboard_view(request):
 
     upcoming_appointments = Appointment.objects.filter(
         student=student,
-        scheduled_at__gte=now,
         status__in=[AppointmentStatusChoices.PENDING, AppointmentStatusChoices.CONFIRMED]
     ).select_related('counselor', 'counselor__user').order_by('scheduled_at')
 
+    completed_appointments = Appointment.objects.filter(
+        student=student,
+        status=AppointmentStatusChoices.COMPLETED
+    ).select_related('counselor', 'counselor__user').order_by('-scheduled_at')
+
     past_appointments = Appointment.objects.filter(
-        student=student
-    ).filter(
-        scheduled_at__lt=now
-    ).exclude(
-        status__in=[AppointmentStatusChoices.PENDING, AppointmentStatusChoices.CONFIRMED]
-    ).select_related('counselor').order_by('-scheduled_at')[:5]
+        student=student,
+        status__in=[AppointmentStatusChoices.COMPLETED, AppointmentStatusChoices.CANCELLED]
+    ).select_related('counselor', 'counselor__user').order_by('-scheduled_at')[:5]
 
-    next_appointment = upcoming_appointments.first()
+    next_appointment = upcoming_appointments.filter(scheduled_at__gte=now).first()
+    if not next_appointment:
+        next_appointment = upcoming_appointments.first()
 
-    # Retrieve non-confidential case notes for past sessions
-    case_notes_raw = CaseNote.objects.filter(
-        appointment__student=student,
-        is_confidential=False
-    ).select_related('counselor', 'appointment').order_by('-created_at')[:5]
+    completed_count = completed_appointments.count()
 
-    case_notes_history = []
-    for cn in case_notes_raw:
-        data = get_decrypted_case_note(cn, student)
-        if data:
-            case_notes_history.append(data)
+    case_notes_history = list(get_student_shared_case_notes(student).values())[:5]
 
     context = {
         'profile': student,
         'next_appointment': next_appointment,
         'upcoming_appointments': upcoming_appointments,
         'upcoming_count': upcoming_appointments.count(),
-        'past_count': past_appointments.count(),
+        'past_count': completed_count,
+        'completed_count': completed_count,
+        'past_appointments': past_appointments,
         'case_notes_history': case_notes_history,
         'mood_form': MoodCheckInForm(),
     }
@@ -166,16 +165,20 @@ def student_appointments_list_view(request):
     """List student appointments categorized into upcoming and past/history."""
     student = request.user.profile
 
-    upcoming_appointments = Appointment.objects.filter(
+    upcoming_appointments = list(Appointment.objects.filter(
         student=student,
         status__in=[AppointmentStatusChoices.PENDING, AppointmentStatusChoices.CONFIRMED]
-    ).select_related('counselor', 'counselor__user').order_by('scheduled_at')
+    ).select_related('counselor', 'counselor__user').order_by('scheduled_at'))
 
-    past_appointments = Appointment.objects.filter(
+    past_appointments = list(Appointment.objects.filter(
         student=student
     ).exclude(
         status__in=[AppointmentStatusChoices.PENDING, AppointmentStatusChoices.CONFIRMED]
-    ).select_related('counselor', 'counselor__user').order_by('-scheduled_at')
+    ).select_related('counselor', 'counselor__user').order_by('-scheduled_at'))
+
+    student_case_notes = get_student_shared_case_notes(student)
+    for appointment in upcoming_appointments + past_appointments:
+        appointment.student_case_note = student_case_notes.get(appointment.id)
 
     counselors = Profile.objects.filter(
         role=RoleChoices.COUNSELOR,
@@ -645,28 +648,32 @@ def counselor_case_note_view(request, appointment_id: int):
         except Exception:
             messages.error(request, "Unable to decrypt existing note.")
 
-    if request.method == 'POST':
-        content = request.POST.get('content', '').strip()
-        is_confidential = request.POST.get('is_confidential') == 'on'
-        if content:
-            try:
-                save_case_note(
-                    appointment=appointment,
-                    counselor=counselor,
-                    raw_content=content,
-                    is_confidential=is_confidential
-                )
-                messages.success(request, "Case note saved securely.")
-                return redirect('counselor_case_note', appointment_id=appointment.id)
-            except Exception as e:
-                messages.error(request, f"Could not save case note: {e}")
-        else:
-            messages.error(request, "Note content cannot be empty.")
+    form = CaseNoteForm(
+        request.POST or None,
+        initial={
+            'content': decrypted_content,
+            'is_confidential': existing_note.is_confidential if existing_note else False,
+        }
+    )
+
+    if request.method == 'POST' and form.is_valid():
+        try:
+            save_case_note(
+                appointment=appointment,
+                counselor=counselor,
+                raw_content=form.cleaned_data['content'],
+                is_confidential=form.cleaned_data['is_confidential']
+            )
+            messages.success(request, "Case note saved securely.")
+            return redirect('counselor_case_note', appointment_id=appointment.id)
+        except (PermissionDenied, ValidationError) as e:
+            form.add_error(None, str(e))
 
     context = {
         'appointment': appointment,
         'existing_note': existing_note,
         'decrypted_content': decrypted_content,
+        'form': form,
         'profile': counselor,
     }
     return render(request, 'case_notes/editor.html', context)
@@ -871,6 +878,34 @@ def receptionist_book_view(request):
 # ==============================================================================
 # 4. ADMINISTRATOR PORTAL & ANALYTICS VIEWS
 # ==============================================================================
+
+@require_admin
+def admin_case_notes_view(request):
+    """Review shared case notes while excluding counselor-only confidential notes."""
+    admin_profile = request.user.profile
+    notes = CaseNote.objects.filter(
+        is_confidential=False
+    ).select_related('appointment', 'appointment__student', 'counselor')
+
+    search_query = request.GET.get('q', '').strip()
+    if search_query:
+        notes = notes.filter(
+            Q(appointment__student__full_name__icontains=search_query) |
+            Q(counselor__full_name__icontains=search_query)
+        )
+
+    note_items = []
+    for note in notes:
+        note_data = get_decrypted_case_note(note, admin_profile)
+        if note_data:
+            note_items.append({'note': note, 'content': note_data['content']})
+
+    return render(request, 'admin/case_notes.html', {
+        'profile': admin_profile,
+        'note_items': note_items,
+        'search_query': search_query,
+    })
+
 
 @require_admin
 def admin_overview_view(request):
